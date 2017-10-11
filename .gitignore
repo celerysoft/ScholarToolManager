@@ -150,3 +150,6 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# uwsgi
+uwsgi_config.ini
