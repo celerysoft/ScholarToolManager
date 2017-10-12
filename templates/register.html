@@ -1,0 +1,121 @@
+{% extends '__base_with_toolbar_only__.html' %}
+
+{% block beforehead %}
+
+    <script>
+        function validateEmail(email) {
+            var re = /^[a-z0-9\.\-\_]+\@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$/;
+            return re.test(email.toLowerCase());
+        }
+
+        $(function () {
+            var vm = new Vue({
+                el: '#vm',
+                data: {
+                    name: '',
+                    email: '',
+                    password: '',
+                    password_confirm: '',
+                    invitation_code: ''
+                },
+                methods: {
+                    submit: function (event) {
+                        event.preventDefault();
+
+                        let $form = $('#vm');
+                        if (!this.name.trim()) {
+                            return mdui.snackbar({
+                                message: '请输入用户名'
+                            });
+                        }
+                        if (!validateEmail(this.email.trim().toLowerCase())) {
+                            return mdui.snackbar({
+                                message: '请输入正确的Email地址'
+                            });
+                        }
+                        if (this.password.length < 6) {
+                            return mdui.snackbar({
+                                message: '口令长度至少为6个字符'
+                            });
+                        }
+                        if (this.password !== this.password_confirm) {
+                            return mdui.snackbar({
+                                message: '两次输入的口令不一致'
+                            });
+                        }
+
+                        let email = this.email.trim().toLowerCase();
+                        $form.httpPost('/api/register', {
+                            name: this.name.trim(),
+                            email: email,
+                            password: CryptoJS.SHA1(this.password).toString(),
+                            invitation_code: this.invitation_code.trim()
+                        }, function (error, data, jqXHR) {
+                            if (error) {
+                                return mdui.snackbar({
+                                    message: error.message
+                                });
+                            }
+
+                            mdui.alert('开始畅游Celery Soft学术吧', '注册成功');
+                            return location.assign('/');
+                        });
+                    }
+                }
+            });
+        });
+    </script>
+
+{% endblock %}
+
+{% block content %}
+
+    <div class="mdui-card mdui-typo register-card mdui-hoverable">
+        <h1>注册
+            <small style="margin-left: 16px;">成为Celery Soft 学术的会员</small>
+        </h1>
+        <form id="vm">
+            <div class="mdui-textfield mdui-textfield-floating-label">
+                <label class="mdui-textfield-label">用户名</label>
+                <input class="mdui-textfield-input" v-model="name" type="text" required/>
+                <div class="mdui-textfield-error">用户名不能为空</div>
+            </div>
+
+            <div class="mdui-textfield mdui-textfield-floating-label">
+                <label class="mdui-textfield-label">E-mail</label>
+                <input class="mdui-textfield-input" v-model="email" type="email" required/>
+                <div class="mdui-textfield-error">邮箱格式错误</div>
+            </div>
+
+            <div class="mdui-textfield mdui-textfield-floating-label">
+                <label class="mdui-textfield-label">密码</label>
+                <input class="mdui-textfield-input" v-model="password" type="password"
+                       pattern="^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z]).*$" required/>
+                <div class="mdui-textfield-error">密码至少 6 位，且包含大小写字母</div>
+            </div>
+
+            <div class="mdui-textfield mdui-textfield-floating-label">
+                <label class="mdui-textfield-label">确认密码</label>
+                <input class="mdui-textfield-input" v-model="password_confirm" type="password"
+                       pattern="^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z]).*$" required/>
+                <div class="mdui-textfield-error">密码至少 6 位，且包含大小写字母</div>
+            </div>
+
+            <div class="mdui-textfield mdui-textfield-floating-label">
+                <label class="mdui-textfield-label">邀请码</label>
+                <input class="mdui-textfield-input" v-model="invitation_code" type="text" required/>
+                <div class="mdui-textfield-error">邀请码不能为空</div>
+            </div>
+
+            <button v-on:click="submit" type="submit" class="mdui-btn mdui-color-theme-accent mdui-ripple mdui-center">
+                注册
+            </button>
+        </form>
+    </div>
+
+    <div class="mdui-typo text-under-register-card mdui-text-color-theme-secondary">
+        已有账号？请<a href="/login/">登录</a>
+    </div>
+
+
+{% endblock %}

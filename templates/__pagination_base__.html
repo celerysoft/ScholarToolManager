@@ -1,0 +1,49 @@
+{% if pagination.iter_pages()|list|length > 1 %} {# 分页 #}
+    <div class="mdui-typo mdui-container-fluid mdui-shadow-6 #mdui-text-center"
+         style="clear: both; padding-top: 8px; padding-bottom: 8px; margin-bottom: 16px;">
+
+        <div class="pagination-page">
+            {% if pagination.has_prev %}
+                <a href="{{ url_for(pagination_url_for, page=1) }}" class="mdui-btn mdui-ripple">首页</a>
+                <a href="{{ url_for(pagination_url_for, page=pagination.prev_num) }}"
+                   class="mdui-btn mdui-ripple">上一页</a>
+            {% else %}
+                <button class="mdui-btn" disabled>首页</button>
+                <button class="mdui-btn" disabled>上一页</button>
+            {% endif %}
+
+            {% for page in pagination.iter_pages() %}
+
+                {% if page != pagination.page %}
+                    <a style="padding-left: 4px; padding-right: 4px;"
+                       href="{{ url_for(pagination_url_for, page=page) }}">{{ page }}</a>
+                {% else %}
+                    <a style="padding-left: 4px; padding-right: 4px; display: inline-block"
+                       class="mdui-text-color-theme-text">{{ page }}</a>
+                {% endif %}
+
+            {% endfor %}
+
+            {% if pagination.has_next %}
+                <a href="{{ url_for(pagination_url_for, page=pagination.next_num) }}"
+                   class="mdui-btn mdui-ripple">下一页</a>
+                <a href="{{ url_for(pagination_url_for, page=pagination.iter_pages()|list|length) }}"
+                   class="mdui-btn mdui-ripple">末页</a>
+            {% else %}
+                <button class="mdui-btn" disabled>下一页</button>
+                <button class="mdui-btn" disabled>末页</button>
+            {% endif %}
+
+            <div class="pagination-quick-jump" style="min-width: 140px;">
+                <div class="mdui-textfield">
+                    <input id="pagination-input-page" class="mdui-textfield-input" style="width: 48px;" type="text"
+                           placeholder="页码"/>
+                </div>
+                <button id="pagination-btn-jump" class="mdui-btn mdui-ripple">跳转</button>
+            </div>
+        </div>
+    </div>
+
+
+    </div>
+{% endif %}

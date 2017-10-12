@@ -1,0 +1,63 @@
+{% extends '__base__.html' %}
+
+{% block script %}
+    <script>
+        function initVM(data) {
+            var vm = new Vue({
+                el: '#today_in_history_container',
+                data: {
+                    results: data.result,
+                    date: data.today
+                },
+            });
+            $('#loading').hide();
+            $('#today_in_history_container').show();
+        }
+
+        $(function () {
+            $('#today_in_history_container').hide();
+            httpGet('/api/today_in_history', function (error, data, jqXHR) {
+                if (error) {
+                    $('#loading').hide();
+                    return mdui.alert(error.message);
+                }
+                initVM(data)
+            });
+        });
+    </script>
+    <script src="{{ static_route }}static/js/scroll_to_top.js"></script>
+{% endblock %}
+
+{% block under_toolbar %}
+    <div id="loading" class="mdui-progress">
+        <div class="mdui-progress-indeterminate"></div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="mdui-typo">
+        <h1 class="mdui-text-center">欢迎来到 Celery Soft 学术</h1>
+
+        <div id="today_in_history_container">
+            <div>
+                <p>今天是<b v-text="date"></b>，来看看历史上的今天发生了什么：</p>
+                <!--<p v-text="results"></p>-->
+                <ul id="example-0">
+                    <li v-for="result in results">
+                        <p>
+                            <b v-text="result.year"></b>年，<span v-text.trim="result.title"></span>
+                        </p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div>
+            <p>如果你还有兴趣的话，可以看看</p>
+            <p><label>Celery Soft的产品：<a href="/product/">www.celerysoft.com/product/</a></label></p>
+            <p><label>Celery Soft的博客：<a href="/blog/">www.celerysoft.com/blog/</a></label></p>
+        </div>
+    </div>
+
+    {% include '__scroll_to_top_button_base__.html' %}
+{% endblock %}

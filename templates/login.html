@@ -1,0 +1,85 @@
+{% extends '__base_with_toolbar_only__.html' %}
+
+{% block beforehead %}
+
+    <script>
+        $(function () {
+            let vm = new Vue({
+                el: '#vm',
+                data: {
+                    name: '',
+                    password: '',
+                },
+                methods: {
+                    submit: function (event) {
+                        event.preventDefault();
+                        let $form = $('#vm');
+                        if (!this.name.trim()) {
+                            return mdui.snackbar({
+                                message: '请输入用户名或邮箱地址'
+                            });
+                        }
+                        if (this.password.length < 6) {
+                            return mdui.snackbar({
+                                message: '口令长度至少为6个字符'
+                            });
+                        }
+                        $form.httpPost('/api/login', {
+                            name: this.name.trim(),
+                            password: CryptoJS.SHA1(this.password).toString()
+                        }, function (error, data, jqXHR) {
+                            if (error) {
+                                return mdui.snackbar({message: error.message});
+                            }
+
+                            return mdui.snackbar({
+                                message: '登录成功，点击屏幕继续',
+                                closeOnOutsideClick: true,
+                                onClose: function () {
+                                    location.assign('/');
+                                }
+                            });
+                        });
+                    }
+                }
+            });
+        });
+    </script>
+
+{% endblock %}
+
+{% block content %}
+    <div class="mdui-typo">
+        <h1 class="mdui-text-center">欢迎来到 Celery Soft 学术</h1>
+
+        <p class="mdui-text-color-theme mdui-text-center">站在巨人的肩膀上</p>
+    </div>
+
+    <div class="mdui-card mdui-typo login-card mdui-hoverable">
+        <h1>登录
+            <small style="margin-left: 16px;">畅游Celery Soft</small>
+        </h1>
+        <form id="vm">
+            <div class="mdui-textfield mdui-textfield-floating-label">
+                <label class="mdui-textfield-label">用户名或邮箱地址</label>
+                <input class="mdui-textfield-input" v-model="name" type="text" required/>
+                <div class="mdui-textfield-error">用户名或邮箱地址不能为空</div>
+            </div>
+
+            <div class="mdui-textfield mdui-textfield-floating-label">
+                <label class="mdui-textfield-label">密码</label>
+                <input class="mdui-textfield-input" v-model="password" type="password"
+                       pattern="^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z]).*$" required/>
+                <div class="mdui-textfield-error">密码至少 6 位，且包含大小写字母</div>
+            </div>
+
+            <button v-on:click="submit" type="submit" class="mdui-btn mdui-color-theme-accent mdui-ripple mdui-center">
+                登录
+            </button>
+        </form>
+    </div>
+
+    <div class="mdui-typo text-under-login-card mdui-text-color-theme-secondary">
+        还没有账号？请先<a href="/register/">注册</a>
+    </div>
+{% endblock %}

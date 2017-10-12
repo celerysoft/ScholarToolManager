@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    {% block meta %}<!-- block meta  -->{% endblock %}
+    <title>{% block title %}{{ title }} | 月下之光{% endblock %}</title>
+
+    {% if debug %}
+        <link rel="stylesheet" href="{{ static_route }}static/css/mdui.css">
+        <link rel="stylesheet" href="{{ static_route }}static/css/font-awesome.css">
+        <link rel="stylesheet" href="{{ static_route }}static/css/base.css">
+        <link rel="stylesheet" href="{{ static_route }}static/css/pygments-friendly.css">
+    {% else %}
+        <link rel="stylesheet" href="{{ static_route }}static/css/mdui.min.css">
+        <link rel="stylesheet" href="{{ static_route }}static/css/font-awesome.min.css">
+        <link rel="stylesheet" href="{{ static_route }}static/css/base.css">
+        <link rel="stylesheet" href="{{ static_route }}static/css/pygments-friendly.css">
+    {% endif %}
+
+    {% if debug %}
+        <script src="{{ static_route }}static/js/jquery-3.2.1.js"></script>
+        <script src="{{ static_route }}static/js/mdui.js"></script>
+        <script src="{{ static_route }}static/js/base.js"></script>
+        <script src="{{ static_route }}static/js/ajax.js"></script>
+        <script src="{{ static_route }}static/js/vue.js"></script>
+        <script src="{{ static_route }}static/js/sha1.min.js"></script>
+    {% else %}
+        <script src="{{ static_route }}static/js/jquery-3.2.1.min.js"></script>
+        <script src="{{ static_route }}static/js/mdui.min.js"></script>
+        <script src="{{ static_route }}static/js/base.js"></script>
+        <script src="{{ static_route }}static/js/ajax.js"></script>
+        <script src="{{ static_route }}static/js/vue.min.js"></script>
+        <script src="{{ static_route }}static/js/sha1.min.js"></script>
+    {% endif %}
+
+    {% block beforehead %}<!-- before head  -->{% endblock %}
+    {% block script %}<!-- extra script -->{% endblock %}
+</head>
+<body class="mdui-appbar-with-toolbar mdui-theme-primary-indigo mdui-theme-accent-red">
+
+<!-- Toolbar -->
+<header class="mdui-appbar mdui-appbar-fixed">
+    <div class="mdui-toolbar mdui-color-theme">
+        <a href="/" class="mdui-typo-headline mdui-hidden-xs" mdui-tooltip="{content: '返回首页'}">Celery Soft 学术</a>
+        <div class="vertical-divider"></div>
+        <div class="mdui-typo-headline">{% block page_title %} {{ title }} {% endblock %}</div>
+        <div class="mdui-toolbar-spacer"></div>
+    </div>
+</header>
+
+<div class="mdui-container content-container">
+    <!-- content -->
+    {% block content %}
+    {% endblock %}
+    <!-- // content -->
+    <div class="empty"></div>
+</div>
+
+</body>
+</html>

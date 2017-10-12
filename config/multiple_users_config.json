@@ -1,0 +1,9 @@
+{
+    "server": "0.0.0.0",
+    "port_password": {
+        "60000": "foobar1",
+        "60001": "foobar2"
+    },
+    "timeout": 300,
+    "method": "aes-256-cfb"
+}
