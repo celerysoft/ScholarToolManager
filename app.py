@@ -181,7 +181,7 @@ def create_product():
                            action='POST')
 
 
-@app.route('/manage/event/edit/') 
+@app.route('/manage/event/edit/')
 def edit_product():
     if not permission.check_manage_event_permission(derive_db_session(), derive_user_id_from_session()):
         return redirect(url_for('home_page'))
@@ -191,6 +191,44 @@ def edit_product():
                            title='编辑公告',
                            id=product_id,
                            action='PATCH')
+
+
+@app.route('/manage/user/')
+def manage_user():
+    permission.check_user_permission()
+
+    db_session = derive_db_session(pagination=True)
+    if not permission.check_manage_user_permission(db_session, derive_user_id_from_session()):
+        return redirect(url_for('home_page'))
+
+    url = url_for('manage_user')
+    page = request.args.get('page')
+    try:
+        page = int(page) if page is not None else 1
+    except ValueError as e:
+        return redirect(url)
+
+    pagination = db_session.query(model.User).order_by(model.User.created_at).paginate(
+        page, __ITEM_PER_PAGE, False)
+    if page > 1 and len(pagination.items) is 0:
+        return redirect(url)
+
+    return render_template('manage_user.html',
+                           title='用户管理',
+                           pagination=pagination,
+                           pagination_url_for='manage_user')
+
+
+@app.route('/user/<name>')
+def show_user_profile(name):
+    db_session = derive_db_session()
+    user = db_session.query(model.User).filter_by(name=name).first()
+    if user is None:
+        return abort(404)
+
+    return render_template('user.html',
+                           title='用户' + name,
+                           user=user)
 
 
 @app.route('/event/')

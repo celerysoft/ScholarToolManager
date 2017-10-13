@@ -1,0 +1,149 @@
+{% extends '__base__.html' %}
+
+{% block script %}
+    <script>
+        $(function () {
+            let
+                modifyAvatarDialog = $('#dialog-modify-avatar'),
+                fileInput = $('#file-upload'),
+                fileName = $('#file-name'),
+                avatarPreview = $('#avatar-preview'),
+                btnUpload = $('#btn-upload'),
+                avatarBase64 = null,
+                dialog = new mdui.Dialog('#dialog-modify-avatar');
+
+            modifyAvatarDialog.on('closed.mdui.dialog', function () {
+                fileName.text('暂未选择文件');
+                avatarPreview.attr('src', '');
+            });
+
+            btnUpload.click(function () {
+                if (avatarBase64 === null) {
+                    return;
+                }
+
+                httpPost('/api/avatar', {avatar_base64: avatarBase64, file_name: fileInput.val()}, function (err, data, jqXHR) {
+                    dialog.close();
+                    if (err) {
+                        return mdui.alert(err.message || err.error || err);
+                    }
+                    location.reload();
+                });
+            });
+
+            fileInput.on('change', function () {
+                avatarPreview.attr('src', '');
+
+                if (!fileInput.val()) {
+                    return;
+                }
+
+                let file = fileInput.prop('files')[0];
+                if (file.type !== 'image/jpeg' && file.type !== 'image/png') {
+                    mdui.snackbar({
+                        message: '仅支持上传jpg，jpeg，png格式的图片'
+                    });
+                    fileName.text('暂未选择文件');
+                    return;
+                }
+                if (file.size > 2 * 1024 * 1024) {
+                    mdui.snackbar({
+                        message: '请上传小于2M的图片'
+                    });
+                    fileName.text('暂未选择文件');
+                    return;
+                }
+                fileName.text(file.name);
+
+                let fileReader = new FileReader();
+                fileReader.onload = function (e) {
+                    avatarBase64 = e.target.result;
+                    avatarPreview.attr('src', avatarBase64);
+                    btnUpload.prop('disabled', false);
+                };
+
+                fileReader.readAsDataURL(file);
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+    <div>
+        <div class="mdui-shadow-6">
+            <li class="mdui-list-item list-item-unclickable">
+                <div class="mdui-list-item-avatar"
+                     style="max-width: 80px; min-width: 80px; width: 80px; max-height: 80px; min-height: 80px; height: 80px;">
+                    {% if session.user and session.user.id == user.id %}
+                        <img src="{{ user.image }}"
+                             mdui-tooltip="{content: '修改头像'}"
+                             mdui-dialog="{target: '#dialog-modify-avatar'}"/>
+                    {% else %}
+                        <img src="{{ user.image }}"/>
+                    {% endif %}
+                </div>
+                <div class="mdui-list-item-content">
+                    <div class="mdui-list-item-title">{{ user.name }}</div>
+                    <div class="mdui-list-item-text mdui-list-item-one-line">
+                        Celery Soft 学术的第 {{ user.id }} 号会员
+                        <span class="mdui-hidden-sm-down">，加入于{{ user.created_at|datetime }}，最后登录于{{ user.last_login_at|datetime }}。</span>
+                    </div>
+                </div>
+            </li>
+            <div class="mdui-hidden-md-up" style="padding-bottom: 8px;">
+                <p class="mdui-list-item-text mdui-text-center">
+                    加入于{{ user.created_at|datetime }}，最后登录于{{ user.last_login_at|datetime }}。</p>
+            </div>
+        </div>
+
+        <div class="mdui-shadow-6" style="margin-top: 24px; margin-bottom: 24px;">
+            {% if comments %}
+                <li class="mdui-list-item list-item-unclickable">
+                    <div class="mdui-list-item-content mdui-text-color-theme">{{ user.name }} 发表的评论：</div>
+                </li>
+                {% for comment in comments %}
+                    <div class="mdui-typo">
+                        <li class="mdui-list-item mdui-list-item-active list-item-unclickable">
+                            <div class="mdui-list-item-content mdui-text-color-theme-text">
+                                评论了 <a href="/user/{{ comment.author_name }}">{{ comment.author_name }}</a> 发表的主题 <a
+                                    href="/blog/{{ comment.blog_id }}">《{{ comment.blog_name }}》</a>
+                            </div>
+                            <nobr><span class="mdui-list-item-text" style="margin-left: 8px">{{ comment.created_at|comment_datetime }}</span>
+                            </nobr>
+                        </li>
+                        <li class="mdui-list-item list-item-unclickable" style="padding-top: 8px; padding-bottom: 8px">
+                            <div class="mdui-list-item-text">{{ comment.content }}</div>
+                        </li>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <li class="mdui-list-item">
+                    <div class="mdui-list-item-content mdui-text-color-theme-accent">{{ user.name }} 还没发表过任何评论。</div>
+                </li>
+            {% endif %}
+        </div>
+
+        <!-- 修改头像对话框 -->
+        <div id="dialog-modify-avatar" class="mdui-dialog">
+            <div class="mdui-dialog-title">上传头像</div>
+
+            <div class="mdui-dialog-content">
+                <form method="post" action="http://localhost/test" enctype="multipart/form-data">
+                    <p class="mdui-center mdui-text-center" style="">
+                        <input id="file-upload" class="material-file-input" type="file">
+                        <label id="btn-file-upload" class="mdui-btn mdui-ripple" for="file-upload">点此选择文件</label>
+                    </p>
+                </form>
+                <img id="avatar-preview" src="" class="mdui-list-item-avatar mdui-center"
+                     style="max-width: 160px; min-width: 160px; width: 160px; max-height: 160px; min-height: 160px; height: 160px; margin-left: auto; margin-right: auto"/>
+                <div id="file-name" class="mdui-text-center">暂未选择文件</div>
+
+            </div>
+            <div class="mdui-dialog-actions">
+                <button class="mdui-btn mdui-ripple" mdui-dialog-cancel="true">取消</button>
+                <button id="btn-upload" class="mdui-btn mdui-ripple" disabled>确定上传</button>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

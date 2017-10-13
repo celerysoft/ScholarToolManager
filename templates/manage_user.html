@@ -1,0 +1,38 @@
+{% extends '__base__.html' %}
+
+{% block meta %}
+    <meta id="paginate-data" name="paginate_url_for" content="{{ pagination_url_for }}">
+{% endblock %}
+
+{% block body_drawer_class %}
+{% endblock %}
+
+{% block drawer_class %}
+    mdui-drawer-close
+{% endblock %}
+
+{% block content %}
+    <ul class="mdui-list">
+        {% if pagination %}
+
+            {% for user in pagination.items %}
+                <a href="/user/{{ user.username }}">
+                    <li class="mdui-list-item mdui-ripple">
+                        <h5 style="margin-right:16px">ID: {{ user.id }}</h5>
+                        <div class="mdui-list-item-avatar"><img src="{{ user.image }}"/></div>
+                        <div class="mdui-list-item-content">
+                            <div class="mdui-list-item-title">{{ user.username }}</div>
+                            <div class="mdui-list-item-text mdui-list-item-one-line">
+                                <span class="mdui-text-color-theme-text">{{ user.email }}</span>
+                                - 注册于{{ user.created_at|datetime }} - 最后登录于{{ user.last_login_at|datetime }}
+                            </div>
+                        </div>
+                    </li>
+                </a>
+            {% endfor %}
+
+            {% include '__pagination_base__.html' %}
+
+        {% endif %}
+    </ul>
+{% endblock %}
