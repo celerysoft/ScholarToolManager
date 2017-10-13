@@ -1,0 +1,126 @@
+{% extends '__base__.html' %}
+
+{% block body_drawer_class %}
+{% endblock %}
+
+{% block drawer_class %}
+    mdui-drawer-close
+{% endblock %}
+
+{% block beforehead %}
+    <script>
+        let
+            ID = '{{ id }}',
+            action = '{{ action }}';
+
+        function initVM(event) {
+            let vm = new Vue({
+                el: '#form',
+                data: event,
+                methods: {
+                    submit: function (event) {
+                        event.preventDefault();
+                        let callback = function (error, data, jqXHR) {
+                                if (error) {
+                                    return mdui.snackbar({
+                                        message: error.message
+                                    });
+                                } else {
+                                    return location.assign('/manage/event/');
+                                }
+                            };
+                        if (action === 'POST') {
+                            httpPost('/api/event', this.$data, callback);
+                        } else if (action === 'PATCH') {
+                            httpPatch('/api/event', this.$data, callback);
+                        }
+                    },
+
+                    cancel: function (event) {
+                        event.preventDefault();
+                        return location.assign('/manage/event/');
+                    }
+                }
+            });
+        }
+
+        $(function () {
+            ID = '{{ id }}';
+            action = '{{ action }}';
+
+            if (ID) {
+                httpGet('/api/event', {id: ID}, function (error, data, jqXHR) {
+                    if (error) {
+                        return mdui.alert(error.message);
+                    }
+                    $('#loading').hide();
+                    initVM(data);
+                });
+            }
+            else {
+                $('#loading').hide();
+                initVM({
+                    name: '',
+                    tag: '',
+                    summary: '',
+                    content: ''
+                });
+            }
+        });
+    </script>
+{% endblock %}
+
+{% block under_toolbar %}
+    <div id="loading" class="mdui-progress">
+        <div class="mdui-progress-indeterminate"></div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="mdui-typo">
+        <h5>说明：</h5>
+        <ul>
+            <li><p>不同标签请用<kbd>Space</kbd>即<kbd>空格键</kbd>隔开。</p></li>
+            <li>
+                <p>内容请使用
+                    <mark>Markdown</mark>
+                    语法编写。
+                </p>
+            </li>
+        </ul>
+    </div>
+
+    <form id="form">
+        <div class="mdui-textfield mdui-textfield-floating-label">
+            <label class="mdui-textfield-label">标题</label>
+            <input v-model="name" class="mdui-textfield-input" type="text" style="padding-right: 10px;"/>
+        </div>
+        <div class="mdui-textfield mdui-textfield-floating-label">
+            <label class="mdui-textfield-label">标签</label>
+            <input v-model="tag" class="mdui-textfield-input" type="text" style="padding-right: 10px;"/>
+        </div>
+        <div class="mdui-textfield mdui-textfield-floating-label">
+            <label class="mdui-textfield-label">摘要</label>
+            <textarea v-model="summary" class="mdui-textfield-input" type="text"
+                      style="padding-right: 10px;"></textarea>
+        </div>
+        <div class="mdui-textfield mdui-textfield-floating-label">
+            <label class="mdui-textfield-label">内容</label>
+            <textarea v-model="content" class="mdui-textfield-input" type="text"
+                      style="padding-right: 10px;"></textarea>
+        </div>
+
+        <div class="mdui-row mdui-center" style="width: 192px;">
+            <button class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-theme-accent mdui-float-left"
+                    v-on:click="submit"
+                    style="width: 80px;margin-top: 16px;margin-bottom: 16px;">
+                发布
+            </button>
+            <button class="mdui-btn mdui-btn-raised mdui-ripple mdui-float-right"
+                    v-on:click="cancel"
+                    style="width: 80px;margin-top: 16px;margin-bottom: 16px;">
+                取消
+            </button>
+        </div>
+    </form>
+{% endblock %}

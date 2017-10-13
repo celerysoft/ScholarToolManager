@@ -66,6 +66,8 @@ class Role(Base):
     ROOT = 1
     # 注册用户, user
     USER = 2
+    # 小黑屋，ban
+    BAN = 3
 
 
 class UserRole(Base):
@@ -103,6 +105,12 @@ class Permission(Base):
     MANAGE = 2
     # 权限管理，manage_permission
     MANAGE_PERMISSION = 3
+    # 公告管理, manage_event
+    MANAGE_EVENT = 4
+    # 用户管理，manage_user
+    MANAGE_USER = 5
+    # 角色管理，manage_role
+    MANAGE_ROLE = 6
 
 
 class RolePermission(Base):
@@ -127,3 +135,29 @@ class InvitationCode(Base):
     available = Column(Boolean)
     created_at = Column(Float)
     invited_at = Column(Float)
+
+
+class Event(Base):
+    __tablename__ = 'event'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer)
+    name = Column(String)
+    tag = Column(String)
+    summary = Column(String)
+    content = Column(String)
+    created_at = Column(Float)
+    available = Column(Boolean)
+
+    def __init__(self, user_id=None, name=None, tag=None, summary=None, content=None, created_at=None,
+                 available=True):
+        self.user_id = user_id
+        self.name = name
+        self.tag = tag
+        self.summary = summary
+        self.content = content
+        self.created_at = created_at if created_at else time.time()
+        self.available = available
+
+    def __repr__(self):
+        return '<Event %s %s>' % (self.name, self.tag)

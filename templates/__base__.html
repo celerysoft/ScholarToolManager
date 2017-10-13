@@ -35,6 +35,40 @@
 
     {% block beforehead %}<!-- before head  -->{% endblock %}
     {% block script %}<!-- extra script -->{% endblock %}
+    <script>
+        let permission_url = '/api/permission';
+        $(function () {
+            let vue = new Vue({
+                el: '#vm_manage',
+                data: {
+                    manage_permission: false
+                },
+                methods: {
+
+                }
+            });
+
+            function checkManagePermission() {
+                let userId = '{{ session.user.id }}';
+                httpGet(permission_url, {user_id: userId}, function (error, data, jqXHR) {
+                    let permissions = data.permissions;
+
+                    let length = data.permissions.length;
+                    for (let i = 0; i < length; i++) {
+                        let permission = permissions[i];
+                        if (permission.id === 2) {
+                            vue.$data.manage_permission = true;
+                            return;
+                        }
+                    }
+
+                    vue.$data.manage_permission = false;
+                });
+            }
+
+            checkManagePermission();
+        });
+    </script>
 </head>
 <body class="{% block body_drawer_class %} mdui-drawer-body-left {% endblock %} mdui-appbar-with-toolbar mdui-theme-primary-indigo mdui-theme-accent-red mdui-loaded">
 
@@ -83,11 +117,11 @@
         </li>
         <li class="mdui-list-item mdui-ripple">
             <i class="mdui-list-item-icon mdui-icon fa fa-gamepad"></i>
-            <a href="/product" class="mdui-list-item-content mdui-ripple">产品</a>
+            <a href="/event" class="mdui-list-item-content mdui-ripple">公告</a>
         </li>
         <li class="mdui-list-item mdui-ripple">
             <i class="mdui-list-item-icon mdui-icon fa fa-book"></i>
-            <a href="/blog" class="mdui-list-item-content mdui-ripple">博客</a>
+            <a href="/product" class="mdui-list-item-content mdui-ripple">学术</a>
         </li>
         <li class="mdui-subheader">设置</li>
         <li class="mdui-list-item mdui-ripple" mdui-dialog="{target: '#dialog-docs-theme'}">
@@ -96,12 +130,12 @@
         </li>
         {% if session.user %}
             <li class="mdui-subheader">用户</li>
-            {% if session.user.admin %}
-                <li class="mdui-list-item mdui-ripple">
+            <div id="vm_manage">
+                <li class="mdui-list-item mdui-ripple" v-if="manage_permission">
                     <i class="mdui-list-item-icon mdui-icon fa fa-database"></i>
                     <a href="/manage/" class="mdui-list-item-content mdui-ripple">后台管理</a>
                 </li>
-            {% endif %}
+            </div>
             <li class="mdui-list-item mdui-ripple">
                 <!--<i class="mdui-list-item-icon mdui-icon material-icons">flight_takoff</i>-->
                 <i class="mdui-list-item-icon mdui-icon fa fa-sign-out"></i>
@@ -433,7 +467,7 @@
             </p>
         </div>
         <div class="mdui-valign">
-            <p class="mdui-center">Copyright &copy; 2017 <a href="http://www.celerysoft.com">www.celerysoft.com</a>
+            <p class="mdui-center">Copyright &copy; 2017 <a href="http://scholar.celerysoft.com">scholar.celerysoft.com</a>
                 All rights reserved.</p>
         </div>
     </div>

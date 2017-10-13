@@ -1,0 +1,35 @@
+{% extends '__base__.html' %}
+
+{% block title %}{{ event.name }} | 月下之光{% endblock %}
+
+{% block script %}
+    <script src="{{ static_route }}static/js/scroll_to_top.js"></script>
+{% endblock %}
+
+{% block content %}
+
+    <article class="mdui-typo">
+        <h1>{{ event.name }}</h1>
+        <p>
+            <small><b>作者：</b><a href="/user/{{ event.user_name }}">{{ event.user_name }}</a> 发表于
+                <time>{{ event.created_at|datetime }}</time>
+            </small>
+        </p>
+        <span>
+        <small><b>标签：</b></small>
+            {% for tag in event.tags %}
+                <div class="mdui-chip">
+            <span class="mdui-chip-title">{{ tag }}</span>
+        </div>
+            {% endfor %}
+    </span>
+        <p></p>
+        <div class="mdui-divider"></div>
+        <div id="post_content">
+            <p>{{ event.html_content|safe }}</p>
+        </div>
+    </article>
+
+    {% include '__scroll_to_top_button_base__.html' %}
+
+{% endblock %}

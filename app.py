@@ -1,21 +1,22 @@
 import hashlib
+import re
+import time
 import urllib
 
-import re
-
+import markdown2
 import sqlalchemy
-import time
 from flask import Flask, redirect, url_for, render_template, json, session, request, abort, make_response
 from flask.json import jsonify
 from flask_session import Session
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from flask_sqlalchemy import SQLAlchemy
 
-import exception
 import init_app
 import model
 import permission
+import exception.http
+import exception.api
 
 app = Flask(__name__)
 app.config.from_object('configs.Config')
@@ -41,6 +42,11 @@ def derive_db_session(pagination=False):
         return sessionmaker(bind=engine)()
 
 
+def derive_user_id_from_session():
+    permission.check_user_permission()
+    return session['user']['id']
+
+
 def create_app(config='configs.DevelopmentConfig'):
     """
     生成app实例
@@ -61,20 +67,34 @@ def create_app(config='configs.DevelopmentConfig'):
 # -------------------------------------------------- Error Handler -------------------------------------------------- #
 # -------------------------------------------------- Error Handler -------------------------------------------------- #
 
-@app.errorhandler(exception.Unauthorized)
+# ------------------------------------------------ Page Error Handler ------------------------------------------------ #
+
+
+@app.errorhandler(exception.http.Forbidden)
 def handle_unauthorized(error):
-    response = jsonify(error.to_dict())
-    response.status_code = error.status_code
-    # return response
     return redirect(url_for('login'))
 
 
-@app.errorhandler(exception.Forbidden)
+@app.errorhandler(exception.http.Forbidden)
 def handle_unauthorized(error):
+    return redirect(url_for('login'))
+
+
+# ------------------------------------------------ Api Error Handler ------------------------------------------------ #
+
+
+@app.errorhandler(exception.api.Unauthorized)
+def handle_api_unauthorized(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
-    # return response
-    return redirect(url_for('login'))
+    return response
+
+
+@app.errorhandler(exception.api.Forbidden)
+def handle_api_unauthorized(error):
+    response = jsonify(error.to_dict())
+    response.status_code = error.status_code
+    return response
 
 
 # -------------------------------------------------- PAGE -------------------------------------------------- #
@@ -86,20 +106,10 @@ def handle_unauthorized(error):
 
 @app.route('/')
 def home_page():
-    permission.check_user_permission(session)
-
-    # db_session = derive_db_session()
-    # user_id = session['user']['id']
-    # roles = db_session.query(model.Permission)\
-    #     .outerjoin(model.UserRole, model.User.id==model.UserRole.user_id)\
-    #     .outerjoin(model.Role, model.Role.id==model.UserRole.role_id).filter_by(id=user_id).all()
-    # roles = db_session.execute(
-    #     'select username,role.name,role.label,role.description from (user left join user_role on user.id = user_role.user_id) left join role on user_role.role_id = role.id;')
-    # for r in roles:
-    #     print(r)
+    permission.check_user_permission()
 
     return render_template('index.html',
-                           title='主页')
+                           title='主页')  
 
 
 @app.route('/index/')
@@ -123,6 +133,112 @@ def register():
 def logout():
     session.pop('user', None)
     return redirect(url_for('home_page'))
+
+
+@app.route('/manage/')
+def manage():
+    if not permission.check_manage_permission(derive_db_session(), derive_user_id_from_session()):
+        return redirect(url_for('home_page'))
+
+    return render_template('manage.html',
+                           title='后台管理')
+
+
+@app.route('/manage/event/')
+def manage_event():
+    if not permission.check_manage_event_permission(derive_db_session(), derive_user_id_from_session()):
+        return redirect(url_for('home_page'))
+
+    page = request.args.get('page')
+    try:
+        page = int(page) if page is not None else 1
+    except ValueError:
+        return redirect(url_for('manage_event'))
+
+    db_session = derive_db_session(pagination=True)
+    pagination = db_session.query(model.Event).order_by(model.Event.created_at.desc()).paginate(
+        page, __ITEM_PER_PAGE, False)
+    if page > 1 and len(pagination.items) is 0:
+        return redirect(url_for('manage_event'))
+    else:
+        for product in pagination.items:
+            user = db_session.query(model.User).filter_by(id=product.user_id).first()
+            product.user_name = user.name
+
+    return render_template('manage_event.html',
+                           title='公告管理',
+                           pagination=pagination,
+                           pagination_url_for='manage_event')
+
+
+@app.route('/manage/event/create/')
+def create_product():
+    if not permission.check_manage_event_permission(derive_db_session(), derive_user_id_from_session()):
+        return redirect(url_for('home_page'))
+
+    return render_template('manage_event_edit.html',
+                           title='发布公告',
+                           action='POST')
+
+
+@app.route('/manage/event/edit/') 
+def edit_product():
+    if not permission.check_manage_event_permission(derive_db_session(), derive_user_id_from_session()):
+        return redirect(url_for('home_page'))
+
+    product_id = request.args.get('id')
+    return render_template('manage_event_edit.html',
+                           title='编辑公告',
+                           id=product_id,
+                           action='PATCH')
+
+
+@app.route('/event/')
+def event():
+    page = request.args.get('page')
+    try:
+        page = int(page) if page is not None else 1
+    except ValueError as e:
+        return redirect(url_for('event'))
+
+    db_session = derive_db_session(pagination=True)
+    pagination = db_session.query(model.Event).order_by(model.Event.created_at.desc()).paginate(
+        page, __ITEM_PER_PAGE, False
+    )
+    if page > 1 and len(pagination.items) is 0:
+        return redirect(url_for('event'))
+
+    for evenet in pagination.items:
+        user = db_session.query(model.User).filter_by(id=evenet.user_id).first()
+        evenet.user_name = user.name
+        evenet.user_image = user.image
+
+    return render_template('event.html',
+                           title='公告',
+                           pagination=pagination,
+                           pagination_url_for='event')
+
+
+@app.route('/event/<int:event_id>')
+def show_event(event_id):
+    db_session = derive_db_session()
+    event = db_session.query(model.Event).filter_by(id=event_id).first()
+    if event is None:
+        return abort(404)
+
+    user = db_session.query(model.User).filter_by(id=event.user_id).first()
+
+    event.html_content = markdown2.markdown(event.content, extras=['fenced-code-blocks', 'tables', 'toc'])
+
+    event.html_content = event.html_content.replace('{{ image }}', app.config['URL_OF_BLOG_IMAGE'])
+
+    event.tags = event.tag.split(' ')
+    event.user_name = user.name
+    event.user_image = user.image
+
+    return render_template('event_view.html',
+                           title='公告',
+                           event=event)
 
 
 # -------------------------------------------------- API -------------------------------------------------- #
@@ -171,6 +287,9 @@ def api_do_login():
     sha1.update(password.encode('utf-8'))
     if user.password != sha1.hexdigest():
         return login_api_document('密码错误，请重试', 400)
+
+    if not permission.check_login_permission(db_session, user.id):
+        return login_api_document('该用户已被关进小黑屋，请联系管理员进行申诉', 403)
 
     user.last_login_at = time.time()
 
@@ -291,6 +410,20 @@ def api_invitation_code():
         return api_create_invitation_code()
     elif request.method == 'DELETE':
         return api_delete_invitation_code()
+    else:
+        return invitation_code_api_document()
+
+
+# TODO 文档链接
+__INVITATION_CODE_API_DOCUMENTATION_URL = 'coming soon...'
+
+
+def invitation_code_api_document(message='', code=400):
+    msg = jsonify({
+        'message': message,
+        'documentation_url': __INVITATION_CODE_API_DOCUMENTATION_URL
+    })
+    return make_response(msg, code)
 
 
 def api_get_invitation_code():
@@ -303,6 +436,196 @@ def api_create_invitation_code():
 
 def api_delete_invitation_code():
     pass
+
+
+@app.route('/api/permission', methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
+def api_permission():
+    if request.method == 'GET':
+        return api_get_permission()
+    elif request.method == 'POST':
+        return permission_api_document()
+    elif request.method == 'PUT':
+        return permission_api_document()
+    elif request.method == 'PATCH':
+        return permission_api_document()
+    elif request.method == 'DELETE':
+        return permission_api_document()
+
+
+# TODO 文档链接
+__PERMISSION_API_DOCUMENTATION_URL = 'coming soon...'
+
+
+def permission_api_document(message='', code=400):
+    msg = jsonify({
+        'message': message,
+        'documentation_url': __PERMISSION_API_DOCUMENTATION_URL
+    })
+    return make_response(msg, code)
+
+
+def api_get_permission():
+    user_id = request.args.get('user_id')
+    if user_id is None:
+        return permission_api_document()
+
+    permission.check_user_api_permission()
+
+    permissions = permission.derive_user_permissions(derive_db_session(), user_id)
+    permission_list = []
+    for p in permissions:
+        permission_list.append(model.to_dict(p))
+    return jsonify({
+        'user_id': user_id,
+        'permissions': permission_list
+    })
+
+
+@app.route('/api/event', methods=['GET', 'POST', 'PATCH', 'DELETE'])
+def event_api():
+    if request.method == 'GET':
+        return api_get_event()
+    elif request.method == 'POST':
+        return api_create_event()
+    elif request.method == 'PATCH':
+        return api_update_event()
+    elif request.method == 'DELETE':
+        return api_delete_event()
+
+
+# TODO 文档链接
+__EVENT_API_DOCUMENTATION_URL = 'coming soon...'
+
+
+def event_api_document(message='', code=400):
+    msg = jsonify({
+        'message': message,
+        'documentation_url': __EVENT_API_DOCUMENTATION_URL
+    })
+    return make_response(msg, code)
+
+
+def api_get_event():
+    event_id = request.args.get('id')
+    if event_id is None:
+        return event_api_document()
+
+    db_session = derive_db_session()
+    event = db_session.query(model.Event).filter_by(id=event_id).first()
+    if event is None:
+        return event_api_document('id为%s的公告不存在' % event_id, 404)
+
+    data = model.to_dict(event)
+
+    html_version = request.args.get('html')
+    if html_version:
+        html_content = markdown2.markdown(event.content, extras=['fenced-code-blocks', 'tables', 'toc'])
+        html_content = html_content.replace('{{ image }}', app.config['URL_OF_BLOG_IMAGE'])
+        data['html'] = html_content
+
+    return jsonify(data)
+
+
+def api_create_event():
+    permission.check_user_api_permission()
+
+    db_session = derive_db_session()
+    if not permission.check_manage_event_permission(db_session, derive_user_id_from_session()):
+        raise exception.api.Forbidden
+
+    name = request.json['name']
+    tag = request.json['tag']
+    summary = request.json['summary']
+    content = request.json['content']
+
+    if not name or not name.strip():
+        return event_api_document('公告名字不能为空', 400)
+    if not summary or not summary.strip():
+        return event_api_document('公告描述不能为空', 400)
+    if not content or not content.strip():
+        return event_api_document('公告内容不能为空', 400)
+
+    event = model.Event(user_id=session['user']['id'], name=name.strip(), tag=tag, summary=summary.strip(),
+                        content=content.strip())
+    try:
+        db_session.add(event)
+        db_session.commit()
+    except sqlalchemy.exc.DataError as e:
+        db_session.rollback()
+        return abort(make_response(str(e), 500))
+    finally:
+        db_session.close()
+
+    return jsonify({'message': '发布公告成功'})
+
+
+def api_update_event():
+    permission.check_user_api_permission()
+
+    db_session = derive_db_session()
+    if not permission.check_manage_event_permission(db_session, derive_user_id_from_session()):
+        raise exception.api.Forbidden
+
+    id = request.json['id']
+    name = request.json['name']
+    tag = request.json['tag']
+    summary = request.json['summary']
+    content = request.json['content']
+
+    if not name or not name.strip():
+        return event_api_document('公告名字不能为空', 400)
+    if not summary or not summary.strip():
+        return event_api_document('公告描述不能为空', 400)
+    if not content or not content.strip():
+        return event_api_document('公告内容不能为空', 400)
+
+    db_session.query(model.Event).filter_by(id=id).update({
+        'name': name,
+        'tag': tag,
+        'summary': summary,
+        'content': content
+    })
+
+    try:
+        db_session.commit()
+    except sqlalchemy.exc.DataError as e:
+        db_session.rollback()
+        return abort(make_response(str(e), 500))
+    finally:
+        db_session.close()
+
+    return jsonify({'message': '修改公告成功'})
+
+
+def api_delete_event():
+    """
+    删除公告
+    :return:
+    """
+    permission.check_user_api_permission()
+
+    db_session = derive_db_session()
+    if not permission.check_manage_event_permission(db_session, derive_user_id_from_session()):
+        raise exception.api.Forbidden
+
+    product_id = request.json['id']
+    if not product_id:
+        return event_api_document('所需删除的公告id不能为空', 400)
+
+    product = db_session.query(model.Event).filter_by(id=product_id).first()
+    if not product:
+        return event_api_document('id为%s公告不存在，故无法删除' % product_id, 404)
+
+    try:
+        db_session.delete(product)
+        db_session.commit()
+    except sqlalchemy.exc.DataError as e:
+        db_session.rollback()
+        return abort(make_response(str(e), 500))
+    finally:
+        db_session.close()
+
+    return jsonify({'message': '删除公告成功'})
 
 
 if __name__ == '__main__':
