@@ -8,6 +8,10 @@ let $$ = mdui.JQ;
     const DEFAULT_ACCENT = 'red';
     const DEFAULT_LAYOUT = '';
 
+    const PRIMARY_COOKIE_KEY = 'scholar-theme-primary';
+    const ACCENT_COOKIE_KEY = 'scholar-theme-accent';
+    const LAYOUT_COOKIE_KEY = 'scholar-theme-layout';
+
 
     // 设置 cookie
     let setCookie = function (key, value) {
@@ -52,7 +56,7 @@ let $$ = mdui.JQ;
                 }
             }
             $body.addClass('mdui-theme-primary-' + theme.primary);
-            setCookie('docs-theme-primary', theme.primary);
+            setCookie(PRIMARY_COOKIE_KEY, theme.primary);
             $$('input[name="doc-theme-primary"][value="' + theme.primary + '"]').prop('checked', true);
         }
 
@@ -64,7 +68,7 @@ let $$ = mdui.JQ;
                 }
             }
             $body.addClass('mdui-theme-accent-' + theme.accent);
-            setCookie('docs-theme-accent', theme.accent);
+            setCookie(ACCENT_COOKIE_KEY, theme.accent);
             $$('input[name="doc-theme-accent"][value="' + theme.accent + '"]').prop('checked', true);
         }
 
@@ -78,7 +82,7 @@ let $$ = mdui.JQ;
             if (theme.layout !== '') {
                 $body.addClass('mdui-theme-layout-' + theme.layout);
             }
-            setCookie('docs-theme-layout', theme.layout);
+            setCookie(LAYOUT_COOKIE_KEY, theme.layout);
             $$('input[name="doc-theme-layout"][value="' + theme.layout + '"]').prop('checked', true);
         }
     };
@@ -116,24 +120,24 @@ let $$ = mdui.JQ;
     $$(function () {
         let hasCookie = false;
 
-        let primaryCookie = getCookie('docs-theme-primary');
+        let primaryCookie = getCookie(PRIMARY_COOKIE_KEY);
         if (primaryCookie !== null && primaryCookie !== 'null') {
             hasCookie = true;
         }
-        let accentCookie = getCookie('docs-theme-accent');
+        let accentCookie = getCookie(ACCENT_COOKIE_KEY);
         if (accentCookie !== null && accentCookie !== 'null') {
             hasCookie = true;
         }
-        let layoutCookie = getCookie('docs-theme-layout');
+        let layoutCookie = getCookie(LAYOUT_COOKIE_KEY);
         if (layoutCookie !== null && layoutCookie !== 'null') {
             hasCookie = true;
         }
 
         if (hasCookie) {
             setDocsTheme({
-                primary: getCookie('docs-theme-primary'),
-                accent: getCookie('docs-theme-accent'),
-                layout: getCookie('docs-theme-layout')
+                primary: primaryCookie,
+                accent: accentCookie,
+                layout: layoutCookie
             });
         }
     });

@@ -38,7 +38,7 @@ def derive_user_permissions(db_session, user_id):
 
 def check_permission(db_session, user_id, permission_id):
     permissions = derive_user_permissions(db_session, user_id)
-    print(permissions)
+    # print(permissions)
     for permission in permissions:
         if permission.id == permission_id:
             return True
