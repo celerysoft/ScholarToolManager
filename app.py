@@ -1,4 +1,5 @@
 import hashlib
+import random
 import re
 import time
 import urllib
@@ -108,10 +109,11 @@ def handle_api_unauthorized(error):
 
 @app.route('/')
 def home_page():
+    derive_invitation_code()
     permission.check_user_permission()
 
     return render_template('index.html',
-                           title='主页')  
+                           title='主页')
 
 
 @app.route('/index/')
@@ -146,10 +148,41 @@ def manage():
                            title='后台管理')
 
 
+@app.route('/manage/invitation/')
+def manage_invitation():
+    db_session = derive_db_session(pagination=True)
+    if not permission.check_manage_invitation_code_permission(db_session, derive_user_id_from_session()):
+        raise exception.http.Forbidden()
+
+    page = request.args.get('page')
+    try:
+        page = int(page) if page is not None else 1
+    except ValueError:
+        return redirect(url_for('manage_invitation'))
+
+    pagination = db_session.query(model.InvitationCode).order_by(model.InvitationCode.created_at.desc()).paginate(
+        page, __ITEM_PER_PAGE, False)
+    if page > 1 and len(pagination.items) is 0:
+        return redirect(url_for('manage_invitation'))
+    else:
+        for invitation in pagination.items:
+            inviter = db_session.query(model.User).filter_by(id=invitation.inviter_id).first()
+            invitation.inviter_username = inviter.username
+            if invitation.invitee_id is not None:
+                invitee = db_session.query(model.User).filter_by(id=invitation.invitee_id).first()
+                invitation.invitee_username = invitee.username
+
+    return render_template('manage_invitation.html',
+                           title='邀请码管理',
+                           pagination=pagination,
+                           pagination_url_for='manage_invitation')
+
+
 @app.route('/manage/event/')
 def manage_event():
-    if not permission.check_manage_event_permission(derive_db_session(), derive_user_id_from_session()):
-        return redirect(url_for('home_page'))
+    db_session = derive_db_session(pagination=True)
+    if not permission.check_manage_event_permission(db_session, derive_user_id_from_session()):
+        raise exception.http.Forbidden()
 
     page = request.args.get('page')
     try:
@@ -157,7 +190,6 @@ def manage_event():
     except ValueError:
         return redirect(url_for('manage_event'))
 
-    db_session = derive_db_session(pagination=True)
     pagination = db_session.query(model.Event).order_by(model.Event.created_at.desc()).paginate(
         page, __ITEM_PER_PAGE, False)
     if page > 1 and len(pagination.items) is 0:
@@ -279,6 +311,15 @@ def show_event(event_id):
     return render_template('event_view.html',
                            title='公告',
                            event=event)
+
+
+@app.route('/invitation/<int:invitation_code_id>')
+def show_invitation_code(invitation_code_id):
+    invitation = None
+
+    return render_template('invitation_code_view.html',
+                           title='邀请详情',
+                           invitation=invitation)
 
 
 # -------------------------------------------------- API -------------------------------------------------- #
@@ -471,11 +512,49 @@ def api_get_invitation_code():
 
 
 def api_create_invitation_code():
-    pass
+    db_session = derive_db_session()
+    user_id = request.json['user_id']
+    if user_id is None:
+        return invitation_code_api_document('Need user_id')
+    if not permission.check_manage_invitation_code_permission(db_session, user_id, True):
+        raise exception.api.Forbidden('ID为%s的用户无权创建邀请码' % user_id)
+
+    invitation_code = None
+    invitation = 1
+    while invitation is not None:
+        invitation_code = derive_invitation_code()
+        invitation = db_session.query(model.InvitationCode)\
+            .filter(model.InvitationCode.code == invitation_code).first()
+
+    invitation = model.InvitationCode(invitation_code, user_id)
+
+    try:
+        db_session.add(invitation)
+        db_session.commit()
+    except sqlalchemy.exc.DataError as e:
+        db_session.rollback()
+        return abort(make_response(str(e), 500))
+    finally:
+        db_session.close()
+
+    return jsonify({
+        'message': '生成邀请码成功',
+        'code': invitation_code
+    })
 
 
 def api_delete_invitation_code():
     pass
+
+
+def derive_invitation_code():
+    seed = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+=-"
+    codes = []
+    for i in range(32):
+        codes.append(random.choice(seed))
+    invitation_code = ''.join(codes)
+    # print(invitation_code)
+    return invitation_code
 
 
 @app.route('/api/permission', methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
@@ -570,8 +649,11 @@ def api_create_event():
     permission.check_user_api_permission()
 
     db_session = derive_db_session()
-    if not permission.check_manage_event_permission(db_session, derive_user_id_from_session()):
-        raise exception.api.Forbidden
+    user_id = request.json['user_id']
+    if user_id is None:
+        return event_api_document('Need user_id')
+    if not permission.check_manage_event_permission(db_session, user_id):
+        raise exception.api.Forbidden('ID为%s的用户无权创建公告' % user_id)
 
     name = request.json['name']
     tag = request.json['tag']
@@ -585,7 +667,7 @@ def api_create_event():
     if not content or not content.strip():
         return event_api_document('公告内容不能为空', 400)
 
-    event = model.Event(user_id=session['user']['id'], name=name.strip(), tag=tag, summary=summary.strip(),
+    event = model.Event(user_id=user_id, name=name.strip(), tag=tag, summary=summary.strip(),
                         content=content.strip())
     try:
         db_session.add(event)
@@ -603,8 +685,11 @@ def api_update_event():
     permission.check_user_api_permission()
 
     db_session = derive_db_session()
-    if not permission.check_manage_event_permission(db_session, derive_user_id_from_session()):
-        raise exception.api.Forbidden
+    user_id = request.json['user_id']
+    if user_id is None:
+        return event_api_document('Need user_id')
+    if not permission.check_manage_event_permission(db_session, user_id):
+        raise exception.api.Forbidden('ID为%s的用户无权编辑公告' % user_id)
 
     id = request.json['id']
     name = request.json['name']
@@ -645,8 +730,11 @@ def api_delete_event():
     permission.check_user_api_permission()
 
     db_session = derive_db_session()
-    if not permission.check_manage_event_permission(db_session, derive_user_id_from_session()):
-        raise exception.api.Forbidden
+    user_id = request.json['user_id']
+    if user_id is None:
+        return event_api_document('Need user_id')
+    if not permission.check_manage_event_permission(db_session, user_id):
+        raise exception.api.Forbidden('ID为%s的用户无权删除公告' % user_id)
 
     product_id = request.json['id']
     if not product_id:

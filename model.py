@@ -103,8 +103,8 @@ class Permission(Base):
     LOGIN = 1
     # 后台管理，manage
     MANAGE = 2
-    # 权限管理，manage_permission
-    MANAGE_PERMISSION = 3
+    # 邀请码管理，manage_invitation_code
+    MANAGE_INVITATION_CODE = 3
     # 公告管理, manage_event
     MANAGE_EVENT = 4
     # 用户管理，manage_user
@@ -135,6 +135,18 @@ class InvitationCode(Base):
     available = Column(Boolean)
     created_at = Column(Float)
     invited_at = Column(Float)
+
+    def __init__(self, code, inviter_id, invitee_id=None, available=None, created_at=None,
+                 invited_at=None):
+        self.code = code
+        self.inviter_id = inviter_id
+        self.invitee_id = invitee_id
+        self.available = available if available else True
+        self.created_at = created_at if created_at else time.time()
+        self.invited_at = invited_at
+
+    def __repr__(self):
+        return '<InvitationCode %s %s %s>' % (self.id, self.code, self.available)
 
 
 class Event(Base):

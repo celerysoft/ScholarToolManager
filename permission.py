@@ -68,3 +68,10 @@ def check_manage_user_permission(db_session, user_id):
 
 def check_manage_role_permission(db_session, user_id):
     return check_permission(db_session, user_id, model.Permission.MANAGE_ROLE)
+
+
+def check_manage_invitation_code_permission(db_session, user_id, call_by_api=False):
+    if call_by_api:
+        check_user_api_permission()
+
+    return check_permission(db_session, user_id, model.Permission.MANAGE_INVITATION_CODE)

@@ -1,0 +1,125 @@
+{% extends '__base__.html' %}
+
+{% block meta %}
+    <meta id="paginate-data" name="paginate_url_for" content="{{ pagination_url_for }}">
+{% endblock %}
+
+{% block body_drawer_class %}
+{% endblock %}
+
+{% block drawer_class %}
+    mdui-drawer-close
+{% endblock %}
+
+{% block script %}
+    <script>
+        $(function () {
+            const userId = '{{ session.user.id }}';
+            let btnCreateInvitationCode = $('#btn_create_invitation_code');
+            btnCreateInvitationCode.click(function () {
+                btnCreateInvitationCode.prop('disabled', true)
+                httpPost('/api/invitation', {user_id: userId}, function (error, data, jqXHR) {
+                    btnCreateInvitationCode.prop('disabled', false);
+                    if (error) {
+                        return mdui.snackbar({
+                            message: error.message
+                        });
+                    } else {
+                        return mdui.snackbar({
+                            message: data.code
+                        });
+{#                        return location.assign('/manage/event/');#}
+                    }
+                })
+            })
+        })
+    </script>
+{% endblock %}
+
+{% block content %}
+
+    <div class="mdui-table-fluid mdui-typo">
+        <table class="mdui-table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>邀请者</th>
+                <th>受邀人</th>
+                <th>生成时间</th>
+                <th>使用时间</th>
+                <th>邀请码</th>
+                <th>有效</th>
+            </tr>
+            </thead>
+            {% if pagination %}
+                <tbody>
+                {% for invitation in pagination.items %}
+                    <tr>
+                        <td>{{ invitation.id }}</td>
+                        <td><a href="/user/{{ invitation.inviter_username }}">{{ invitation.inviter_username }}</a></td>
+                        <td><a href="/user/{{ invitation.invitee_username }}">{{ invitation.invitee_username }}</a></td>
+                        <td>{{ invitation.created_at|datetime }}</td>
+                        <td>{{ invitation.invited_at|datetime }}</td>
+                        <td>{{ invitation.code }}</td>
+                        <td>{{ invitation.available|boolean_to_yes }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            {% endif %}
+        </table>
+
+        {% if pagination %}
+            {% include '__pagination_base__.html' %}
+        {% endif %}
+    </div>
+
+
+    <button id="btn_create_invitation_code" class="mdui-fab mdui-color-theme-accent mdui-fab-fixed mdui-ripple"
+            mdui-tooltip="{content: '创建邀请码', position: 'top'}">
+        <i class="mdui-icon material-icons">create</i>
+    </button>
+    {#    <div class="mdui-table-fluid">#}
+    {#        <table class="mdui-table">#}
+    {#            <thead>#}
+    {#            <tr>#}
+    {#                <th>ID</th>#}
+    {#                <th>邀请者</th>#}
+    {#                <th>受邀人</th>#}
+    {#                <th>生成时间</th>#}
+    {#                <th>使用时间</th>#}
+    {#                <th>邀请码</th>#}
+    {#                <th>有效</th>#}
+    {#            </tr>#}
+    {#            </thead>#}
+    {#            <tbody>#}
+    {#            <tr>#}
+    {#                <td>1</td>#}
+    {#                <td>Mark</td>#}
+    {#                <td>Otto</td>#}
+    {#                <td>2017-01-01 12:30:23</td>#}
+    {#                <td>2017-01-01 12:31:23</td>#}
+    {#                <td>ABCDEFGHIJKLMNOPQRSTUVWXYZ123456</td>#}
+    {#                <td>No</td>#}
+    {#            </tr>#}
+    {#            <tr>#}
+    {#                <td>2</td>#}
+    {#                <td>Jacob</td>#}
+    {#                <td>Thornton</td>#}
+    {#                <td>2017-01-01 12:30:23</td>#}
+    {#                <td>2017-01-01 12:31:23</td>#}
+    {#                <td>ABCDEFGHIJKLMNOPQRSTUVWXYZ123456</td>#}
+    {#                <td>No</td>#}
+    {#            </tr>#}
+    {#            <tr>#}
+    {#                <td>3</td>#}
+    {#                <td>Larry the Bird</td>#}
+    {#                <td></td>#}
+    {#                <td>2017-01-01 12:30:23</td>#}
+    {#                <td></td>#}
+    {#                <td>ABCDEFGHIJKLMNOPQRSTUVWXYZ123456</td>#}
+    {#                <td>YES</td>#}
+    {#            </tr>#}
+    {#            </tbody>#}
+    {#        </table>#}
+    {#    </div>#}
+{% endblock %}

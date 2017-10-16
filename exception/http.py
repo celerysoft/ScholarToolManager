@@ -15,10 +15,10 @@ class BaseRequestException(Exception):
 
 
 class Unauthorized(BaseRequestException):
-    def __init__(self, message, payload=None):
+    def __init__(self, message=None, payload=None):
         BaseRequestException.__init__(self, message, status_code=401, payload=payload)
 
 
 class Forbidden(BaseRequestException):
-    def __init__(self, message, payload=None):
+    def __init__(self, message=None, payload=None):
         BaseRequestException.__init__(self, message, status_code=403, payload=payload)

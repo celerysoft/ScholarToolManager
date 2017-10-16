@@ -150,17 +150,17 @@
 
 /** 分页插件，结束 **/
 
-table {
+.codehilite table {
     border-collapse: collapse;
     border-spacing: 0;
 }
 
-th {
+.codehilite th {
     border: 1px solid #aeaeae;
     padding: 2px 8px;
 }
 
-td {
+.codehilite td {
     border: 1px dashed #aeaeae;
     padding: 2px 8px;
 }

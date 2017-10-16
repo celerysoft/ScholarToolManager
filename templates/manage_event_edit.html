@@ -11,7 +11,8 @@
     <script>
         let
             ID = '{{ id }}',
-            action = '{{ action }}';
+            action = '{{ action }}',
+            userId = '{{ session.user.id }}';
 
         function initVM(event) {
             let vm = new Vue({
@@ -29,6 +30,7 @@
                                     return location.assign('/manage/event/');
                                 }
                             };
+                        this.$data.user_id = userId;
                         if (action === 'POST') {
                             httpPost('/api/event', this.$data, callback);
                         } else if (action === 'PATCH') {

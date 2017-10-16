@@ -57,7 +57,7 @@ CREATE TABLE permission (
   DEFAULT CHARSET = utf8;
 INSERT INTO permission VALUES (1, '登录', 'login', '允许登录');
 INSERT INTO permission VALUES (2, '后台管理', 'login', '允许进入后台管理');
-INSERT INTO permission VALUES (3, '权限管理', 'manage_permission', '允许进行权限管理');
+INSERT INTO permission VALUES (3, '邀请码管理', 'manage_invitation_code', '允许进行邀请码管理');
 INSERT INTO permission VALUES (4, '公告管理', 'manage_event', '允许进行公告管理');
 INSERT INTO permission VALUES (5, '用户管理', 'manage_user', '允许进行用户管理');
 INSERT INTO permission VALUES (6, '角色管理', 'manage_role', '允许进行用户角色管理');

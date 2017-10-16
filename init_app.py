@@ -27,9 +27,13 @@ def init_jinja2_global(app):
 def init_jinja2():
     jinja2.filters.FILTERS['comment_datetime'] = datetime_filter
     jinja2.filters.FILTERS['datetime'] = datetime_filter2
+    jinja2.filters.FILTERS['boolean_to_yes'] = boolean_to_yes_or_no
 
 
 def datetime_filter(t):
+    if t is None:
+        return t
+
     delta = int(time.time() - t)
     if delta < 60:
         return u'1分钟前'
@@ -46,5 +50,16 @@ def datetime_filter(t):
 
 
 def datetime_filter2(t):
+    if t is None:
+        return t
+
     dt = datetime.datetime.fromtimestamp(t)
     return dt.strftime('%Y-%m-%d %H:%M:%S')
+
+
+def boolean_to_yes_or_no(boolean):
+    if boolean:
+        return 'YES'
+    else:
+        return 'NO'
+
