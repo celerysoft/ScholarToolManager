@@ -38,7 +38,7 @@
     <script>
         let permission_url = '/api/permission';
         $(function () {
-            let vue = new Vue({
+            let vmManage = new Vue({
                 el: '#vm_manage',
                 data: {
                     manage_permission: false
@@ -57,12 +57,12 @@
                     for (let i = 0; i < length; i++) {
                         let permission = permissions[i];
                         if (permission.id === 2) {
-                            vue.$data.manage_permission = true;
+                            vmManage.$data.manage_permission = true;
                             return;
                         }
                     }
 
-                    vue.$data.manage_permission = false;
+                    vmManage.$data.manage_permission = false;
                 });
             }
 

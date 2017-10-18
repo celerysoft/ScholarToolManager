@@ -1,17 +1,6 @@
 {% extends '__base__.html' %}
 
 {% block script %}
-    <script src="{{ static_route }}static/js/pagination.js"></script>
-{% endblock %}
-
-{% block body_drawer_class %}
-{% endblock %}
-
-{% block drawer_class %}
-    mdui-drawer-close
-{% endblock %}
-
-{% block beforehead %}
     <script>
         function stopPropagation(event) {
             event = event || window.event;
@@ -23,7 +12,6 @@
         }
 
         $(function () {
-            const userId = '{{ session.user.id }}';
             var vm = new Vue({
                 el: '#vm',
                 methods: {
@@ -35,7 +23,7 @@
                         stopPropagation();
                         mdui.confirm('确认要删除“' + name + '”？\n删除后不可恢复！',
                             function () {
-                                httpDelete('/api/event', {id: id, user_id: userId}, function (err, r) {
+                                httpDelete('/api/event', {id: id}, function (err, r) {
                                     if (err) {
                                         return mdui.alert(err.message || err.error || err);
                                     }
@@ -54,6 +42,15 @@
             });
         });
     </script>
+
+    <script src="{{ static_route }}static/js/pagination.js"></script>
+{% endblock %}
+
+{% block body_drawer_class %}
+{% endblock %}
+
+{% block drawer_class %}
+    mdui-drawer-close
 {% endblock %}
 
 {% block content %}

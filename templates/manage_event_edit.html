@@ -30,7 +30,6 @@
                                     return location.assign('/manage/event/');
                                 }
                             };
-                        this.$data.user_id = userId;
                         if (action === 'POST') {
                             httpPost('/api/event', this.$data, callback);
                         } else if (action === 'PATCH') {

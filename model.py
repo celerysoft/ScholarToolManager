@@ -81,6 +81,9 @@ class UserRole(Base):
         self.user_id = user_id
         self.role_id = role_id
 
+    def __repr__(self):
+        return '<UserRole %s: user_id = %s, role_id = %s>' % (self.id, self.user_id, self.role_id)
+
 
 class Permission(Base):
     __tablename__ = 'permission'

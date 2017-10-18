@@ -11,13 +11,105 @@
     mdui-drawer-close
 {% endblock %}
 
-{% block content %}
-    <ul class="mdui-list">
-        {% if pagination %}
+{% block script %}
+    <script>
+        function stopPropagation(event) {
+            event = event || window.event;
+            if (event.stopPropagation) { //W3C阻止冒泡方法
+                event.stopPropagation();
+            } else {
+                event.cancelBubble = true; //IE阻止冒泡方法
+            }
+        }
 
-            {% for user in pagination.items %}
-                <a href="/user/{{ user.username }}">
-                    <li class="mdui-list-item mdui-ripple">
+        $(function () {
+            let
+                dialogInst = new mdui.Dialog('#dialog-modify-role'),
+                modifyUserId = null,
+                modifyUserRole = null;
+
+
+            let vm = new Vue({
+                el: '#vm_user',
+                methods: {
+                    edit_role: function (id) {
+                        stopPropagation();
+                        modifyUserId = id;
+                        getRoles(modifyUserId)
+
+                    },
+                    redirect_to_user_page: function (userName) {
+                        stopPropagation();
+                        location.assign('/user/' + userName);
+                    }
+                }
+            });
+
+            let vmDialog = new Vue({
+                el: '#dialog-modify-role-content',
+                data: {
+                    roles: '',
+                    user_role: ''
+                },
+                methods: {
+                },
+                watch: {
+                    user_role: function (newUserRole) {
+                        if (newUserRole === '' || newUserRole === modifyUserRole) {
+                            vmBtn.$data.isButtonDisabled = true;
+                            return;
+                        }
+
+                        vmBtn.$data.isButtonDisabled = false;
+                    }
+                }
+            });
+
+            let vmBtn = new Vue({
+                el: '#btn-modify',
+                data: {
+                    isButtonDisabled: true
+                },
+                methods: {
+                    modifyUserRole: function () {
+                        httpPatch('/api/role', {user_id: modifyUserId, role_id: vmDialog.$data.user_role}, function (err, data, jqXHR) {
+                            dialogInst.close();
+                            if (err) {
+                                return mdui.alert(err.message || err.error || err);
+                            }
+
+                        });
+                    }
+                }
+            });
+
+            function getRoles(userId) {
+                let data = userId === null ? null : { user_id: userId};
+
+                httpGet('/api/role', data, function (error, data, jqXHR) {
+                    if (error) {
+                        return mdui.alert(error.message);
+                    }
+                    modifyUserRole = data.user_role.id;
+                    vmDialog.$data.roles = data.roles;
+                    vmDialog.$data.user_role = data.user_role.id;
+
+                    dialogInst.open()
+                })
+            }
+        });
+    </script>
+
+    <script src="{{ static_route }}static/js/pagination.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div id="vm_user">
+        <ul  class="mdui-list">
+            {% if pagination %}
+
+                {% for user in pagination.items %}
+                    <li class="mdui-list-item mdui-ripple" v-on:click="redirect_to_user_page('{{ user.username }}')">
                         <h5 style="margin-right:16px">ID: {{ user.id }}</h5>
                         <div class="mdui-list-item-avatar"><img src="{{ user.image }}"/></div>
                         <div class="mdui-list-item-content">
@@ -27,12 +119,38 @@
                                 - 注册于{{ user.created_at|datetime }} - 最后登录于{{ user.last_login_at|datetime }}
                             </div>
                         </div>
+                        <div class="mdui-col-xs-1 mdui.center">
+                            <i class="mdui-list-item-icon mdui-icon material-icons mdui-ripple fa fa-user"
+                               aria-hidden="true" mdui-tooltip="{content: '编辑用户角色'}"
+                               v-on:click="edit_role({{ user.id }})"></i>
+                        </div>
                     </li>
-                </a>
-            {% endfor %}
+                {% endfor %}
 
-            {% include '__pagination_base__.html' %}
+                {% include '__pagination_base__.html' %}
 
-        {% endif %}
-    </ul>
+            {% endif %}
+        </ul>
+    </div>
+
+    <!-- 修改用户角色对话框 -->
+    <div id="dialog-modify-role" class="mdui-dialog">
+        <div class="mdui-dialog-title">修改用户角色</div>
+        <div id="dialog-modify-role-content" class="mdui-dialog-content" style="padding: 8px 0">
+            <div v-if="roles.length > 0">
+                <label v-for="role in roles"  class="mdui-radio" style="margin: 0 16px;">
+                    <input type="radio" :value="role.id" v-model="user_role"/>
+                    <i class="mdui-radio-icon"></i>
+                    {{role.name}}({{role.label}})
+                </label>
+            </div>
+            <div v-else>
+                <p style="margin: 16px 8px">暂无角色，请先创建角色。</p>
+            </div>
+        </div>
+        <div class="mdui-dialog-actions">
+            <button class="mdui-btn mdui-ripple" mdui-dialog-cancel="true">取消</button>
+            <button id="btn-modify" class="mdui-btn mdui-ripple" v-on:click="modifyUserRole" :disabled="isButtonDisabled">修改</button>
+        </div>
+    </div>
 {% endblock %}

@@ -18,7 +18,7 @@
             let btnCreateInvitationCode = $('#btn_create_invitation_code');
             btnCreateInvitationCode.click(function () {
                 btnCreateInvitationCode.prop('disabled', true)
-                httpPost('/api/invitation', {user_id: userId}, function (error, data, jqXHR) {
+                httpPost('/api/invitation', null, function (error, data, jqXHR) {
                     btnCreateInvitationCode.prop('disabled', false);
                     if (error) {
                         return mdui.snackbar({
@@ -38,7 +38,7 @@
 
 {% block content %}
 
-    <div class="mdui-table-fluid mdui-typo">
+    <div class="mdui-table-fluid mdui-typo" style="margin: 16px 0;">
         <table class="mdui-table">
             <thead>
             <tr>

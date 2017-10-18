@@ -57,8 +57,13 @@
                                 });
                             }
 
-                            mdui.alert('开始畅游Celery Soft学术吧', '注册成功');
-                            return location.assign('/');
+                            return mdui.snackbar({
+                                message: '注册成功，开始畅游Celery Soft学术吧，点击屏幕继续',
+                                closeOnOutsideClick: true,
+                                onClose: function () {
+                                    location.assign('/');
+                                }
+                            });
                         });
                     }
                 }

@@ -41,8 +41,11 @@ def derive_db_session(pagination=False):
         return sessionmaker(bind=engine)()
 
 
-def derive_user_id_from_session():
-    permission.check_user_permission()
+def derive_user_id_from_session(call_by_api=False):
+    if call_by_api:
+        permission.check_user_api_permission()
+    else:
+        permission.check_user_permission()
     return session['user']['id']
 
 
@@ -370,7 +373,17 @@ def api_do_login():
         return login_api_document('密码错误，请重试', 400)
 
     if not permission.check_login_permission(db_session, user.id):
-        return login_api_document('该用户已被关进小黑屋，请联系管理员进行申诉', 403)
+        user_role = db_session.query(model.UserRole).filter(model.UserRole.user_id == user.id).first()
+        if user_role is None:
+            user_role = model.UserRole(user.id, model.Role.USER)
+            try:
+                db_session.add(user_role)
+                db_session.commit()
+            except sqlalchemy.exc.DataError as e:
+                db_session.rollback()
+                return login_api_document('服务器内部错误，请稍后再试', 500)
+        else:
+            return login_api_document('该用户已被关进小黑屋，请联系管理员进行申诉', 403)
 
     user.last_login_at = time.time()
 
@@ -512,8 +525,9 @@ def api_get_invitation_code():
 
 
 def api_create_invitation_code():
+    # TODO OAUTH
+    user_id = derive_user_id_from_session(True)
     db_session = derive_db_session()
-    user_id = request.json['user_id']
     if user_id is None:
         return invitation_code_api_document('Need user_id')
     if not permission.check_manage_invitation_code_permission(db_session, user_id, True):
@@ -523,7 +537,7 @@ def api_create_invitation_code():
     invitation = 1
     while invitation is not None:
         invitation_code = derive_invitation_code()
-        invitation = db_session.query(model.InvitationCode)\
+        invitation = db_session.query(model.InvitationCode) \
             .filter(model.InvitationCode.code == invitation_code).first()
 
     invitation = model.InvitationCode(invitation_code, user_id)
@@ -553,7 +567,6 @@ def derive_invitation_code():
     for i in range(32):
         codes.append(random.choice(seed))
     invitation_code = ''.join(codes)
-    # print(invitation_code)
     return invitation_code
 
 
@@ -646,10 +659,9 @@ def api_get_event():
 
 
 def api_create_event():
-    permission.check_user_api_permission()
-
+    # TODO OAUTH
+    user_id = derive_user_id_from_session(True)
     db_session = derive_db_session()
-    user_id = request.json['user_id']
     if user_id is None:
         return event_api_document('Need user_id')
     if not permission.check_manage_event_permission(db_session, user_id):
@@ -682,10 +694,9 @@ def api_create_event():
 
 
 def api_update_event():
-    permission.check_user_api_permission()
-
+    # TODO OAUTH
+    user_id = derive_user_id_from_session(True)
     db_session = derive_db_session()
-    user_id = request.json['user_id']
     if user_id is None:
         return event_api_document('Need user_id')
     if not permission.check_manage_event_permission(db_session, user_id):
@@ -727,10 +738,9 @@ def api_delete_event():
     删除公告
     :return:
     """
-    permission.check_user_api_permission()
-
+    # TODO OAUTH
+    user_id = derive_user_id_from_session(True)
     db_session = derive_db_session()
-    user_id = request.json['user_id']
     if user_id is None:
         return event_api_document('Need user_id')
     if not permission.check_manage_event_permission(db_session, user_id):
@@ -754,6 +764,104 @@ def api_delete_event():
         db_session.close()
 
     return jsonify({'message': '删除公告成功'})
+
+
+@app.route('/api/role', methods=['GET', 'POST', 'PATCH', 'DELETE'])
+def role_api():
+    if request.method == 'GET':
+        return api_get_role()
+    elif request.method == 'POST':
+        return api_create_role()
+    elif request.method == 'PATCH':
+        return api_update_role()
+    elif request.method == 'DELETE':
+        return api_delete_role()
+
+
+# TODO 文档链接
+__ROLE_API_DOCUMENTATION_URL = 'coming soon...'
+
+
+def role_api_document(message='', code=400):
+    msg = jsonify({
+        'message': message,
+        'documentation_url': __ROLE_API_DOCUMENTATION_URL
+    })
+    return make_response(msg, code)
+
+
+def api_get_role():
+    # TODO OAUTH
+    current_user_id = derive_user_id_from_session(True)
+
+    db_session = derive_db_session()
+    permission.check_manage_role_permission(db_session, current_user_id)
+
+    # 查询用户当前角色
+    user_role = None
+    user_id = request.args.get('user_id')
+    if user_id is not None:
+        user_role = db_session.query(model.Role) \
+            .filter(model.User.id == model.UserRole.user_id) \
+            .filter(model.UserRole.role_id == model.Role.id) \
+            .filter(model.User.id == user_id).first()
+
+    # 查询所有角色列表
+    roles = db_session.query(model.Role).order_by(model.Role.id).all()
+
+    role_list = []
+    for role in roles:
+        role_list.append(model.to_dict(role))
+
+    result = {
+        'documentation_url': __ROLE_API_DOCUMENTATION_URL,
+        'roles': role_list
+    }
+    if user_role is not None:
+        result['user_role'] = model.to_dict(user_role)
+    return jsonify(result)
+
+
+def api_create_role():
+    pass
+
+
+def api_update_role():
+    # TODO OAUTH
+    current_user_id = derive_user_id_from_session(True)
+
+    db_session = derive_db_session()
+    permission.check_manage_role_permission(db_session, current_user_id)
+
+    user_id = request.json['user_id']
+    if user_id is None:
+        return role_api_document('Need user_id field')
+    role_id = request.json['role_id']
+    if role_id is None:
+        return role_api_document('Need role_id field')
+
+    user_role = db_session.query(model.UserRole) \
+        .filter(model.User.id == model.UserRole.user_id) \
+        .filter(model.UserRole.role_id == model.Role.id) \
+        .filter(model.User.id == user_id).first()
+
+    user_role.role_id = role_id
+
+    try:
+        db_session.commit()
+    except sqlalchemy.exc.DataError as e:
+        db_session.rollback()
+        return abort(make_response(str(e), 500))
+    finally:
+        db_session.close() 
+
+    return jsonify({
+        'message': '修改用户角色成功'
+    })
+
+
+def api_delete_role():
+    pass
 
 
 if __name__ == '__main__':
