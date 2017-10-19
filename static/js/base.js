@@ -139,6 +139,12 @@ let $$ = mdui.JQ;
                 accent: accentCookie,
                 layout: layoutCookie
             });
+        } else {
+            setDocsTheme({
+                primary: DEFAULT_PRIMARY,
+                accent: DEFAULT_ACCENT,
+                layout: DEFAULT_LAYOUT
+            });
         }
     });
 })();

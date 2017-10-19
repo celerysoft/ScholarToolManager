@@ -181,6 +181,51 @@ def manage_invitation():
                            pagination_url_for='manage_invitation')
 
 
+@app.route('/manage/role/')
+def manage_role():
+    db_session = derive_db_session(pagination=True)
+    if not permission.check_manage_role_permission(db_session, derive_user_id_from_session()):
+        raise exception.http.Forbidden()
+
+    page = request.args.get('page')
+    try:
+        page = int(page) if page is not None else 1
+    except ValueError:
+        return redirect(url_for('manage_role'))
+
+    pagination = db_session.query(model.Role).order_by(model.Role.id).paginate(
+        page, __ITEM_PER_PAGE, False)
+    if page > 1 and len(pagination.items) is 0:
+        return redirect(url_for('manage_role'))
+
+    return render_template('manage_role.html',
+                           title='角色管理',
+                           pagination=pagination,
+                           pagination_url_for='manage_role')
+
+
+@app.route('/manage/role/create/')
+def create_role():
+    if not permission.check_manage_role_permission(derive_db_session(), derive_user_id_from_session()):
+        return redirect(url_for('home_page'))
+
+    return render_template('manage_role_edit.html',
+                           title='创建角色',
+                           action='POST')
+
+
+@app.route('/manage/role/edit/')
+def edit_role():
+    if not permission.check_manage_role_permission(derive_db_session(), derive_user_id_from_session()):
+        return redirect(url_for('home_page'))
+
+    role_id = request.args.get('id')
+    return render_template('manage_role_edit.html',
+                           title='编辑角色',
+                           id=role_id,
+                           action='PATCH')
+
+
 @app.route('/manage/event/')
 def manage_event():
     db_session = derive_db_session(pagination=True)
@@ -597,20 +642,50 @@ def permission_api_document(message='', code=400):
 
 
 def api_get_permission():
-    user_id = request.args.get('user_id')
-    if user_id is None:
-        return permission_api_document()
+    # TODO OAUTH
+    db_session = derive_db_session()
+    user_id = derive_user_id_from_session(True)
 
-    permission.check_user_api_permission()
+    query_user_id = request.args.get('user_id')
+    query_role_id = request.args.get('role_id')
 
-    permissions = permission.derive_user_permissions(derive_db_session(), user_id)
-    permission_list = []
-    for p in permissions:
-        permission_list.append(model.to_dict(p))
-    return jsonify({
-        'user_id': user_id,
-        'permissions': permission_list
-    })
+    if query_user_id is None and query_role_id is None:
+        permissions = db_session.query(model.Permission).all()
+        permission_list = []
+        for p in permissions:
+            permission_list.append(model.to_dict(p))
+        return jsonify({
+            'permissions': permission_list
+        })
+
+    if query_user_id is not None:
+        if not permission.check_manage_user_permission(db_session, user_id):
+            return permission_api_document('ID为%s的用户无权进行用户管理' % user_id)
+
+        permissions = permission.derive_user_permissions(derive_db_session(), user_id)
+        permission_list = []
+        for p in permissions:
+            permission_list.append(model.to_dict(p))
+        return jsonify({
+            'user_id': user_id,
+            'permissions': permission_list
+        })
+
+    if query_role_id is not None:
+        if not permission.check_manage_role_permission(db_session, user_id):
+            return permission_api_document('ID为%s的用户无权进行角色管理' % user_id)
+
+        permissions = db_session.query(model.Permission) \
+            .filter(model.Role.id == model.RolePermission.role_id) \
+            .filter(model.RolePermission.permission_id == model.Permission.id) \
+            .filter(model.Role.id == query_role_id)
+        permission_list = []
+        for p in permissions:
+            permission_list.append(model.to_dict(p))
+        return jsonify({
+            'role_id': query_role_id,
+            'permissions': permission_list
+        })
 
 
 @app.route('/api/event', methods=['GET', 'POST', 'PATCH', 'DELETE'])
@@ -741,8 +816,6 @@ def api_delete_event():
     # TODO OAUTH
     user_id = derive_user_id_from_session(True)
     db_session = derive_db_session()
-    if user_id is None:
-        return event_api_document('Need user_id')
     if not permission.check_manage_event_permission(db_session, user_id):
         raise exception.api.Forbidden('ID为%s的用户无权删除公告' % user_id)
 
@@ -853,7 +926,7 @@ def api_update_role():
         db_session.rollback()
         return abort(make_response(str(e), 500))
     finally:
-        db_session.close() 
+        db_session.close()
 
     return jsonify({
         'message': '修改用户角色成功'
@@ -861,7 +934,33 @@ def api_update_role():
 
 
 def api_delete_role():
-    pass
+    # TODO OAUTH
+    user_id = derive_user_id_from_session(True)
+    db_session = derive_db_session()
+    if not permission.check_manage_event_permission(db_session, user_id):
+        raise exception.api.Forbidden('ID为%s的用户无权删除角色' % user_id)
+
+    role_id = request.json['id']
+    if not role_id:
+        return role_api_document('所需删除的角色id不能为空', 400)
+
+    role = db_session.query(model.Role).filter_by(id=role_id).first()
+    if not role:
+        return role_api_document('id为%s公告不存在，故无法删除' % role_id, 404)
+
+    try:
+        db_session.delete(role)
+        db_session.commit()
+    except sqlalchemy.exc.DataError as e:
+        db_session.rollback()
+        return abort(make_response(str(e), 500))
+    finally:
+        db_session.close()
+
+    return jsonify({
+        'message': '删除角色成功',
+        'documentation_url': __ROLE_API_DOCUMENTATION_URL
+    })
 
 
 if __name__ == '__main__':

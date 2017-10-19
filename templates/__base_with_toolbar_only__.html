@@ -2,35 +2,36 @@
 <html>
 <head>
     <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width">
     {% block meta %}<!-- block meta  -->{% endblock %}
     <title>{% block title %}{{ title }} | 月下之光{% endblock %}</title>
 
     {% if debug %}
-        <link rel="stylesheet" href="{{ static_route }}static/css/mdui.css">
-        <link rel="stylesheet" href="{{ static_route }}static/css/font-awesome.css">
-        <link rel="stylesheet" href="{{ static_route }}static/css/base.css">
-        <link rel="stylesheet" href="{{ static_route }}static/css/pygments-friendly.css">
+        <link rel="stylesheet" href="{{ static_route }}/static/css/mdui.css">
+        <link rel="stylesheet" href="{{ static_route }}/static/css/font-awesome.css">
+        <link rel="stylesheet" href="{{ static_route }}/static/css/base.css">
+        <link rel="stylesheet" href="{{ static_route }}/static/css/pygments-friendly.css">
     {% else %}
-        <link rel="stylesheet" href="{{ static_route }}static/css/mdui.min.css">
-        <link rel="stylesheet" href="{{ static_route }}static/css/font-awesome.min.css">
-        <link rel="stylesheet" href="{{ static_route }}static/css/base.css">
-        <link rel="stylesheet" href="{{ static_route }}static/css/pygments-friendly.css">
+        <link rel="stylesheet" href="{{ static_route }}/static/css/mdui.min.css">
+        <link rel="stylesheet" href="{{ static_route }}/static/css/font-awesome.min.css">
+        <link rel="stylesheet" href="{{ static_route }}/static/css/base.css">
+        <link rel="stylesheet" href="{{ static_route }}/static/css/pygments-friendly.css">
     {% endif %}
 
     {% if debug %}
-        <script src="{{ static_route }}static/js/jquery-3.2.1.js"></script>
-        <script src="{{ static_route }}static/js/mdui.js"></script>
-        <script src="{{ static_route }}static/js/base.js"></script>
-        <script src="{{ static_route }}static/js/ajax.js"></script>
-        <script src="{{ static_route }}static/js/vue.js"></script>
-        <script src="{{ static_route }}static/js/sha1.min.js"></script>
+        <script src="{{ static_route }}/static/js/jquery-3.2.1.js"></script>
+        <script src="{{ static_route }}/static/js/mdui.js"></script>
+        <script src="{{ static_route }}/static/js/base.js"></script>
+        <script src="{{ static_route }}/static/js/ajax.js"></script>
+        <script src="{{ static_route }}/static/js/vue.js"></script>
+        <script src="{{ static_route }}/static/js/sha1.min.js"></script>
     {% else %}
-        <script src="{{ static_route }}static/js/jquery-3.2.1.min.js"></script>
-        <script src="{{ static_route }}static/js/mdui.min.js"></script>
-        <script src="{{ static_route }}static/js/base.js"></script>
-        <script src="{{ static_route }}static/js/ajax.js"></script>
-        <script src="{{ static_route }}static/js/vue.min.js"></script>
-        <script src="{{ static_route }}static/js/sha1.min.js"></script>
+        <script src="{{ static_route }}/static/js/jquery-3.2.1.min.js"></script>
+        <script src="{{ static_route }}/static/js/mdui.min.js"></script>
+        <script src="{{ static_route }}/static/js/base.js"></script>
+        <script src="{{ static_route }}/static/js/ajax.js"></script>
+        <script src="{{ static_route }}/static/js/vue.min.js"></script>
+        <script src="{{ static_route }}/static/js/sha1.min.js"></script>
     {% endif %}
 
     {% block beforehead %}<!-- before head  -->{% endblock %}

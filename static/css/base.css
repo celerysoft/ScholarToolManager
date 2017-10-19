@@ -44,43 +44,22 @@
 }
 
 .register-card {
-    height: 700px;
-    min-width: 480px;
-    max-width: 480px;
+    min-height: 700px;
     padding: 16px;
-    /*margin-top: calc((100% - 600px) / 2);*/
-    margin-top: 80px;
-    margin-bottom: 16px;
-    margin-left: auto;
-    margin-right: auto;
+    margin-top: 40px;
 }
 
 .text-under-register-card {
-    min-width: 480px;
-    max-width: 480px;
-    padding-right: 8px;
-    margin-left: auto;
-    margin-right: auto;
     text-align: right;
 }
 
 .login-card {
-    height: 384px;
-    min-width: 480px;
-    max-width: 480px;
+    min-height: 384px;
     padding: 16px;
-    margin-top: 80px;
-    margin-bottom: 16px;
-    margin-left: auto;
-    margin-right: auto;
+    margin-top: 40px;
 }
 
 .text-under-login-card {
-    min-width: 480px;
-    max-width: 480px;
-    padding-right: 8px;
-    margin-left: auto;
-    margin-right: auto;
     text-align: right;
 }
 

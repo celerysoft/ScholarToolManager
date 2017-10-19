@@ -14,7 +14,6 @@
 {% block script %}
     <script>
         $(function () {
-            const userId = '{{ session.user.id }}';
             let btnCreateInvitationCode = $('#btn_create_invitation_code');
             btnCreateInvitationCode.click(function () {
                 btnCreateInvitationCode.prop('disabled', true)
@@ -78,48 +77,5 @@
             mdui-tooltip="{content: '创建邀请码', position: 'top'}">
         <i class="mdui-icon material-icons">create</i>
     </button>
-    {#    <div class="mdui-table-fluid">#}
-    {#        <table class="mdui-table">#}
-    {#            <thead>#}
-    {#            <tr>#}
-    {#                <th>ID</th>#}
-    {#                <th>邀请者</th>#}
-    {#                <th>受邀人</th>#}
-    {#                <th>生成时间</th>#}
-    {#                <th>使用时间</th>#}
-    {#                <th>邀请码</th>#}
-    {#                <th>有效</th>#}
-    {#            </tr>#}
-    {#            </thead>#}
-    {#            <tbody>#}
-    {#            <tr>#}
-    {#                <td>1</td>#}
-    {#                <td>Mark</td>#}
-    {#                <td>Otto</td>#}
-    {#                <td>2017-01-01 12:30:23</td>#}
-    {#                <td>2017-01-01 12:31:23</td>#}
-    {#                <td>ABCDEFGHIJKLMNOPQRSTUVWXYZ123456</td>#}
-    {#                <td>No</td>#}
-    {#            </tr>#}
-    {#            <tr>#}
-    {#                <td>2</td>#}
-    {#                <td>Jacob</td>#}
-    {#                <td>Thornton</td>#}
-    {#                <td>2017-01-01 12:30:23</td>#}
-    {#                <td>2017-01-01 12:31:23</td>#}
-    {#                <td>ABCDEFGHIJKLMNOPQRSTUVWXYZ123456</td>#}
-    {#                <td>No</td>#}
-    {#            </tr>#}
-    {#            <tr>#}
-    {#                <td>3</td>#}
-    {#                <td>Larry the Bird</td>#}
-    {#                <td></td>#}
-    {#                <td>2017-01-01 12:30:23</td>#}
-    {#                <td></td>#}
-    {#                <td>ABCDEFGHIJKLMNOPQRSTUVWXYZ123456</td>#}
-    {#                <td>YES</td>#}
-    {#            </tr>#}
-    {#            </tbody>#}
-    {#        </table>#}
-    {#    </div>#}
+
 {% endblock %}

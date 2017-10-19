@@ -75,52 +75,56 @@
 
 {% block content %}
 
-    <div class="mdui-card mdui-typo register-card mdui-hoverable">
-        <h1>注册
-            <small style="margin-left: 16px;">成为Celery Soft 学术的会员</small>
-        </h1>
-        <form id="vm">
-            <div class="mdui-textfield mdui-textfield-floating-label">
-                <label class="mdui-textfield-label">用户名</label>
-                <input class="mdui-textfield-input" v-model="name" type="text" required/>
-                <div class="mdui-textfield-error">用户名不能为空</div>
-            </div>
+    <div class="mdui-row">
+        <div class="mdui-card mdui-typo register-card mdui-hoverable mdui-col-xs-12 mdui-col-sm-6 mdui-col-offset-sm-3">
+            <h1>注册
+                <small style="margin-left: 16px;">成为Celery Soft 学术的会员</small>
+            </h1>
 
-            <div class="mdui-textfield mdui-textfield-floating-label">
-                <label class="mdui-textfield-label">E-mail</label>
-                <input class="mdui-textfield-input" v-model="email" type="email" required/>
-                <div class="mdui-textfield-error">邮箱格式错误</div>
-            </div>
+            <form id="vm">
+                <div class="mdui-textfield mdui-textfield-floating-label">
+                    <label class="mdui-textfield-label">用户名</label>
+                    <input class="mdui-textfield-input" v-model="name" type="text" required/>
+                    <div class="mdui-textfield-error">用户名不能为空</div>
+                </div>
 
-            <div class="mdui-textfield mdui-textfield-floating-label">
-                <label class="mdui-textfield-label">密码</label>
-                <input class="mdui-textfield-input" v-model="password" type="password"
-                       pattern="^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z]).*$" required/>
-                <div class="mdui-textfield-error">密码至少 6 位，且包含大小写字母</div>
-            </div>
+                <div class="mdui-textfield mdui-textfield-floating-label">
+                    <label class="mdui-textfield-label">E-mail</label>
+                    <input class="mdui-textfield-input" v-model="email" type="email" required/>
+                    <div class="mdui-textfield-error">邮箱格式错误</div>
+                </div>
 
-            <div class="mdui-textfield mdui-textfield-floating-label">
-                <label class="mdui-textfield-label">确认密码</label>
-                <input class="mdui-textfield-input" v-model="password_confirm" type="password"
-                       pattern="^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z]).*$" required/>
-                <div class="mdui-textfield-error">密码至少 6 位，且包含大小写字母</div>
-            </div>
+                <div class="mdui-textfield mdui-textfield-floating-label">
+                    <label class="mdui-textfield-label">密码</label>
+                    <input class="mdui-textfield-input" v-model="password" type="password"
+                           pattern="^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z]).*$" required/>
+                    <div class="mdui-textfield-error">密码至少 6 位，且包含大小写字母</div>
+                </div>
 
-            <div class="mdui-textfield mdui-textfield-floating-label">
-                <label class="mdui-textfield-label">邀请码</label>
-                <input class="mdui-textfield-input" v-model="invitation_code" type="text" required/>
-                <div class="mdui-textfield-error">邀请码不能为空</div>
-            </div>
+                <div class="mdui-textfield mdui-textfield-floating-label">
+                    <label class="mdui-textfield-label">确认密码</label>
+                    <input class="mdui-textfield-input" v-model="password_confirm" type="password"
+                           pattern="^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z]).*$" required/>
+                    <div class="mdui-textfield-error">密码至少 6 位，且包含大小写字母</div>
+                </div>
 
-            <button v-on:click="submit" type="submit" class="mdui-btn mdui-color-theme-accent mdui-ripple mdui-center">
-                注册
-            </button>
-        </form>
+                <div class="mdui-textfield mdui-textfield-floating-label">
+                    <label class="mdui-textfield-label">邀请码</label>
+                    <input class="mdui-textfield-input" v-model="invitation_code" type="text" required/>
+                    <div class="mdui-textfield-error">邀请码不能为空</div>
+                </div>
+
+                <button v-on:click="submit" type="submit" class="mdui-btn mdui-color-theme-accent mdui-ripple mdui-center">
+                    注册
+                </button>
+            </form>
+        </div>
     </div>
 
-    <div class="mdui-typo text-under-register-card mdui-text-color-theme-secondary">
-        已有账号？请<a href="/login/">登录</a>
+    <div class="mdui-row">
+        <div class="mdui-typo text-under-register-card mdui-text-color-theme-secondary mdui-col-xs-12 mdui-col-sm-6 mdui-col-offset-sm-3">
+            已有账号？请<a href="/login/">登录</a>
+        </div>
     </div>
-
 
 {% endblock %}

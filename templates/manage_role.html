@@ -1,0 +1,108 @@
+{% extends '__base__.html' %}
+
+{% block meta %}
+    <meta id="paginate-data" name="paginate_url_for" content="{{ pagination_url_for }}">
+{% endblock %}
+
+{% block body_drawer_class %}
+{% endblock %}
+
+{% block drawer_class %}
+    mdui-drawer-close
+{% endblock %}
+
+{% block script %}
+    <script>
+        function stopPropagation(event) {
+            event = event || window.event;
+            if (event.stopPropagation) { //W3C阻止冒泡方法
+                event.stopPropagation();
+            } else {
+                event.cancelBubble = true; //IE阻止冒泡方法
+            }
+        }
+
+        $(function () {
+            let vm = new Vue({
+                el: '#vm_action',
+                methods: {
+                    edit_role: function (id) {
+                        stopPropagation();
+                        location.assign('/manage/role/edit?id=' + id);
+                    },
+                    delete_role: function (id, name) {
+                        stopPropagation();
+                        mdui.confirm('确认要删除角色“' + name + '”？\n删除后不可恢复！',
+                            function () {
+                                httpDelete('/api/role', {id: id}, function (err, r) {
+                                    if (err) {
+                                        return mdui.alert(err.message || err.error || err);
+                                    }
+                                    refresh();
+                                });
+                            });
+                    }
+                }
+            });
+
+            let vm_permissions = new Vue({
+                el: '#vm_permissions',
+                data: {
+                    permissions: '',
+                    role_permission: ''
+                },
+                methods: {
+
+                }
+            })
+        })
+    </script>
+{% endblock %}
+
+{% block content %}
+
+    <div class="mdui-table-fluid mdui-typo" style="margin: 16px 0;">
+        <table class="mdui-table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>名字</th>
+                <th>标签</th>
+                <th>描述</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            {% if pagination %}
+                <tbody id="vm_action">
+                {% for role in pagination.items %}
+                    <tr>
+                        <td>{{ role.id }}</td>
+                        <td>{{ role.name }}</td>
+                        <td>{{ role.label }}</td>
+                        <td>{{ role.description }}</td>
+                        <td>
+                            <i class="mdui-list-item-icon mdui-icon material-icons mdui-ripple"
+                               v-on:click="edit_role({{ role.id }})" mdui-tooltip="{content: '编辑'}">create</i>
+                            <i class="mdui-list-item-icon mdui-icon material-icons mdui-ripple"
+                               v-on:click="delete_role({{ role.id }}, '{{ role.name }}')"
+                               mdui-tooltip="{content: '删除'}">delete</i>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            {% endif %}
+        </table>
+
+        {% if pagination %}
+            {% include '__pagination_base__.html' %}
+        {% endif %}
+    </div>
+
+    <a href="/manage/role/create/">
+        <button id="btn_create_invitation_code" class="mdui-fab mdui-color-theme-accent mdui-fab-fixed mdui-ripple"
+                mdui-tooltip="{content: '创建角色', position: 'top'}">
+            <i class="mdui-icon material-icons">add</i>
+        </button>
+    </a>
+
+{% endblock %}

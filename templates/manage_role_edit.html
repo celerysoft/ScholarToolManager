@@ -1,0 +1,137 @@
+{% extends '__base__.html' %}
+
+{% block body_drawer_class %}
+{% endblock %}
+
+{% block drawer_class %}
+    mdui-drawer-close
+{% endblock %}
+
+{% block beforehead %}
+    <script>
+        $(function () {
+            let
+                ID = '{{ id }}',
+                action = '{{ action }}';
+
+            if (ID) {
+                httpGet('/api/role', {id: ID}, function (error, data, jqXHR) {
+                    if (error) {
+                        return mdui.alert(error.message);
+                    }
+                    $('#loading').hide();
+{#                    initVM(data);#}
+                });
+            }
+            else {
+                $('#loading').hide();
+            }
+
+            let vm_ = new Vue({
+                el: '#form',
+                data: {
+                    name: '',
+                    label: '',
+                    description: '',
+                    rolePermission: [],
+                    permissions: ''
+                },
+                methods: {
+                    submit: function (event) {
+                        event.preventDefault();
+                        let callback = function (error, data, jqXHR) {
+                            if (error) {
+                                return mdui.snackbar({
+                                    message: error.message
+                                });
+                            } else {
+                                return location.assign('/manage/role/');
+                            }
+                        };
+                        if (action === 'POST') {
+                            httpPost('/api/role', this.$data, callback);
+                        } else if (action === 'PATCH') {
+                            httpPatch('/api/role', this.$data, callback);
+                        }
+                    },
+                    cancel: function (event) {
+                        event.preventDefault();
+                        return location.assign('/manage/role/');
+                    },
+                    derive_mdui_tooltip: function (content) {
+                        return { content: content }
+                    }
+                }
+            })
+
+            function getPermissions(roleId) {
+                console.log(roleId);
+                console.log(typeof roleId);
+                let data = roleId === null || roleId === '' ? null : { role_id: roleId};
+                console.log(data);
+
+                httpGet('/api/permission', data, function (error, data, jqXHR) {
+                    if (error) {
+                        return mdui.alert(error.message);
+                    }
+                    console.log(data);
+                    vm_.$data.permissions = data.permissions;
+{#                    vm_.$data.user_role = data.user_role.id;#}
+                })
+            }
+
+            getPermissions(ID);
+        });
+    </script>
+{% endblock %}
+
+{% block under_toolbar %}
+    <div id="loading" class="mdui-progress">
+        <div class="mdui-progress-indeterminate"></div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <form id="form">
+        <div class="mdui-textfield mdui-textfield-floating-label">
+            <label class="mdui-textfield-label">权限名</label>
+            <input v-model="name" class="mdui-textfield-input" type="text" style="padding-right: 10px;"/>
+        </div>
+        <div class="mdui-textfield mdui-textfield-floating-label">
+            <label class="mdui-textfield-label">标签</label>
+            <input v-model="label" class="mdui-textfield-input" type="text" style="padding-right: 10px;"/>
+        </div>
+        <div class="mdui-textfield mdui-textfield-floating-label">
+            <label class="mdui-textfield-label">描述</label>
+            <textarea v-model="description" class="mdui-textfield-input" type="text"
+                      style="padding-right: 10px;"></textarea>
+        </div>
+
+        <p>角色权限</p>
+
+        <div v-if="permissions.length > 0">
+            <label v-for="permission in permissions"  class="mdui-checkbox" style="margin: 0 16px;"
+                   :mdui-tooltip=derive_mdui_tooltip({{permission.description}})>
+                <input type="checkbox" :value="permission.id" v-model="role_permission"/>
+                <i class="mdui-checkbox-icon"></i>
+                {{permission.name}}({{permission.label}})
+            </label>
+        </div>
+        <div v-else>
+            <p style="margin: 16px 8px">暂无权限，请先创建权限。</p>
+        </div>
+
+        <div class="mdui-row mdui-center" style="width: 192px;">
+            <button class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-theme-accent mdui-float-left"
+                    v-on:click="submit"
+                    style="width: 80px;margin-top: 16px;margin-bottom: 16px;">
+                创建
+            </button>
+            <button class="mdui-btn mdui-btn-raised mdui-ripple mdui-float-right"
+                    v-on:click="cancel"
+                    style="width: 80px;margin-top: 16px;margin-bottom: 16px;">
+                取消
+            </button>
+        </div>
+    </form>
+{% endblock %}

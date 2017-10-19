@@ -34,7 +34,7 @@ class Config(object):
                               + _db_user + ':' + _db_password + '@' + _db_host + ':' + _db_port + '/' + _db_name
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # static目录的路径，测试时为本地，上线时为cdn
-    URL_OF_STATIC = '/'
+    URL_OF_STATIC = ''
     # 博客图片的路径
     URL_OF_BLOG_IMAGE = '/static/image/blog/'
     # 匿名评论用户的用户名（username）字段
@@ -69,5 +69,5 @@ class ProductionConfig(Config):
     """
     生产环境
     """
-    URL_OF_STATIC = 'http://ow92gcjek.bkt.clouddn.com/'
+    URL_OF_STATIC = 'http://ow92gcjek.bkt.clouddn.com'
     URL_OF_BLOG_IMAGE = 'http://ow92gcjek.bkt.clouddn.com/static/image/blog/'
