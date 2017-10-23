@@ -51,6 +51,7 @@ CREATE TABLE permission (
   `name`        VARCHAR(56) NOT NULL,
   `label`       VARCHAR(56) NOT NULL,
   `description` VARCHAR(512),
+  UNIQUE  KEY `idx_name` (`name`),
   PRIMARY KEY (`id`)
 )
   ENGINE = innodb

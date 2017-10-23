@@ -54,7 +54,7 @@
                 httpGet(permission_url, {user_id: userId}, function (error, data, jqXHR) {
                     let permissions = data.permissions;
 
-                    let length = data.permissions.length;
+                    let length = permissions.length;
                     for (let i = 0; i < length; i++) {
                         let permission = permissions[i];
                         if (permission.id === 2) {
@@ -79,7 +79,7 @@
         <span class="mdui-btn mdui-btn-icon mdui-ripple mdui-ripple-white"
               mdui-drawer="{target: '#main-drawer', swipe: true}"><i class="mdui-icon material-icons">menu</i></span>
         <a href="/" class="mdui-typo-headline mdui-hidden-xs" mdui-tooltip="{content: '返回首页'}">Celery Soft 学术</a>
-        <div class="vertical-divider"></div>
+        <div class="vertical-divider mdui-hidden-xs"></div>
         <div class="mdui-typo-headline">{% block page_title %} {{ title }} {% endblock %}</div>
         <div class="mdui-toolbar-spacer"></div>
 

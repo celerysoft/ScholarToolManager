@@ -72,7 +72,7 @@
                 },
                 methods: {
                     modifyUserRole: function () {
-                        httpPatch('/api/role', {user_id: modifyUserId, role_id: vmDialog.$data.user_role}, function (err, data, jqXHR) {
+                        httpPatch('/api/user', {user_id: modifyUserId, role_id: vmDialog.$data.user_role}, function (err, data, jqXHR) {
                             dialogInst.close();
                             if (err) {
                                 return mdui.alert(err.message || err.error || err);
