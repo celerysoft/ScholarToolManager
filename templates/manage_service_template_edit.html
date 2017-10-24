@@ -1,0 +1,162 @@
+{% extends '__base__.html' %}
+
+{% block body_drawer_class %}
+{% endblock %}
+
+{% block drawer_class %}
+    mdui-drawer-close
+{% endblock %}
+
+{% block beforehead %}
+    <script>
+        $(function () {
+            let
+                ID = '{{ id }}',
+                TYPE = '{{ type }}',
+                action = '{{ action }}';
+
+            let vm_service_template = new Vue({
+                el: '#form',
+                data: {
+                    type: '',
+                    title: '',
+                    subtitle: '',
+                    description: '',
+                    balance: '',
+                    price: 0,
+                },
+                methods: {
+                    submit: function (event) {
+                        event.preventDefault();
+                        let callback = function (error, data, jqXHR) {
+                            if (error) {
+                                return mdui.snackbar({
+                                    message: error.message
+                                });
+                            } else {
+                                return location.assign('/manage/service-template/');
+                            }
+                        };
+                        let data = {
+                            type: this.$data.type,
+                            title: this.$data.title,
+                            subtitle: this.$data.subtitle,
+                            description: this.$data.description,
+                            balance: this.$data.balance,
+                            price: this.$data.price
+                        };
+                        if (action === 'POST') {
+                            console.log(data);
+                            httpPost('/api/service-template', data, callback);
+                        } else if (action === 'PATCH') {
+                            data.id = ID;
+                            httpPatch('/api/service-template', data, callback);
+                        }
+                    },
+                    cancel: function (event) {
+                        event.preventDefault();
+                        return location.assign('/manage/service-template/');
+                    }
+                }
+            })
+
+            function getServiceTemplate(serviceId, renderFunc) {
+                let data = serviceId === null || serviceId === '' ? null : { id: serviceId };
+
+                httpGet('/api/service-template', data, function (error, data, jqXHR) {
+                    if (error) {
+                        return mdui.alert(error.message);
+                    }
+
+                    renderFunc(data.template);
+                });
+            }
+
+            if (TYPE === '0') {
+                vm_service_template.$data.type = 0;
+            } else if (TYPE === '1') {
+                vm_service_template.$data.type = 1;
+            }
+            $('#loading').hide();
+
+            if (ID) {
+                getServiceTemplate(ID, function (data) {
+                    $('#loading').hide();
+
+                    vm_service_template.$data.type = data.type;
+                    vm_service_template.$data.title  = data.title;
+                    vm_service_template.$data.subtitle = data.subtitle;
+                    vm_service_template.$data.description = data.description;
+                    vm_service_template.$data.balance = data.balance;
+                    vm_service_template.$data.price = data.price;
+                });
+            }
+            else {
+                $('#loading').hide();
+            }
+        });
+    </script>
+{% endblock %}
+
+{% block under_toolbar %}
+    <div id="loading" class="mdui-progress">
+        <div class="mdui-progress-indeterminate"></div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="mdui-typo">
+        <h5>说明：</h5>
+        <ul>
+            <li><p>不同描述请用<kbd>Space</kbd>即<kbd>空格键</kbd>隔开。</p></li>
+            <li>1G = <mark>1073741824</mark></li>
+            <li>500M = <mark>524288000</mark></li>
+        </ul>
+    </div>
+
+    <form id="form">
+        <p><small>套餐类型</small></p>
+        <select v-model="type" class="mdui-select" mdui-select1>
+            <option disabled value="">请选择套餐类型</option>
+            <option value="0">包月套餐</option>
+            <option value="1">流量套餐</option>
+        </select>
+
+        <div class="mdui-textfield">
+            <label class="mdui-textfield-label">标题</label>
+            <input v-model="title" class="mdui-textfield-input" type="text" style="padding-right: 10px;"/>
+        </div>
+        <div class="mdui-textfield">
+            <label class="mdui-textfield-label">副标题</label>
+            <input v-model="subtitle" class="mdui-textfield-input" type="text" style="padding-right: 10px;"/>
+        </div>
+        <div class="mdui-textfield">
+            <label class="mdui-textfield-label">描述</label>
+            <textarea v-model="description" class="mdui-textfield-input" type="text"
+                      style="padding-right: 10px;"></textarea>
+        </div>
+
+         <div class="mdui-textfield">
+            <label class="mdui-textfield-label">流量</label>
+            <input v-model="balance" class="mdui-textfield-input" type="text" style="padding-right: 10px;"/>
+        </div>
+
+         <div class="mdui-textfield">
+            <label class="mdui-textfield-label">价格</label>
+            <input v-model="price" class="mdui-textfield-input" type="text" style="padding-right: 10px;"/>
+        </div>
+
+        <div class="mdui-row mdui-center" style="width: 192px;">
+            <button class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-theme-accent mdui-float-left"
+                    v-on:click="submit"
+                    style="width: 80px;margin-top: 16px;margin-bottom: 16px;">
+                保存
+            </button>
+            <button class="mdui-btn mdui-btn-raised mdui-ripple mdui-float-right"
+                    v-on:click="cancel"
+                    style="width: 80px;margin-top: 16px;margin-bottom: 16px;">
+                取消
+            </button>
+        </div>
+    </form>
+{% endblock %}

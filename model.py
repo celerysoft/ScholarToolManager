@@ -114,6 +114,8 @@ class Permission(Base):
     MANAGE_USER = 5
     # 角色管理，manage_role
     MANAGE_ROLE = 6
+    # 套餐模板管理 manage_service_template
+    MANAGE_SERVICE_TEMPLATE = 7
 
 
 class RolePermission(Base):
@@ -176,3 +178,26 @@ class Event(Base):
 
     def __repr__(self):
         return '<Event %s %s>' % (self.name, self.tag)
+
+
+class ServiceTemplate(Base):
+    __tablename__ = 'service_template'
+
+    id = Column(Integer, primary_key=True)
+    type = Column(Integer)
+    title = Column(String)
+    subtitle = Column(String)
+    description = Column(String)
+    balance = Column(Integer)
+    price = Column(Integer)
+
+    def __init__(self, type=None, title=None, subtitle=None, description=None, balance=None, price=None):
+        self.type = type
+        self.title = title
+        self.subtitle = subtitle
+        self.description = description
+        self.balance = balance
+        self.price = price
+
+    def __repr__(self):
+        return '<ServiceTemplate %s %s>' % (self.title, self.balance)

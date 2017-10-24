@@ -111,7 +111,7 @@
         </div>
     {% endif %}
 
-    <ul class="mdui-list">
+    <ul class="mdui-list" mdui-collapse="{accordion: true}">
         <li class="mdui-list-item mdui-ripple">
             <i class="mdui-list-item-icon mdui-icon fa fa-home"></i>
             <a href="/" class="mdui-list-item-content mdui-ripple">主页</a>
@@ -120,9 +120,16 @@
             <i class="mdui-list-item-icon mdui-icon fa fa-gamepad"></i>
             <a href="/event" class="mdui-list-item-content mdui-ripple">公告</a>
         </li>
-        <li class="mdui-list-item mdui-ripple">
-            <i class="mdui-list-item-icon mdui-icon fa fa-book"></i>
-            <a href="/product" class="mdui-list-item-content mdui-ripple">学术</a>
+        <li class="mdui-collapse-item mdui-collapse-item-open">
+            <div class="mdui-collapse-item-header mdui-list-item mdui-ripple">
+                <i class="mdui-list-item-icon mdui-icon fa fa-book"></i>
+                <div class="mdui-list-item-content">学术</div>
+                <i class="mdui-collapse-item-arrow mdui-icon material-icons">keyboard_arrow_down</i>
+            </div>
+            <div class="mdui-collapse-item-body mdui-list">
+                <a href="/product" class="mdui-list-item mdui-ripple ">我的学术</a>
+                <a href="/product/create" class="mdui-list-item mdui-ripple ">获取新学术</a>
+            </div>
         </li>
         <li class="mdui-subheader">设置</li>
         <li class="mdui-list-item mdui-ripple" mdui-dialog="{target: '#dialog-docs-theme'}">

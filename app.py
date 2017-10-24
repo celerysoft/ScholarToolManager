@@ -119,7 +119,6 @@ def handle_api_unauthorized(error):
 
 @app.route('/')
 def home_page():
-    derive_invitation_code()
     permission.check_user_permission()
 
     return render_template('index.html',
@@ -233,6 +232,55 @@ def edit_role():
                            action='PATCH')
 
 
+@app.route('/manage/service-template/')
+def manage_service_template():
+    db_session = derive_db_session(pagination=True)
+    if not permission.check_manage_service_template_permission(db_session, derive_user_id_from_session()):
+        raise exception.http.Forbidden()
+
+    page = request.args.get('page')
+    try:
+        page = int(page) if page is not None else 1
+    except ValueError:
+        return redirect(url_for('manage_service_template'))
+
+    pagination = db_session.query(model.ServiceTemplate).order_by(model.ServiceTemplate.id).paginate(
+        page, __ITEM_PER_PAGE, False)
+    if page > 1 and len(pagination.items) is 0:
+        return redirect(url_for('manage_service_template'))
+
+    return render_template('manage_service_template.html',
+                           title='套餐模版管理',
+                           pagination=pagination,
+                           pagination_url_for='manage_service_template')
+
+
+@app.route('/manage/service-template/create/')
+def create_service_template():
+    if not permission.check_manage_service_template_permission(derive_db_session(), derive_user_id_from_session()):
+        raise exception.http.Forbidden()
+
+    service_type = request.args.get('type') if request.args.get('type') else 0
+
+    return render_template('manage_service_template_edit.html',
+                           title='创建套餐',
+                           type=service_type,
+                           action='POST')
+
+
+@app.route('/manage/service-template/edit/')
+def edit_service_template():
+    if not permission.check_manage_service_template_permission(derive_db_session(), derive_user_id_from_session()):
+        raise exception.http.Forbidden()
+
+    service_template_id = request.args.get('id')
+
+    return render_template('manage_service_template_edit.html',
+                           title='编辑套餐',
+                           id=service_template_id,
+                           action='PATCH')
+
+
 @app.route('/manage/event/')
 def manage_event():
     db_session = derive_db_session(pagination=True)
@@ -261,7 +309,7 @@ def manage_event():
 
 
 @app.route('/manage/event/create/')
-def create_product():
+def create_event():
     if not permission.check_manage_event_permission(derive_db_session(), derive_user_id_from_session()):
         return redirect(url_for('home_page'))
 
@@ -271,7 +319,7 @@ def create_product():
 
 
 @app.route('/manage/event/edit/')
-def edit_product():
+def edit_event():
     if not permission.check_manage_event_permission(derive_db_session(), derive_user_id_from_session()):
         return redirect(url_for('home_page'))
 
@@ -284,8 +332,6 @@ def edit_product():
 
 @app.route('/manage/user/')
 def manage_user():
-    permission.check_user_permission()
-
     db_session = derive_db_session(pagination=True)
     if not permission.check_manage_user_permission(db_session, derive_user_id_from_session()):
         return redirect(url_for('home_page'))
@@ -310,6 +356,8 @@ def manage_user():
 
 @app.route('/user/<name>')
 def show_user_profile(name):
+    permission.check_user_permission()
+
     db_session = derive_db_session()
     user = db_session.query(model.User).filter_by(name=name).first()
     if user is None:
@@ -322,6 +370,8 @@ def show_user_profile(name):
 
 @app.route('/event/')
 def event():
+    permission.check_user_permission()
+
     page = request.args.get('page')
     try:
         page = int(page) if page is not None else 1
@@ -348,6 +398,8 @@ def event():
 
 @app.route('/event/<int:event_id>')
 def show_event(event_id):
+    permission.check_user_permission()
+
     db_session = derive_db_session()
     event = db_session.query(model.Event).filter_by(id=event_id).first()
     if event is None:
@@ -368,13 +420,12 @@ def show_event(event_id):
                            event=event)
 
 
-@app.route('/invitation/<int:invitation_code_id>')
-def show_invitation_code(invitation_code_id):
-    invitation = None
+@app.route('/product/create/')
+def create_product():
+    permission.check_user_permission()
 
-    return render_template('invitation_code_view.html',
-                           title='邀请详情',
-                           invitation=invitation)
+    return render_template('product_create.html',
+                           title='获取新学术')
 
 
 # -------------------------------------------------- API -------------------------------------------------- #
@@ -1108,8 +1159,8 @@ def api_update_role():
     #     db_session.close()
 
     # 删除role_permission表的旧记录
-    role_permissions = db_session.query(model.RolePermission)\
-        .filter(model.Role.id == model.RolePermission.role_id)\
+    role_permissions = db_session.query(model.RolePermission) \
+        .filter(model.Role.id == model.RolePermission.role_id) \
         .filter(model.Role.id == role_id).all()
 
     for role_permission in role_permissions:
@@ -1157,17 +1208,17 @@ def api_delete_role():
         return role_api_document('所需删除的角色id不能为空', 400)
 
     # 判断是否有user的角色是待删除角色
-    users = db_session.query(model.User)\
-        .filter(model.UserRole.user_id == model.User.id)\
-        .filter(model.UserRole.role_id == model.Role.id)\
+    users = db_session.query(model.User) \
+        .filter(model.UserRole.user_id == model.User.id) \
+        .filter(model.UserRole.role_id == model.Role.id) \
         .filter(model.Role.id == role_id).all()
 
     if users is not None and len(users) > 0:
         raise exception.api.InvalidRequest('当前还有%s位用户的角色为待删除角色，故无法删除该角色' % len(users))
 
     # 从role_permission表删除记录
-    role_permissions = db_session.query(model.RolePermission)\
-        .filter(model.Role.id == role_id)\
+    role_permissions = db_session.query(model.RolePermission) \
+        .filter(model.Role.id == role_id) \
         .filter(model.Role.id == model.RolePermission.role_id).all()
     for role_permission in role_permissions:
         db_session.delete(role_permission)
@@ -1190,6 +1241,186 @@ def api_delete_role():
         jsonify({
             'message': '删除角色成功',
             'documentation_url': __ROLE_API_DOCUMENTATION_URL
+        }), 204
+    )
+
+
+@app.route('/api/service-template', methods=['GET', 'POST', 'PATCH', 'DELETE'])
+def service_template_api():
+    if request.method == 'GET':
+        return api_get_service_template()
+    elif request.method == 'POST':
+        return api_create_service_template()
+    elif request.method == 'PATCH':
+        return api_update_service_template()
+    elif request.method == 'DELETE':
+        return api_delete_service_template()
+
+
+# TODO 文档链接
+__SERVICE_TEMPLATE_API_DOCUMENTATION_URL = 'coming soon...'
+
+
+def service_template_api_document(message='', code=400):
+    msg = jsonify({
+        'message': message,
+        'documentation_url': __SERVICE_TEMPLATE_API_DOCUMENTATION_URL
+    })
+    return make_response(msg, code)
+
+
+def api_get_service_template():
+    service_template_id = request.args.get('id')
+    if service_template_id is None:
+        return service_template_api_document('Need id field.')
+
+    db_session = derive_db_session()
+
+    service_template = db_session.query(model.ServiceTemplate)\
+        .filter(model.ServiceTemplate.id == service_template_id).first()
+
+    if service_template is None:
+        return service_template_api_document('ID为%s的套餐模板不存在' % service_template_id, 404)
+
+    return make_response(
+        jsonify({
+            'message': '获取套餐模板成功',
+            'template': model.to_dict(service_template),
+            'documentation_url': __SERVICE_TEMPLATE_API_DOCUMENTATION_URL
+        }), 200
+    )
+
+
+def api_create_service_template():
+    # TODO OAUTH2
+    user_id = derive_user_id_from_session(True)
+    db_session = derive_db_session()
+    if not permission.check_manage_service_template_permission(db_session, user_id):
+        raise exception.api.Forbidden('ID为%s的用户无权创建套餐模版' % user_id)
+
+    service_type = request.json['type']
+    if service_type is None:
+        return service_template_api_document('Need type field.')
+    title = request.json['title']
+    if title is None:
+        return service_template_api_document('Need title field.')
+    subtitle = request.json['subtitle']
+    if subtitle is None:
+        return service_template_api_document('Need subtitle field.')
+    description = request.json['description']
+    if description is None:
+        return service_template_api_document('Need description field.')
+    balance = request.json['balance']
+    if balance is None:
+        return service_template_api_document('Need balance field.')
+    price = request.json['price']
+    if price is None:
+        return service_template_api_document('Need price field.')
+
+    service_template = model.ServiceTemplate(service_type, title, subtitle, description, balance, price)
+    db_session.add(service_template)
+
+    try:
+        db_session.commit()
+    except sqlalchemy.exc.DataError as e:
+        db_session.rollback()
+        return abort(make_response(str(e), 500))
+    finally:
+        db_session.close()
+
+    return make_response(
+        jsonify({
+            'message': '创建套餐模板成功',
+            'documentation_url': __SERVICE_TEMPLATE_API_DOCUMENTATION_URL
+        }), 201
+    )
+
+
+def api_update_service_template():
+    # TODO OAUTH2
+    user_id = derive_user_id_from_session(True)
+    db_session = derive_db_session()
+    if not permission.check_manage_service_template_permission(db_session, user_id):
+        raise exception.api.Forbidden('ID为%s的用户无权创建套餐模版' % user_id)
+
+    service_id = request.json['id']
+    if service_id is None:
+        return service_template_api_document('Need id field.')
+    service_type = request.json['type']
+    if service_type is None:
+        return service_template_api_document('Need type field.')
+    title = request.json['title']
+    if title is None:
+        return service_template_api_document('Need title field.')
+    subtitle = request.json['subtitle']
+    if subtitle is None:
+        return service_template_api_document('Need subtitle field.')
+    description = request.json['description']
+    if description is None:
+        return service_template_api_document('Need description field.')
+    balance = request.json['balance']
+    if balance is None:
+        return service_template_api_document('Need balance field.')
+    price = request.json['price']
+    if price is None:
+        return service_template_api_document('Need price field.')
+
+    service_templates = db_session.query(model.ServiceTemplate).filter(model.ServiceTemplate.id == service_id).all()
+    print(len(service_templates))
+    service_template = db_session.query(model.ServiceTemplate).filter(model.ServiceTemplate.id == service_id).first()
+
+    if service_template is None:
+        return service_template_api_document('ID为%s的套餐模板不存在' % service_id, 404)
+
+    service_template.type = service_type
+    service_template.title = title
+    service_template.subtitle = subtitle
+    service_template.description = description
+    service_template.balance = balance
+    service_template.price = price
+
+    try:
+        db_session.commit()
+    except sqlalchemy.exc.DataError as e:
+        db_session.rollback()
+        return abort(make_response(str(e), 500))
+    finally:
+        db_session.close()
+
+    return make_response(
+        jsonify({
+            'message': '编辑套餐模板成功',
+            'documentation_url': __SERVICE_TEMPLATE_API_DOCUMENTATION_URL
+        }), 201
+    )
+
+
+def api_delete_service_template():
+    # TODO OAUTH2
+    user_id = derive_user_id_from_session(True)
+    db_session = derive_db_session()
+    if not permission.check_manage_service_template_permission(db_session, user_id):
+        raise exception.api.Forbidden('ID为%s的用户无权删除套餐模版' % user_id)
+
+    service_template_id = request.json['id']
+    if service_template_id is None:
+        return service_template_api_document('Need id field.')
+
+    service_template = db_session.query(model.ServiceTemplate).filter(model.ServiceTemplate.id == service_template_id).first()
+    db_session.delete(service_template)
+
+    try:
+        db_session.commit()
+    except sqlalchemy.exc.DataError as e:
+        db_session.rollback()
+        return abort(make_response(str(e), 500))
+    finally:
+        db_session.close()
+
+    return make_response(
+        jsonify({
+            'message': '删除套餐模板成功',
+            'documentation_url': __SERVICE_TEMPLATE_API_DOCUMENTATION_URL
         }), 204
     )
 

@@ -1,0 +1,111 @@
+{% extends '__base__.html' %}
+
+{% block meta %}
+    <meta id="paginate-data" name="paginate_url_for" content="{{ pagination_url_for }}">
+{% endblock %}
+
+{% block body_drawer_class %}
+{% endblock %}
+
+{% block drawer_class %}
+    mdui-drawer-close
+{% endblock %}
+
+{% block script %}
+    <script>
+        function stopPropagation(event) {
+            event = event || window.event;
+            if (event.stopPropagation) { //W3C阻止冒泡方法
+                event.stopPropagation();
+            } else {
+                event.cancelBubble = true; //IE阻止冒泡方法
+            }
+        }
+
+        $(function () {
+            let
+                btnCreateMonthly = $('#btn-create-monthly-service'),
+                btnCreateData = $('#btn-create-data-service');
+
+            btnCreateMonthly.click(() => {
+                location.assign('/manage/service-template/create?type=0');
+            });
+            btnCreateData.click(() => {
+                location.assign('/manage/service-template/create?type=1');
+            });
+
+            let vm = new Vue({
+                el: '#vm_action',
+                methods: {
+                    edit_service_template: function (id) {
+                        stopPropagation();
+                        location.assign('/manage/service-template/edit?id=' + id);
+                    },
+                    delete_service_template: function (id, name) {
+                        stopPropagation();
+                        mdui.confirm('确认要删除套餐“' + name + '”？\n删除后不可恢复！',
+                            function () {
+                                httpDelete('/api/service-template', {id: id}, function (err, r) {
+                                    if (err) {
+                                        return mdui.alert(err.message || err.error || err);
+                                    }
+                                    refresh();
+                                });
+                            });
+                    }
+                }
+            });
+        })
+    </script>
+{% endblock %}
+
+{% block content %}
+
+    <div class="mdui-table-fluid mdui-typo" style="margin: 16px 0;">
+        <table class="mdui-table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>类型</th>
+                <th>标题</th>
+                <th>副标题</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            {% if pagination %}
+                <tbody id="vm_action">
+                {% for service in pagination.items %}
+                    <tr>
+                        <td>{{ service.id }}</td>
+                        <td>{{ service.type|service_type }}</td>
+                        <td>{{ service.title }}</td>
+                        <td>{{ service.subtitle }}</td>
+                        <td>
+                            <i class="mdui-list-item-icon mdui-icon material-icons mdui-ripple"
+                               v-on:click="edit_service_template({{ service.id }})" mdui-tooltip="{content: '编辑'}">create</i>
+                            <i class="mdui-list-item-icon mdui-icon material-icons mdui-ripple"
+                               v-on:click="delete_service_template({{ service.id }}, '{{ service.title }}')"
+                               mdui-tooltip="{content: '删除'}">delete</i>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            {% endif %}
+        </table>
+
+        {% if pagination %}
+            {% include '__pagination_base__.html' %}
+        {% endif %}
+    </div>
+
+    <div class="mdui-fab-wrapper" mdui-fab>
+        <button id="btn-create-monthly-service" class="mdui-fab mdui-ripple mdui-color-theme-accent" mdui-tooltip="{content: '创建包月套餐', position: 'left'}">
+            <i class="mdui-icon material-icons">add</i>
+            <i class="mdui-icon mdui-fab-opened fa fa-calendar"></i>
+        </button>
+        <div class="mdui-fab-dial">
+            <button id="btn-create-data-service" class="mdui-fab mdui-ripple mdui-color-theme" mdui-tooltip="{content: '创建流量套餐', position: 'left'}"><i class="mdui-icon fa fa-signal"></i></button>
+        </div>
+    </div>
+
+{% endblock %}

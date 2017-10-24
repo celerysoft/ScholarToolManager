@@ -37,6 +37,7 @@ def derive_user_permissions(db_session, user_id):
 
 
 def check_permission(db_session, user_id, permission_id):
+    print(user_id)
     permissions = derive_user_permissions(db_session, user_id)
     # print(permissions)
     for permission in permissions:
@@ -78,3 +79,10 @@ def check_manage_invitation_code_permission(db_session, user_id, call_by_api=Fal
         check_user_api_permission()
 
     return check_permission(db_session, user_id, model.Permission.MANAGE_INVITATION_CODE)
+
+
+def check_manage_service_template_permission(db_session, user_id, call_by_api=False):
+    if call_by_api:
+        check_user_api_permission()
+
+    return check_permission(db_session, user_id, model.Permission.MANAGE_SERVICE_TEMPLATE)

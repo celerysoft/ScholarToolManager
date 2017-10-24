@@ -6,10 +6,10 @@ IDENTIFIED BY 'www->R&daD6xZM6283n3-data';
 
 CREATE TABLE user (
   `id`            INT(16)      NOT NULL AUTO_INCREMENT,
-  `username`      VARCHAR(56)  NOT NULL,
-  `email`         VARCHAR(56)  NOT NULL,
-  `password`      VARCHAR(56)  NOT NULL,
-  `name`          VARCHAR(56)  NOT NULL,
+  `username`      VARCHAR(64)  NOT NULL,
+  `email`         VARCHAR(64)  NOT NULL,
+  `password`      VARCHAR(64)  NOT NULL,
+  `name`          VARCHAR(64)  NOT NULL,
   `image`         VARCHAR(512) NOT NULL,
   `created_at`    REAL         NOT NULL,
   `last_login_at` REAL         NOT NULL,
@@ -25,8 +25,8 @@ CREATE TABLE user (
 
 CREATE TABLE role (
   `id`          INT(16)     NOT NULL AUTO_INCREMENT,
-  `name`        VARCHAR(56) NOT NULL,
-  `label`       VARCHAR(56) NOT NULL,
+  `name`        VARCHAR(64) NOT NULL,
+  `label`       VARCHAR(64) NOT NULL,
   `description` VARCHAR(512),
   UNIQUE KEY `idx_name` (`name`),
   PRIMARY KEY (`id`)
@@ -48,10 +48,10 @@ CREATE TABLE user_role (
 
 CREATE TABLE permission (
   `id`          INT(16)     NOT NULL AUTO_INCREMENT,
-  `name`        VARCHAR(56) NOT NULL,
-  `label`       VARCHAR(56) NOT NULL,
+  `name`        VARCHAR(64) NOT NULL,
+  `label`       VARCHAR(64) NOT NULL,
   `description` VARCHAR(512),
-  UNIQUE  KEY `idx_name` (`name`),
+  UNIQUE KEY `idx_name` (`name`),
   PRIMARY KEY (`id`)
 )
   ENGINE = innodb
@@ -62,6 +62,7 @@ INSERT INTO permission VALUES (3, '邀请码管理', 'manage_invitation_code', '
 INSERT INTO permission VALUES (4, '公告管理', 'manage_event', '允许进行公告管理');
 INSERT INTO permission VALUES (5, '用户管理', 'manage_user', '允许进行用户管理');
 INSERT INTO permission VALUES (6, '角色管理', 'manage_role', '允许进行用户角色管理');
+INSERT INTO permission VALUES (7, '套餐模版管理', 'manage_service_template', '允许进行套餐模版管理');
 
 CREATE TABLE role_permission (
   `id`            INT(16) NOT NULL AUTO_INCREMENT,
@@ -78,6 +79,7 @@ INSERT INTO role_permission VALUES (4, 1, 4);
 INSERT INTO role_permission VALUES (5, 1, 5);
 INSERT INTO role_permission VALUES (6, 1, 6);
 INSERT INTO role_permission VALUES (7, 2, 1);
+INSERT INTO role_permission VALUES (8, 1, 7);
 
 CREATE TABLE invitation_code (
   `id`         INT(16)     NOT NULL AUTO_INCREMENT,
@@ -119,6 +121,51 @@ CREATE TABLE event (
   ENGINE = innodb
   DEFAULT CHARSET = utf8;
 
+CREATE TABLE user_service (
+  `id`         INT(16) NOT NULL  AUTO_INCREMENT,
+  `user_id`    INT(16) NOT NULL,
+  `service_id` INT(16) NOT NULL,
+  PRIMARY KEY (`id`)
+)
+  ENGINE = innodb
+  DEFAULT CHARSET = utf8;
+
+CREATE TABLE service (
+  `id`            INT(16) NOT NULL  AUTO_INCREMENT,
+  `usage`         INT(16) NOT NULL,
+  `package`       INT(16) NOT NULL,
+  `reset_at`      REAL,
+  `last_reset_at` REAL,
+  `created_at`    REAL    NOT NULL,
+  `expired_at`    REAL    NOT NULL,
+  `total_usage`   INT(16) NOT NULL,
+  PRIMARY KEY (`id`)
+)
+  ENGINE = innodb
+  DEFAULT CHARSET = utf8;
+
+CREATE TABLE service_password (
+  `id`         INT(16)     NOT NULL  AUTO_INCREMENT,
+  `service_id` INT(16)     NOT NULL,
+  `port`       INT(6)      NOT NULL,
+  `password`   VARCHAR(64) NOT NULL,
+  PRIMARY KEY (`id`)
+)
+  ENGINE = innodb
+  DEFAULT CHARSET = utf8;
+
+CREATE TABLE service_template (
+  `id`          INT(16)      NOT NULL  AUTO_INCREMENT,
+  `type`        INT(4)       NOT NULL,
+  `title`       VARCHAR(64)  NOT NULL,
+  `subtitle`    VARCHAR(64)  NOT NULL,
+  `description` VARCHAR(512) NOT NULL,
+  `balance`     INT(16)      NOT NULL,
+  `price`       INT(16)      NOT NULL,
+  PRIMARY KEY (`id`)
+)
+  ENGINE = innodb
+  DEFAULT CHARSET = utf8;
 
 DROP DATABASE IF EXISTS scholar_tool_manager_test;
 CREATE DATABASE scholar_tool_manager_test;
@@ -141,3 +188,11 @@ CREATE TABLE sessions
   LIKE scholar_tool_manager.sessions;
 CREATE TABLE event
   LIKE scholar_tool_manager.event;
+CREATE TABLE user_service
+  LIKE scholar_tool_manager.user_service;
+CREATE TABLE service
+  LIKE scholar_tool_manager.service;
+CREATE TABLE service_password
+  LIKE scholar_tool_manager.service_password;
+CREATE TABLE service_template
+  LIKE scholar_tool_manager.service_template;

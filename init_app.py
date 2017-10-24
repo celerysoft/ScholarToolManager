@@ -28,6 +28,7 @@ def init_jinja2():
     jinja2.filters.FILTERS['comment_datetime'] = datetime_filter
     jinja2.filters.FILTERS['datetime'] = datetime_filter2
     jinja2.filters.FILTERS['boolean_to_yes'] = boolean_to_yes_or_no
+    jinja2.filters.FILTERS['service_type'] = service_type_to_str
 
 
 def datetime_filter(t):
@@ -62,4 +63,13 @@ def boolean_to_yes_or_no(boolean):
         return 'YES'
     else:
         return 'NO'
+
+
+def service_type_to_str(service_type):
+    if service_type == 0:
+        return '包月套餐'
+    elif service_type == 1:
+        return '流量套餐'
+    else:
+        return '未知类型'
 

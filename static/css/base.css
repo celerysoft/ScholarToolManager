@@ -11,6 +11,19 @@
     height: 144px;
 }
 
+/* 调整网格边距 */
+.mdui-grid-card-list {
+    margin: 0 -8px;
+}
+.mdui-grid-card-list .mdui-col,
+.mdui-grid-card-list [class*="mdui-col-xs-"],
+.mdui-grid-card-list [class*="mdui-col-sm-"],
+.mdui-grid-card-list [class*="mdui-col-md-"],
+.mdui-grid-card-list [class*="mdui-col-lg-"],
+.mdui-grid-card-list [class*="mdui-col-xl-"] {
+    padding: 8px;
+}
+
 /** MDUI补充结束 **/
 
 .drawer-avatar {
@@ -61,15 +74,6 @@
 
 .text-under-login-card {
     text-align: right;
-}
-
-.card-view {
-    width: 45%;
-    margin-top: 8px;
-    margin-bottom: 8px;
-    margin-left: 2.5%;
-    margin-right: 2.5%;
-    float: left;
 }
 
 .clickable {
