@@ -112,14 +112,15 @@
     {% endif %}
 
     <ul class="mdui-list" mdui-collapse="{accordion: true}">
-        <li class="mdui-list-item mdui-ripple">
+
+        <a href="/" class="mdui-list-item mdui-ripple">
             <i class="mdui-list-item-icon mdui-icon fa fa-home"></i>
-            <a href="/" class="mdui-list-item-content mdui-ripple">主页</a>
-        </li>
-        <li class="mdui-list-item mdui-ripple">
+            <div href="/" class="mdui-list-item-content mdui-ripple">主页</div>
+        </a>
+        <a href="/event" class="mdui-list-item mdui-ripple">
             <i class="mdui-list-item-icon mdui-icon fa fa-gamepad"></i>
-            <a href="/event" class="mdui-list-item-content mdui-ripple">公告</a>
-        </li>
+            <div class="mdui-list-item-content mdui-ripple">公告</div>
+        </a>
         <li class="mdui-collapse-item mdui-collapse-item-open">
             <div class="mdui-collapse-item-header mdui-list-item mdui-ripple">
                 <i class="mdui-list-item-icon mdui-icon fa fa-book"></i>
@@ -139,17 +140,15 @@
         {% if session.user %}
             <li class="mdui-subheader">用户</li>
             <div id="vm_manage">
-                <li class="mdui-list-item mdui-ripple" v-if="manage_permission">
+                <a href="/manage/" class="mdui-list-item mdui-ripple" v-if="manage_permission">
                     <i class="mdui-list-item-icon mdui-icon fa fa-database"></i>
-                    <a href="/manage/" class="mdui-list-item-content mdui-ripple">后台管理</a>
-                </li>
+                    <div class="mdui-list-item-content mdui-ripple">后台管理</div>
+                </a>
             </div>
-            <li class="mdui-list-item mdui-ripple">
-                <!--<i class="mdui-list-item-icon mdui-icon material-icons">flight_takoff</i>-->
+            <a href="/logout/" class="mdui-list-item mdui-ripple">
                 <i class="mdui-list-item-icon mdui-icon fa fa-sign-out"></i>
-                <!--<i class="fa fa-sign-out" aria-hidden="true"></i>-->
-                <a href="/logout/" class="mdui-list-item-content mdui-ripple">退出登录</a>
-            </li>
+                <div class="mdui-list-item-content mdui-ripple">退出登录</div>
+            </a>
         {% endif %}
 
     </ul>

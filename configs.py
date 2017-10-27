@@ -26,6 +26,8 @@ class Config(object):
     HOST = '127.0.0.1'
     # 本地测试时的端口
     PORT = 50001
+    # 本地测试时的线程数
+    PROCESSES = 2
     # session类型 http://pythonhosted.org/Flask-Session/
     SESSION_TYPE = 'sqlalchemy'
     SESSION_USE_SIGNER = True
@@ -45,6 +47,8 @@ class Config(object):
     URL_OF_AVATAR_IMAGE = 'static/image/avatar/'
     # 上传头像到七牛时图片的外链默认域名
     URL_OF_QINIU_AVATAR = 'http://ow92gcjek.bkt.clouddn.com/'
+    # SS服务起始端口号
+    SERVICE_MIN_PORT = 20000
 
 
 class DevelopmentConfig(Config):

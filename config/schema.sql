@@ -139,6 +139,7 @@ CREATE TABLE service (
   `created_at`    REAL    NOT NULL,
   `expired_at`    REAL    NOT NULL,
   `total_usage`   INT(16) NOT NULL,
+  `available`     BOOL    NOT NULL,
   PRIMARY KEY (`id`)
 )
   ENGINE = innodb
@@ -155,13 +156,14 @@ CREATE TABLE service_password (
   DEFAULT CHARSET = utf8;
 
 CREATE TABLE service_template (
-  `id`          INT(16)      NOT NULL  AUTO_INCREMENT,
-  `type`        INT(4)       NOT NULL,
-  `title`       VARCHAR(64)  NOT NULL,
-  `subtitle`    VARCHAR(64)  NOT NULL,
-  `description` VARCHAR(512) NOT NULL,
-  `balance`     INT(16)      NOT NULL,
-  `price`       INT(16)      NOT NULL,
+  `id`                 INT(16)      NOT NULL  AUTO_INCREMENT,
+  `type`               INT(4)       NOT NULL,
+  `title`              VARCHAR(64)  NOT NULL,
+  `subtitle`           VARCHAR(64)  NOT NULL,
+  `description`        VARCHAR(512) NOT NULL,
+  `balance`            INT(16)      NOT NULL,
+  `price`              INT(16)      NOT NULL,
+  `initialization_fee` INT(16)      NOT NULL,
   PRIMARY KEY (`id`)
 )
   ENGINE = innodb

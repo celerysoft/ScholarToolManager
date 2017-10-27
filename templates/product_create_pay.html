@@ -1,0 +1,136 @@
+{% extends '__base__.html' %}
+
+{% block script %}
+    <script>
+        $(function () {
+            const
+                TEMPLATE_ID = '{{ service.id }}',
+                TEMPLATE_TYPE = {{ service.type }}
+
+            $('#btn-cancel').click(() => {
+                return location.assign('/product/create/')
+            });
+            $('#label-customer-service').click(() => {
+                return mdui.snackbar({message: '客服？不存在的！'});
+            });
+            $('#btn-pay').click(() => {
+                if (!$('#cb-agreement').prop('checked')) {
+                    return mdui.snackbar({
+                        message: '请同意用户协议'
+                    });
+                }
+
+                let password = $('#input-password').val();
+                if (password === null || password === '' || password.length <= 0) {
+                    return mdui.snackbar({
+                        message: '请输入连接密码'
+                    });
+                }
+
+                let data = {
+                    template_id: TEMPLATE_ID,
+                    password: password
+                };
+                console.log(TEMPLATE_TYPE);
+                console.log(data);
+                console.log(typeof data);
+                if (TEMPLATE_TYPE === 0) {
+                    data['auto_renew'] = $('#cb-auto-renew').prop('checked');
+                    console.log($('#cb-auto-renew').prop('checked'));
+                    console.log(data);
+                }
+
+                httpPost('/api/service', data, function (error, data, jqXHR) {
+                    if (error) {
+                        return mdui.snackbar({message: error.message});
+                    }
+
+                    return mdui.snackbar({
+                        message: '订购成功，点击屏幕继续',
+                        closeOnOutsideClick: true,
+                        onClose: function () {
+                            location.assign('/product');
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+
+    <script src="{{ static_route }}/static/js/scroll_to_top.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="mdui-row">
+        <!-- 左 -->
+        <div class="mdui-col-xs-12 mdui-col-sm-7">
+            <div class="mdui-typo">
+                <h1>套餐信息</h1>
+                <div class="mdui-divider"></div>
+                <h3>{{ service.title }}<br/><small>{{ service.subtitle }}</small></h3>
+                <ul>
+                    {% for description in service.descriptions %}
+                        <li>{{ description }}</li>
+                    {% endfor %}
+                </ul>
+                {% if service.type == 0 %}
+                    <div style="margin-left: 8px;">
+                        <label class="mdui-checkbox">
+                            <input id="cb-auto-renew" type="checkbox"/>
+                            <i class="mdui-checkbox-icon"></i>
+                            自动续费
+                        </label>
+                    </div>
+                {% endif %}
+                <div class="mdui-textfield mdui-textfield-floating-label">
+                    <label class="mdui-textfield-label">连接密码</label>
+                    <input id="input-password" class="mdui-textfield-input" type="password"/>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右 -->
+        <div class="mdui-col-xs-12 mdui-col-sm-5">
+            <div class="mdui-typo">
+                <h1>订单总计</h1>
+                <div class="mdui-clearfix">
+                    <div class="mdui-float-left">{{ service.title }}</div>
+                    <div class="mdui-float-right">{{ service.price }} 学术币</div>
+                </div>
+                <div class="mdui-clearfix">
+                    <div class="mdui-float-left">初装费</div>
+                    <div class="mdui-float-right">{{ service.initialization_fee }} 学术币</div>
+                </div>
+                <div class="mdui-divider"></div>
+                <div class="mdui-clearfix">
+                    <div class="mdui-float-left">总计</div>
+                    <div class="mdui-float-right"><strong>{{ service.total_price }} 学术币</strong></div>
+                </div>
+
+                <p style="margin-top: 16px;"><small>如果你有任何疑问可以随时咨询我们的<a href="#label-customer-service" id="label-customer-service">客服</a></small></p>
+            </div>
+        </div>
+
+        <div class="mdui-col-xs-12 mdui-text-center mdui-typo" style="margin-top: 16px;">
+            <label class="mdui-checkbox">
+                <input id="cb-agreement" type="checkbox"/>
+                <i class="mdui-checkbox-icon"></i>
+                我已阅读并同意<a target="_blank" href="/agreement/">《用户协议》</a>
+            </label>
+        </div>
+
+        <div class="mdui-center" style="width: 192px;">
+            <button id="btn-pay" class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-theme-accent mdui-float-left"
+                    style="width: 80px;margin-top: 16px;margin-bottom: 16px;">
+                订购
+            </button>
+            <button id="btn-cancel" class="mdui-btn mdui-btn-raised mdui-ripple mdui-float-right"
+                    style="width: 80px;margin-top: 16px;margin-bottom: 16px;">
+                取消
+            </button>
+        </div>
+    </div>
+
+
+    {% include '__scroll_to_top_button_base__.html' %}
+{% endblock %}

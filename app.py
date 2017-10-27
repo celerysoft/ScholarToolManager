@@ -1,8 +1,9 @@
+import datetime
 import hashlib
 import random
 import re
 import time
-import urllib
+import urllib.request
 
 import markdown2
 import sqlalchemy
@@ -18,6 +19,8 @@ import model
 import permission
 import exception.http
 import exception.api
+from server import shadowsocks_controller
+from util import date_util
 
 app = Flask(__name__)
 app.config.from_object('configs.Config')
@@ -424,8 +427,47 @@ def show_event(event_id):
 def create_product():
     permission.check_user_permission()
 
+    db_session = derive_db_session()
+
+    monthly_services = db_session.query(model.ServiceTemplate) \
+        .filter(model.ServiceTemplate.type == model.ServiceTemplate.MONTHLY) \
+        .all()
+    for s in monthly_services:
+        s.descriptions = s.description.split('#')
+
+    data_services = db_session.query(model.ServiceTemplate) \
+        .filter(model.ServiceTemplate.type == model.ServiceTemplate.DATA) \
+        .all()
+    for s in data_services:
+        s.descriptions = s.description.split('#')
+
     return render_template('product_create.html',
+                           monthly_services=monthly_services,
+                           data_services=data_services,
                            title='获取新学术')
+
+
+@app.route('/product/create/pay/<service_template_id>')
+def pay_product(service_template_id):
+    permission.check_user_permission()
+
+    db_session = derive_db_session()
+    service_template = db_session.query(model.ServiceTemplate) \
+        .filter(model.ServiceTemplate.id == service_template_id).first()
+    if service_template is None:
+        return abort(404)
+    service_template.descriptions = service_template.description.split('#')
+    service_template.total_price = service_template.price + service_template.initialization_fee
+
+    return render_template('product_create_pay.html',
+                           service=service_template,
+                           title='支付')
+
+
+@app.route('/agreement/')
+def agreement():
+    return render_template('agreement.html',
+                           title='用户协议')
 
 
 # -------------------------------------------------- API -------------------------------------------------- #
@@ -1276,7 +1318,7 @@ def api_get_service_template():
 
     db_session = derive_db_session()
 
-    service_template = db_session.query(model.ServiceTemplate)\
+    service_template = db_session.query(model.ServiceTemplate) \
         .filter(model.ServiceTemplate.id == service_template_id).first()
 
     if service_template is None:
@@ -1316,8 +1358,12 @@ def api_create_service_template():
     price = request.json['price']
     if price is None:
         return service_template_api_document('Need price field.')
+    initialization_fee = request.json['initialization_fee']
+    if initialization_fee is None:
+        return service_template_api_document('Need initialization_fee field.')
 
-    service_template = model.ServiceTemplate(service_type, title, subtitle, description, balance, price)
+    service_template = model.ServiceTemplate(service_type, title, subtitle, description, balance, price,
+                                             initialization_fee)
     db_session.add(service_template)
 
     try:
@@ -1364,9 +1410,10 @@ def api_update_service_template():
     price = request.json['price']
     if price is None:
         return service_template_api_document('Need price field.')
+    initialization_fee = request.json['initialization_fee']
+    if initialization_fee is None:
+        return service_template_api_document('Need initialization_fee field.')
 
-    service_templates = db_session.query(model.ServiceTemplate).filter(model.ServiceTemplate.id == service_id).all()
-    print(len(service_templates))
     service_template = db_session.query(model.ServiceTemplate).filter(model.ServiceTemplate.id == service_id).first()
 
     if service_template is None:
@@ -1378,6 +1425,7 @@ def api_update_service_template():
     service_template.description = description
     service_template.balance = balance
     service_template.price = price
+    service_template.initialization_fee = initialization_fee
 
     try:
         db_session.commit()
@@ -1406,7 +1454,8 @@ def api_delete_service_template():
     if service_template_id is None:
         return service_template_api_document('Need id field.')
 
-    service_template = db_session.query(model.ServiceTemplate).filter(model.ServiceTemplate.id == service_template_id).first()
+    service_template = db_session.query(model.ServiceTemplate).filter(
+        model.ServiceTemplate.id == service_template_id).first()
     db_session.delete(service_template)
 
     try:
@@ -1425,9 +1474,157 @@ def api_delete_service_template():
     )
 
 
+@app.route('/api/service', methods=['GET', 'POST', 'PATCH', 'DELETE'])
+def service_api():
+    if request.method == 'GET':
+        return api_get_service()
+    elif request.method == 'POST':
+        return api_create_service()
+    elif request.method == 'PATCH':
+        return api_update_service()
+    elif request.method == 'DELETE':
+        return api_delete_service()
+    else:
+        return service_api_document()
+
+
+# TODO 文档链接
+__SERVICE_API_DOCUMENTATION_URL = 'coming soon...'
+
+
+def service_api_document(message='', code=400):
+    msg = jsonify({
+        'message': message,
+        'documentation_url': __SERVICE_API_DOCUMENTATION_URL
+    })
+    return make_response(msg, code)
+
+
+def api_get_service():
+    pass
+
+
+def api_create_service():
+    permission.check_user_api_permission()
+
+    user_id = derive_user_id_from_session(True)
+    service_template_id = request.json['template_id']
+    if service_template_id is None:
+        return service_api_document('Need service_template_id field.')
+    password = request.json['password']
+    if password is None:
+        return service_api_document('Need password field.')
+    db_session = derive_db_session()
+    service_template = db_session.query(model.ServiceTemplate) \
+        .filter(model.ServiceTemplate.id == service_template_id).first()
+
+    # TODO 扣费系统
+
+    service_type = service_template.type
+    now = datetime.datetime.now()
+    created_at = now.timestamp()
+    last_reset_at = None
+    if service_type == model.ServiceTemplate.MONTHLY:
+        auto_renew = request.json['auto_renew']
+        if auto_renew is None:
+            return service_api_document('Need auto_renew field.')
+        if auto_renew:
+            reset_at = date_util.derive_1st_of_next_month(now)
+            expired_at = datetime.datetime(2099, 12, 31, 23, 59, 59).timestamp()
+        else:
+            reset_at = None
+            expired_at = created_at + 365 * 24 * 60 * 60
+    elif service_type == model.ServiceTemplate.DATA:
+        reset_at = None
+        expired_at = created_at + 365 * 24 * 60 * 60
+    else:
+        reset_at = None
+        expired_at = created_at
+
+    service = model.Service(0, service_template.balance, reset_at, last_reset_at, created_at, expired_at, 0)
+    db_session.add(service)
+
+    try:
+        db_session.commit()
+    except sqlalchemy.exc.DataError as e:
+        db_session.rollback()
+        return abort(make_response(str(e), 500))
+
+    service_id = service.id
+
+    user_service = model.UserService(user_id, service_id)
+    db_session.add(user_service)
+
+    service_port = derive_available_shadowsocks_port(db_session)
+
+    service_password = model.ServicePassword(service.id, service_port, password)
+    db_session.add(service_password)
+
+    try:
+        db_session.commit()
+    except sqlalchemy.exc.DataError as e:
+        db_session.rollback()
+        return abort(make_response(str(e), 500))
+    finally:
+        db_session.close()
+
+    return make_response(
+        jsonify({
+            'message': '创建套餐成功',
+            'service_id': service_id,
+            'documentation_url': __SERVICE_API_DOCUMENTATION_URL
+        }), 201
+    )
+
+
+def derive_available_shadowsocks_port(db_session):
+    service_passwords = db_session.query(model.ServicePassword) \
+        .order_by(model.ServicePassword.port.desc()) \
+        .filter(model.Service.available == True) \
+        .filter(model.Service.id == model.ServicePassword.service_id).all()
+
+    if service_passwords is None or len(service_passwords) == 0:
+        return app.config['SERVICE_MIN_PORT']
+    else:
+        return service_passwords[0].port
+
+
+def api_update_service():
+    pass
+
+
+def api_delete_service():
+    pass
+
+
+@app.route('/api/usage', methods=['POST'])
+def usage_api():
+    data = request.data.decode('utf-8')
+    data = data[6:]
+
+    print(data)
+
+    data = json.loads(data)
+
+    for k, v in data.items():
+        print('port %s use data: %s' % (k, v))
+
+    return 'OK'
+
+
+@app.route('/api/ss', methods=['POST'])
+def ss_api():
+    data = request.data.decode('utf-8')
+
+    print(data)
+
+    return 'OK'
+
+
 if __name__ == '__main__':
     create_app()
     # create_app('configs.ProductionConfig')
     host = app.config['HOST']
     port = app.config['PORT']
-    app.run(host=host, port=port)
+    processes = app.config['PROCESSES']
+    app.run(host=host, port=port, processes=processes)

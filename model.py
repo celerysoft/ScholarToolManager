@@ -190,14 +190,82 @@ class ServiceTemplate(Base):
     description = Column(String)
     balance = Column(Integer)
     price = Column(Integer)
+    initialization_fee = Column(Integer)
 
-    def __init__(self, type=None, title=None, subtitle=None, description=None, balance=None, price=None):
+    def __init__(self, type=None, title=None, subtitle=None, description=None, balance=None, price=None,
+                 initialization_fee=None):
         self.type = type
         self.title = title
         self.subtitle = subtitle
         self.description = description
         self.balance = balance
         self.price = price
+        self.initialization_fee = initialization_fee
 
     def __repr__(self):
         return '<ServiceTemplate %s %s>' % (self.title, self.balance)
+
+    # 包月套餐
+    MONTHLY = 0
+    # 流量套餐
+    DATA = 1
+
+
+class Service(Base):
+    __tablename__ = 'service'
+
+    id = Column(Integer, primary_key=True)
+    usage = Column(Integer)
+    package = Column(Integer)
+    reset_at = Column(Float)
+    last_reset_at = Column(Float)
+    created_at = Column(Float)
+    expired_at = Column(Float)
+    total_usage = Column(Integer)
+    available = Column(Boolean)
+
+    def __init__(self, usage=None, package=None, reset_at=None, last_reset_at=None, created_at=None, expired_at=None,
+                 total_usage=None, available=True):
+        self.usage = usage
+        self.package = package
+        self.reset_at = reset_at
+        self.last_reset_at = last_reset_at
+        self.created_at = created_at if created_at else time.time()
+        self.expired_at = expired_at
+        self.total_usage = total_usage
+        self.available = available
+
+    def __repr__(self):
+        return '<Service %s %s>' % (self.usage, self.package)
+
+
+class ServicePassword(Base):
+    __tablename__ = 'service_password'
+
+    id = Column(Integer, primary_key=True)
+    service_id = Column(Integer)
+    port = Column(Integer)
+    password = Column(String)
+
+    def __init__(self, service_id=None, port=None, password=None):
+        self.service_id = service_id
+        self.port = port
+        self.password = password
+
+    def __repr__(self):
+        return '<ServicePassword %s %s>' % (self.port, self.password)
+
+
+class UserService(Base):
+    __tablename__ = 'user_service'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer)
+    service_id = Column(Integer)
+
+    def __init__(self, user_id=None, service_id=None):
+        self.user_id = user_id
+        self.service_id = service_id
+
+    def __repr__(self):
+        return '<UserService %s %s>' % (self.user_id, self.service_id)

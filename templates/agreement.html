@@ -1,0 +1,21 @@
+{% extends '__base_with_toolbar_only__.html' %}
+
+{% block script %}
+    <script src="{{ static_route }}/static/js/scroll_to_top.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="mdui-typo">
+        <h1 class="mdui-text-center">Celery Soft 学术用户协议</h1>
+        <p>居然真的有人会点进来，肯定是手滑的吧。下面的协议就不用仔细看了吧，站长给你总结一下吧，就四个字：<mark>我是你爹</mark>。什么，你还不相信，那我列出来你自己看看吧。</p>
+        <ol>
+            <li>使用本站的任何服务，请遵守所在地的法律法规，出了事我是会向公安机关举报你的。</li>
+            <li>本站拥有随时更改任何学术服务定价，上架、下架任何学术服务的权利。已下架的学术服务无法续费使用。</li>
+            <li>在网络使用高峰期（一般是站长在吃鸡的时候），本站拥有暂时暂停学术服务的权利，待高峰期过后重启服务。</li>
+            <li>由于站长居无定所，朝不保夕，本站有随时跑路的可能，所以本站自动拥有随时跑路的权利。</li>
+            <li>写了4条就这么累了，只能偷偷补充一条，本站拥有随时更改用户协议的权利，怎么着，厉害吧？</li>
+        </ol>
+    </div>
+
+    {% include '__scroll_to_top_button_base__.html' %}
+{% endblock %}

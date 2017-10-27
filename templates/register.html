@@ -44,6 +44,12 @@
                             });
                         }
 
+                        if(!$('#cb-agreement').prop('checked')) {
+                            return mdui.snackbar({
+                                message: '请同意用户协议'
+                            });
+                        }
+
                         let email = this.email.trim().toLowerCase();
                         $form.httpPost('/api/register', {
                             name: this.name.trim(),
@@ -114,7 +120,13 @@
                     <div class="mdui-textfield-error">邀请码不能为空</div>
                 </div>
 
-                <button v-on:click="submit" type="submit" class="mdui-btn mdui-color-theme-accent mdui-ripple mdui-center">
+                <label class="mdui-checkbox">
+                    <input id="cb-agreement" type="checkbox"/>
+                    <i class="mdui-checkbox-icon"></i>
+                    我已阅读并同意<a target="_blank" href="/agreement/">《用户协议》</a>
+                </label>
+
+                <button v-on:click="submit" style="margin-top: 16px;" type="submit" class="mdui-btn mdui-color-theme-accent mdui-ripple mdui-center">
                     注册
                 </button>
             </form>

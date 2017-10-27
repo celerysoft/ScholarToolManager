@@ -24,6 +24,7 @@
                     description: '',
                     balance: '',
                     price: 0,
+                    initialization_fee: 0
                 },
                 methods: {
                     submit: function (event) {
@@ -43,7 +44,8 @@
                             subtitle: this.$data.subtitle,
                             description: this.$data.description,
                             balance: this.$data.balance,
-                            price: this.$data.price
+                            price: this.$data.price,
+                            initialization_fee: this.$data.initialization_fee
                         };
                         if (action === 'POST') {
                             console.log(data);
@@ -89,6 +91,7 @@
                     vm_service_template.$data.description = data.description;
                     vm_service_template.$data.balance = data.balance;
                     vm_service_template.$data.price = data.price;
+                    vm_service_template.$data.initialization_fee = data.initialization_fee;
                 });
             }
             else {
@@ -108,9 +111,9 @@
     <div class="mdui-typo">
         <h5>说明：</h5>
         <ul>
-            <li><p>不同描述请用<kbd>Space</kbd>即<kbd>空格键</kbd>隔开。</p></li>
+            <li><p>不同描述请用<kbd>#</kbd>隔开。</p></li>
             <li>1G = <mark>1073741824</mark></li>
-            <li>500M = <mark>524288000</mark></li>
+            <li>512M = <mark>536870912</mark></li>
         </ul>
     </div>
 
@@ -144,6 +147,11 @@
          <div class="mdui-textfield">
             <label class="mdui-textfield-label">价格</label>
             <input v-model="price" class="mdui-textfield-input" type="text" style="padding-right: 10px;"/>
+        </div>
+
+        <div class="mdui-textfield">
+            <label class="mdui-textfield-label">初装费</label>
+            <input v-model="initialization_fee" class="mdui-textfield-input" type="text" style="padding-right: 10px;"/>
         </div>
 
         <div class="mdui-row mdui-center" style="width: 192px;">
