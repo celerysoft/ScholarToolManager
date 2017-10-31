@@ -139,6 +139,7 @@ CREATE TABLE service (
   `created_at`    REAL    NOT NULL,
   `expired_at`    REAL    NOT NULL,
   `total_usage`   INT(16) NOT NULL,
+  `template_id`   INT(16) NOT NULL,
   `available`     BOOL    NOT NULL,
   PRIMARY KEY (`id`)
 )
@@ -164,6 +165,16 @@ CREATE TABLE service_template (
   `balance`            INT(16)      NOT NULL,
   `price`              INT(16)      NOT NULL,
   `initialization_fee` INT(16)      NOT NULL,
+  PRIMARY KEY (`id`)
+)
+  ENGINE = innodb
+  DEFAULT CHARSET = utf8;
+
+CREATE TABLE user_scholar_balance (
+  `id`      INT(16) NOT NULL  AUTO_INCREMENT,
+  `user_id` INT(16) NOT NULL,
+  `balance` INT(16) NOT NULL,
+  UNIQUE KEY `idx_user_id` (`user_id`),
   PRIMARY KEY (`id`)
 )
   ENGINE = innodb
@@ -198,3 +209,5 @@ CREATE TABLE service_password
   LIKE scholar_tool_manager.service_password;
 CREATE TABLE service_template
   LIKE scholar_tool_manager.service_template;
+CREATE TABLE user_scholar_balance
+  LIKE scholar_tool_manager.user_scholar_balance;

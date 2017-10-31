@@ -222,10 +222,11 @@ class Service(Base):
     created_at = Column(Float)
     expired_at = Column(Float)
     total_usage = Column(Integer)
+    template_id = Column(Integer)
     available = Column(Boolean)
 
     def __init__(self, usage=None, package=None, reset_at=None, last_reset_at=None, created_at=None, expired_at=None,
-                 total_usage=None, available=True):
+                 total_usage=None, template_id=None, available=True):
         self.usage = usage
         self.package = package
         self.reset_at = reset_at
@@ -233,6 +234,7 @@ class Service(Base):
         self.created_at = created_at if created_at else time.time()
         self.expired_at = expired_at
         self.total_usage = total_usage
+        self.template_id = template_id
         self.available = available
 
     def __repr__(self):
@@ -269,3 +271,19 @@ class UserService(Base):
 
     def __repr__(self):
         return '<UserService %s %s>' % (self.user_id, self.service_id)
+
+
+class UserScholarBalance(Base):
+    __tablename__ = 'user_scholar_balance'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer)
+    balance = Column(Integer)
+
+    def __init__(self, user_id=None, balance=None):
+        self.user_id = user_id
+        self.balance = balance
+
+    def __repr__(self):
+        return '<UserScholarBalance %s %s>' % (self.user_id, self.balance)
+

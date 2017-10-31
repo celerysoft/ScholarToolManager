@@ -1,5 +1,6 @@
 import datetime
 import hashlib
+import math
 import random
 import re
 import time
@@ -423,6 +424,15 @@ def show_event(event_id):
                            event=event)
 
 
+@app.route('/product/')
+def product():
+    user_id = derive_user_id_from_session()
+    db_session = derive_db_session()
+
+    return render_template('product.html',
+                           title='我的学术')
+
+
 @app.route('/product/create/')
 def create_product():
     permission.check_user_permission()
@@ -449,7 +459,7 @@ def create_product():
 
 @app.route('/product/create/pay/<service_template_id>')
 def pay_product(service_template_id):
-    permission.check_user_permission()
+    user_id = derive_user_id_from_session()
 
     db_session = derive_db_session()
     service_template = db_session.query(model.ServiceTemplate) \
@@ -459,8 +469,13 @@ def pay_product(service_template_id):
     service_template.descriptions = service_template.description.split('#')
     service_template.total_price = service_template.price + service_template.initialization_fee
 
+    user_scholar_balance = db_session.query(model.UserScholarBalance)\
+        .filter(model.UserScholarBalance.user_id == user_id).first()
+    balance = user_scholar_balance.balance
+
     return render_template('product_create_pay.html',
                            service=service_template,
+                           balance=balance,
                            title='支付')
 
 
@@ -475,6 +490,28 @@ def agreement():
 # -------------------------------------------------- API -------------------------------------------------- #
 # -------------------------------------------------- API -------------------------------------------------- #
 # -------------------------------------------------- API -------------------------------------------------- #
+
+
+def derive_page_parameter(query):
+    page = request.args.get('page')
+    try:
+        page = int(page) if page is not None else 1
+    except ValueError:
+        raise exception.api.InvalidRequest('Invalid page field.')
+    page_size = request.args.get('page_size')
+    try:
+        page_size = int(page_size) if page_size is not None else __ITEM_PER_PAGE
+    except ValueError:
+        page_size = __ITEM_PER_PAGE
+    offset = (page - 1) * page_size
+
+    record_count = query.count()
+
+    if record_count <= offset:
+        raise exception.api.InvalidRequest('Item index is out of bounds, try modify page and page_size.')
+    max_page = math.ceil(record_count / page_size)
+
+    return page, page_size, offset, max_page
 
 
 @app.route('/api/today_in_history')
@@ -621,22 +658,22 @@ def api_create_user():
         db_session.rollback()
         return abort(make_response(str(e), 500))
 
-    # 将记录写入user_role表
-    user = db_session.query(model.User).filter_by(username=username).first()
+    # user = db_session.query(model.User).filter_by(username=username).first()
 
+    # 将记录写入user_role表
     user_role = model.UserRole(user.id, model.Role.USER)
     db_session.add(user_role)
-    # try:
-    #     db_session.add(user_role)
-    #     db_session.commit()
-    # except sqlalchemy.exc.DataError as e:
-    #     db_session.rollback()
-    #     return abort(make_response(str(e), 500))
 
     # 将记录写入invitation_code表
     invitation_code.available = False
     invitation_code.invitee_id = user.id
     invitation_code.invited_at = time.time()
+
+    # 将记录写入user_scholar_balance表
+    __SCHOLAR_BALANCE_FOR_NEW_USER = 56
+    user_scholar_balance = model.UserScholarBalance(user.id, __SCHOLAR_BALANCE_FOR_NEW_USER)
+    db_session.add(user_scholar_balance)
+
     try:
         db_session.commit()
     except sqlalchemy.exc.DataError as e:
@@ -1501,6 +1538,56 @@ def service_api_document(message='', code=400):
 
 
 def api_get_service():
+    # TODO OAUTH2
+    permission.check_user_api_permission()
+
+    query_user_id = request.args.get('user_id')
+    if query_user_id is not None:
+        return api_get_user_service(query_user_id)
+    else:
+        return api_get_service_on_sale()
+
+
+def api_get_user_service(query_user_id):
+    # 分页示例
+
+    db_session = derive_db_session()
+
+    query = db_session.query(model.Service) \
+        .filter(model.UserService.user_id == query_user_id) \
+        .filter(model.UserService.service_id == model.Service.id)
+
+    page, page_size, offset, max_page = derive_page_parameter(query)
+
+    print('offset = %s, page_size = %s, page = %s, max_page = %s' % (offset, page_size, page, max_page))
+
+    services = query.offset(offset).limit(page_size).all()
+
+    service_list = []
+
+    for s in services:
+        service = model.to_dict(s)
+        template = db_session.query(model.ServiceTemplate).filter(model.ServiceTemplate.id == s.template_id).first()
+        service_password = db_session.query(model.ServicePassword) \
+            .filter(model.ServicePassword.service_id == s.id).first()
+        service['title'] = template.title
+        service['price'] = template.price
+        service['port'] = service_password.port
+        service_list.append(service)
+
+    return make_response(
+        jsonify({
+            'message': '获取用户套餐信息成功',
+            'page': page,
+            'page_size': page_size,
+            'max_page': max_page,
+            'service': service_list,
+            'documentation_url': __SERVICE_API_DOCUMENTATION_URL
+        }), 200
+    )
+
+
+def api_get_service_on_sale():
     pass
 
 
@@ -1519,6 +1606,14 @@ def api_create_service():
         .filter(model.ServiceTemplate.id == service_template_id).first()
 
     # TODO 扣费系统
+    total_payment = service_template.initialization_fee + service_template.price
+    user_scholar_balance = db_session.query(model.UserScholarBalance) \
+        .filter(model.UserScholarBalance.user_id == user_id).first()
+    balance = user_scholar_balance.balance
+    if balance < total_payment:
+        return service_api_document('余额不足', 403)
+    else:
+        user_scholar_balance.balance -= total_payment
 
     service_type = service_template.type
     now = datetime.datetime.now()
@@ -1541,7 +1636,7 @@ def api_create_service():
         reset_at = None
         expired_at = created_at
 
-    service = model.Service(0, service_template.balance, reset_at, last_reset_at, created_at, expired_at, 0)
+    service = model.Service(0, service_template.balance, reset_at, last_reset_at, created_at, expired_at, 0, service_template_id)
     db_session.add(service)
 
     try:
@@ -1578,15 +1673,15 @@ def api_create_service():
 
 
 def derive_available_shadowsocks_port(db_session):
-    service_passwords = db_session.query(model.ServicePassword) \
+    service_password = db_session.query(model.ServicePassword) \
         .order_by(model.ServicePassword.port.desc()) \
-        .filter(model.Service.available == True) \
-        .filter(model.Service.id == model.ServicePassword.service_id).all()
+        .filter(model.Service.available.is_(True)) \
+        .filter(model.Service.id == model.ServicePassword.service_id).first()
 
-    if service_passwords is None or len(service_passwords) == 0:
+    if service_password is None:
         return app.config['SERVICE_MIN_PORT']
     else:
-        return service_passwords[0].port
+        return service_password.port + 1
 
 
 def api_update_service():
@@ -1604,12 +1699,30 @@ def usage_api():
 
     print(data)
 
+    db_session = derive_db_session()
+
     data = json.loads(data)
+    for port, usage in data.items():
+        service = db_session.query(model.Service).filter(model.ServicePassword.port == port).filter(model.Service.id == model.ServicePassword.service_id).first()
+        service.usage += usage
+        service.total_usage += usage
+        print('port %s use data: %s' % (port, usage))
 
-    for k, v in data.items():
-        print('port %s use data: %s' % (k, v))
 
-    return 'OK'
+    try:
+        db_session.commit()
+    except sqlalchemy.exc.DataError as e:
+        db_session.rollback()
+        return abort(make_response(str(e), 500))
+    finally:
+        db_session.close()
+
+    return make_response(
+        jsonify({
+            'message': '学术统计信息接收成功',
+            'documentation_url': __SERVICE_API_DOCUMENTATION_URL
+        }), 201
+    )
 
 
 @app.route('/api/ss', methods=['POST'])

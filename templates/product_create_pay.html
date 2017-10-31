@@ -31,13 +31,8 @@
                     template_id: TEMPLATE_ID,
                     password: password
                 };
-                console.log(TEMPLATE_TYPE);
-                console.log(data);
-                console.log(typeof data);
                 if (TEMPLATE_TYPE === 0) {
                     data['auto_renew'] = $('#cb-auto-renew').prop('checked');
-                    console.log($('#cb-auto-renew').prop('checked'));
-                    console.log(data);
                 }
 
                 httpPost('/api/service', data, function (error, data, jqXHR) {
@@ -105,6 +100,11 @@
                 <div class="mdui-clearfix">
                     <div class="mdui-float-left">总计</div>
                     <div class="mdui-float-right"><strong>{{ service.total_price }} 学术币</strong></div>
+                </div>
+
+                <div class="mdui-clearfix" style="margin-top: 16px;">
+                    <div class="mdui-float-left">账户余额</div>
+                    <div class="mdui-float-right"><strong>{{ balance }} 学术币</strong></div>
                 </div>
 
                 <p style="margin-top: 16px;"><small>如果你有任何疑问可以随时咨询我们的<a href="#label-customer-service" id="label-customer-service">客服</a></small></p>

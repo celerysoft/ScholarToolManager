@@ -19,10 +19,10 @@ cli.bind(CLIENT_ADDRESS)
 
 SERVER_ADDRESS = '/Users/admin/Developer/shadowsocks-manager.sock'
 
-# print('send "ping"')
-# cli.sendto(b'ping', SERVER_ADDRESS)
-# print(cli.recv(1506))  # You'll receive 'pong'
-#
+print('send "ping"')
+cli.sendto(b'ping', SERVER_ADDRESS)
+print(cli.recv(1506))  # You'll receive 'pong'
+
 # print('send "add"')
 # cli.sendto(b'add: {"server_port":60000, "password":"7cd308cc059"}', SERVER_ADDRESS)
 # print(cli.recv(1506))  # You'll receive 'ok'
