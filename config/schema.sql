@@ -63,6 +63,8 @@ INSERT INTO permission VALUES (4, '公告管理', 'manage_event', '允许进行�
 INSERT INTO permission VALUES (5, '用户管理', 'manage_user', '允许进行用户管理');
 INSERT INTO permission VALUES (6, '角色管理', 'manage_role', '允许进行用户角色管理');
 INSERT INTO permission VALUES (7, '套餐模版管理', 'manage_service_template', '允许进行套餐模版管理');
+INSERT INTO permission VALUES (8, '学术积分管理', 'manage_scholar_balance', '允许进行学术积分管理');
+INSERT INTO permission VALUES (9, '套餐管理', 'manage_service', '允许进行套餐管理');
 
 CREATE TABLE role_permission (
   `id`            INT(16) NOT NULL AUTO_INCREMENT,
@@ -80,6 +82,9 @@ INSERT INTO role_permission VALUES (5, 1, 5);
 INSERT INTO role_permission VALUES (6, 1, 6);
 INSERT INTO role_permission VALUES (7, 2, 1);
 INSERT INTO role_permission VALUES (8, 1, 7);
+INSERT INTO role_permission VALUES (9, 1, 8);
+INSERT INTO role_permission VALUES (10, 1, 9);
+INSERT INTO role_permission VALUES (11, 2, 9);
 
 CREATE TABLE invitation_code (
   `id`         INT(16)     NOT NULL AUTO_INCREMENT,

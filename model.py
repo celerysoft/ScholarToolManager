@@ -116,6 +116,10 @@ class Permission(Base):
     MANAGE_ROLE = 6
     # 套餐模板管理 manage_service_template
     MANAGE_SERVICE_TEMPLATE = 7
+    # 用户学术积分管理
+    MANAGE_SCHOLAR_BALANCE = 8
+    # 用户套餐管理
+    MANAGE_SERVICE = 9
 
 
 class RolePermission(Base):

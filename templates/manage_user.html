@@ -25,6 +25,8 @@
         $(function () {
             let
                 dialogInst = new mdui.Dialog('#dialog-modify-role'),
+                balanceDialogInst = new mdui.Dialog('#dialog-modify-scholar-balance'),
+                btnRecharge = $('#btn-recharge'),
                 modifyUserId = null,
                 modifyUserRole = null;
 
@@ -37,6 +39,11 @@
                         modifyUserId = id;
                         getRoles(modifyUserId)
 
+                    },
+                    edit_scholar_balance: function (id) {
+                        stopPropagation();
+                        modifyUserId = id;
+                        getScholarBalance(modifyUserId)
                     },
                     redirect_to_user_page: function (userName) {
                         stopPropagation();
@@ -78,9 +85,38 @@
                                 return mdui.alert(err.message || err.error || err);
                             }
 
+                            return mdui.snackbar({
+                                message: '修改用户角色成功'
+                            });
                         });
                     }
                 }
+            });
+
+            let vmBalanceDialog = new Vue({
+                el: '#dialog-modify-scholar-balance-content',
+                data: {
+                    balance: '54',
+                    recharge: ''
+                },
+                methods: {
+                }
+            });
+
+            btnRecharge.click(function () {
+                let amount = vmBalanceDialog.$data.recharge;
+
+                httpPatch('/api/scholar_balance', { user_id: modifyUserId, amount: amount }, function (error, data, jqXHR) {
+                    balanceDialogInst.close();
+                    vmBalanceDialog.$data.recharge = '';
+                    if (error) {
+                        return mdui.alert(error.message);
+                    }
+
+                    return mdui.snackbar({
+                        message: '充值学术积分成功'
+                    });
+                });
             });
 
             function getRoles(userId) {
@@ -96,6 +132,20 @@
 
                     dialogInst.open()
                 })
+            }
+
+            function getScholarBalance(userId) {
+                let data = userId === null ? null : { user_id: userId};
+
+                httpGet('/api/scholar_balance', data, function (error, data, jqXHR) {
+                    if (error) {
+                        return mdui.alert(error.message);
+                    }
+
+                    vmBalanceDialog.$data.balance = data.balance;
+
+                    balanceDialogInst.open()
+                });
             }
         });
     </script>
@@ -120,9 +170,12 @@
                             </div>
                         </div>
                         <div class="mdui-col-xs-1 mdui.center">
-                            <i class="mdui-list-item-icon mdui-icon material-icons mdui-ripple fa fa-user"
+                            <i class="mdui-list-item-icon mdui-icon mdui-ripple fa fa-user"
                                aria-hidden="true" mdui-tooltip="{content: '编辑用户角色'}"
                                v-on:click="edit_role({{ user.id }})"></i>
+                            <i class="mdui-list-item-icon mdui-icon mdui-ripple fa fa-credit-card"
+                               aria-hidden="true" mdui-tooltip="{content: '编辑学术积分'}"
+                               v-on:click="edit_scholar_balance({{ user.id }})"></i>
                         </div>
                     </li>
                 {% endfor %}
@@ -151,6 +204,22 @@
         <div class="mdui-dialog-actions">
             <button class="mdui-btn mdui-ripple" mdui-dialog-cancel="true">取消</button>
             <button id="btn-modify" class="mdui-btn mdui-ripple" v-on:click="modifyUserRole" :disabled="isButtonDisabled">修改</button>
+        </div>
+    </div>
+
+    <!-- 修改用户学术积分 -->
+    <div id="dialog-modify-scholar-balance" class="mdui-dialog">
+        <div class="mdui-dialog-title">修改用户学术积分</div>
+        <div id="dialog-modify-scholar-balance-content" class="mdui-dialog-content" style="padding: 0 24px">
+            <div>当前学术积分：{{balance}}</div>
+            <div class="mdui-textfield mdui-textfield-floating-label">
+                <label class="mdui-textfield-label">所需充值的积分</label>
+                <input class="mdui-textfield-input" type="number" v-model="recharge"/>
+            </div>
+        </div>
+        <div class="mdui-dialog-actions">
+            <button class="mdui-btn mdui-ripple" mdui-dialog-cancel="true">取消</button>
+            <button id="btn-recharge" class="mdui-btn mdui-ripple">充值</button>
         </div>
     </div>
 {% endblock %}

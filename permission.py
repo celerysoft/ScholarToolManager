@@ -37,7 +37,6 @@ def derive_user_permissions(db_session, user_id):
 
 
 def check_permission(db_session, user_id, permission_id):
-    print(user_id)
     permissions = derive_user_permissions(db_session, user_id)
     # print(permissions)
     for permission in permissions:
@@ -86,3 +85,17 @@ def check_manage_service_template_permission(db_session, user_id, call_by_api=Fa
         check_user_api_permission()
 
     return check_permission(db_session, user_id, model.Permission.MANAGE_SERVICE_TEMPLATE)
+
+
+def check_manage_scholar_balance_permission(db_session, user_id, call_by_api=False):
+    if call_by_api:
+        check_user_api_permission()
+
+    return check_permission(db_session, user_id, model.Permission.MANAGE_SCHOLAR_BALANCE)
+
+
+def check_manage_service_permission(db_session, user_id, call_by_api=False):
+    if call_by_api:
+        check_user_api_permission()
+
+    return check_permission(db_session, user_id, model.Permission.MANAGE_SERVICE)

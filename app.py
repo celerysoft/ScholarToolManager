@@ -1589,16 +1589,17 @@ def api_get_service_on_sale():
 
 
 def api_create_service():
-    permission.check_user_api_permission()
-
     user_id = derive_user_id_from_session(True)
+    db_session = derive_db_session()
+    if not permission.check_manage_service_permission(db_session, user_id, True):
+        raise exception.api.Forbidden("无权创建套餐")
+
     service_template_id = request.json['template_id']
     if service_template_id is None:
         return service_api_document('Need service_template_id field.')
     password = request.json['password']
     if password is None:
         return service_api_document('Need password field.')
-    db_session = derive_db_session()
     service_template = db_session.query(model.ServiceTemplate) \
         .filter(model.ServiceTemplate.id == service_template_id).first()
 
@@ -1724,6 +1725,89 @@ def usage_api():
     return make_response(
         jsonify({
             'message': '学术统计信息接收成功',
+            'documentation_url': __SERVICE_API_DOCUMENTATION_URL
+        }), 201
+    )
+
+
+@app.route('/api/scholar_balance', methods=['GET', 'POST', 'PATCH', 'DELETE'])
+def scholar_balance_api():
+    if request.method == 'GET':
+        return api_get_scholar_balance()
+    elif request.method == 'POST':
+        return scholar_balance_api_document()
+    elif request.method == 'PATCH':
+        return api_update_scholar_balance()
+    elif request.method == 'DELETE':
+        return scholar_balance_api_document()
+    else:
+        return scholar_balance_api_document()
+
+
+# TODO 文档链接
+__SCHOLAR_BALANCE_API_DOCUMENTATION_URL = 'coming soon...'
+
+
+def scholar_balance_api_document(message='', code=400):
+    msg = jsonify({
+        'message': message,
+        'documentation_url': __SCHOLAR_BALANCE_API_DOCUMENTATION_URL
+    })
+    return make_response(msg, code)
+
+
+def api_get_scholar_balance():
+    query_user_id = request.args.get('user_id')
+    if query_user_id is None:
+        return scholar_balance_api_document('Need user_id field.')
+
+    db_session = derive_db_session()
+    user_scholar_balance = db_session.query(model.UserScholarBalance)\
+        .filter(model.UserScholarBalance.user_id == query_user_id).first()
+
+    balance = user_scholar_balance.balance
+
+    return make_response(
+        jsonify({
+            'message': '学术统计信息接收成功',
+            'user_id': query_user_id,
+            'balance': balance,
+            'documentation_url': __SERVICE_API_DOCUMENTATION_URL
+        }), 200
+    )
+
+
+def api_update_scholar_balance():
+    user_id = derive_user_id_from_session(True)
+    db_session = derive_db_session()
+    if not permission.check_manage_scholar_balance_permission(db_session, user_id, True):
+        raise exception.api.Forbidden("无权管理学术积分")
+
+    query_user_id = request.json['user_id']
+    if query_user_id is None:
+        return scholar_balance_api_document('Need user_id field.')
+    amount = int(request.json['amount'])
+    if amount is None:
+        return scholar_balance_api_document('Need amount field.')
+
+    user_scholar_balance = db_session.query(model.UserScholarBalance)\
+        .filter(model.UserScholarBalance.user_id == query_user_id).first()
+
+    print(type(user_scholar_balance.balance))
+    print(type(amount))
+    user_scholar_balance.balance += amount
+
+    try:
+        db_session.commit()
+    except sqlalchemy.exc.DataError as e:
+        db_session.rollback()
+        return abort(make_response(str(e), 500))
+    finally:
+        db_session.close()
+
+    return make_response(
+        jsonify({
+            'message': '充值学术积分成功',
             'documentation_url': __SERVICE_API_DOCUMENTATION_URL
         }), 201
     )
