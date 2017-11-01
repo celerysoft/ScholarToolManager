@@ -141,6 +141,7 @@ CREATE TABLE service (
   `total_usage`   INT(16) NOT NULL,
   `template_id`   INT(16) NOT NULL,
   `available`     BOOL    NOT NULL,
+  `alive`         BOOL    NOT NULL,
   PRIMARY KEY (`id`)
 )
   ENGINE = innodb

@@ -1,12 +1,12 @@
 import datetime
-import hashlib
 import math
-import random
-import re
 import time
 import urllib.request
 
+import hashlib
 import markdown2
+import random
+import re
 import sqlalchemy
 from flask import Flask, redirect, url_for, render_template, json, session, request, abort, make_response
 from flask.json import jsonify
@@ -15,13 +15,12 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+import exception.api
+import exception.http
 import init_app
 import model
 import permission
-import exception.http
-import exception.api
-from server import shadowsocks_controller
-from util import date_util
+from util import date_util, shadowsocks_controller, shadowsocks_config_manager
 
 app = Flask(__name__)
 app.config.from_object('configs.Config')
@@ -1559,8 +1558,6 @@ def api_get_user_service(query_user_id):
 
     page, page_size, offset, max_page = derive_page_parameter(query)
 
-    print('offset = %s, page_size = %s, page = %s, max_page = %s' % (offset, page_size, page, max_page))
-
     services = query.offset(offset).limit(page_size).all()
 
     service_list = []
@@ -1605,7 +1602,7 @@ def api_create_service():
     service_template = db_session.query(model.ServiceTemplate) \
         .filter(model.ServiceTemplate.id == service_template_id).first()
 
-    # TODO 扣费系统
+    # 扣费
     total_payment = service_template.initialization_fee + service_template.price
     user_scholar_balance = db_session.query(model.UserScholarBalance) \
         .filter(model.UserScholarBalance.user_id == user_id).first()
@@ -1615,6 +1612,7 @@ def api_create_service():
     else:
         user_scholar_balance.balance -= total_payment
 
+    # 创建服务
     service_type = service_template.type
     now = datetime.datetime.now()
     created_at = now.timestamp()
@@ -1647,9 +1645,11 @@ def api_create_service():
 
     service_id = service.id
 
+    # 关联user_service表
     user_service = model.UserService(user_id, service_id)
     db_session.add(user_service)
 
+    # 关联service_password表
     service_port = derive_available_shadowsocks_port(db_session)
 
     service_password = model.ServicePassword(service.id, service_port, password)
@@ -1663,6 +1663,8 @@ def api_create_service():
     finally:
         db_session.close()
 
+    shadowsocks_controller.add_port(service_port, password)
+
     return make_response(
         jsonify({
             'message': '创建套餐成功',
@@ -1675,7 +1677,7 @@ def api_create_service():
 def derive_available_shadowsocks_port(db_session):
     service_password = db_session.query(model.ServicePassword) \
         .order_by(model.ServicePassword.port.desc()) \
-        .filter(model.Service.available.is_(True)) \
+        .filter(model.Service.alive.is_(True)) \
         .filter(model.Service.id == model.ServicePassword.service_id).first()
 
     if service_password is None:
@@ -1703,11 +1705,13 @@ def usage_api():
 
     data = json.loads(data)
     for port, usage in data.items():
+        print('port %s use data: %s' % (port, usage))
         service = db_session.query(model.Service).filter(model.ServicePassword.port == port).filter(model.Service.id == model.ServicePassword.service_id).first()
         service.usage += usage
         service.total_usage += usage
-        print('port %s use data: %s' % (port, usage))
-
+        if service.usage > service.package:
+            service.available = False
+            shadowsocks_controller.remove_port(port)
 
     try:
         db_session.commit()
@@ -1723,15 +1727,6 @@ def usage_api():
             'documentation_url': __SERVICE_API_DOCUMENTATION_URL
         }), 201
     )
-
-
-@app.route('/api/ss', methods=['POST'])
-def ss_api():
-    data = request.data.decode('utf-8')
-
-    print(data)
-
-    return 'OK'
 
 
 if __name__ == '__main__':

@@ -4,11 +4,14 @@ import os
 import subprocess
 import urllib.request, urllib.parse
 
+import configs
+from util import shadowsocks_config_manager
+
 if __name__ == '__main__':
     print('__main__')
 
 # address of the client
-CLIENT_ADDRESS = '/Users/admin/Developer/shadowsocks-controller-client.sock'
+CLIENT_ADDRESS = configs.Config.SS_CONTROLLER_UDS_CLIEND_ADDRESS
 try:
     os.unlink(CLIENT_ADDRESS)
 except OSError:
@@ -18,7 +21,8 @@ except OSError:
 cli = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
 cli.bind(CLIENT_ADDRESS)
 
-SERVER_ADDRESS = '/Users/admin/Developer/shadowsocks-manager.sock'
+# address of the server
+SERVER_ADDRESS = configs.Config.SS_SERVER_UDS_ADDRESS
 
 
 # print('send "ping"')
@@ -49,16 +53,7 @@ def add_port(port, password):
         else:
             continue
 
-    api_url = 'http://127.0.0.1:50001/api/ss'
-    data = {
-        'message': response.decode('utf-8'),
-        'port': port,
-        'password': '******'
-    }
-    data = json.dumps(data).encode('utf-8')
-    request = urllib.request.Request(api_url, data=data, headers={'Content-type': 'application/json'})
-    response = urllib.request.urlopen(request).read()
-    print(response.decode('utf-8'))
+    shadowsocks_config_manager.add_port(port, password)
 
 
 def remove_port(port):
@@ -75,13 +70,8 @@ def remove_port(port):
         else:
             continue
 
-    api_url = 'http://127.0.0.1:50001/api/ss'
-    data = {
-        'message': response.decode('utf-8'),
-        'port': port,
-        'password': '******'
-    }
-    data = json.dumps(data).encode('utf-8')
-    request = urllib.request.Request(api_url, data=data, headers={'Content-type': 'application/json'})
-    response = urllib.request.urlopen(request).read()
-    print(response.decode('utf-8'))
+    shadowsocks_config_manager.remove_port(port)
+
+
+def restart_service(db_session):
+    pass

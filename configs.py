@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 # -*-coding:utf-8 -*-
+import os
 
 
 class Config(object):
@@ -49,6 +50,16 @@ class Config(object):
     URL_OF_QINIU_AVATAR = 'http://ow92gcjek.bkt.clouddn.com/'
     # SS服务起始端口号
     SERVICE_MIN_PORT = 20000
+    # SS服务配置文件路径
+    SHADOWSOCKS_CONFIG_FILE_PATH = '/Users/admin/Developer/Python/scholar-tool-manager/config/multiple_users_config.json'
+    # 主服务器地址，数据库，网页所在的服务器地址
+    MAIN_SERVER_ADDRESS = 'http://127.0.0.1:50001'
+    # SS服务unix domain socket的地址
+    SS_SERVER_UDS_ADDRESS = '/Users/admin/Developer/shadowsocks-manager.sock'
+    # ss_controller的unix domain socket的地址
+    SS_CONTROLLER_UDS_CLIEND_ADDRESS = '/Users/admin/Developer/shadowsocks-controller-client.sock'
+    # ss_listener的unix domain socket的地址
+    SS_LISTENER_UDS_CLIEND_ADDRESS = '/Users/admin/Developer/shadowsocks-listener-client.sock'
 
 
 class DevelopmentConfig(Config):
@@ -75,3 +86,7 @@ class ProductionConfig(Config):
     """
     URL_OF_STATIC = 'http://ow92gcjek.bkt.clouddn.com'
     URL_OF_BLOG_IMAGE = 'http://ow92gcjek.bkt.clouddn.com/static/image/blog/'
+
+
+if __name__ == '__main__':
+    pass

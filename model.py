@@ -224,9 +224,10 @@ class Service(Base):
     total_usage = Column(Integer)
     template_id = Column(Integer)
     available = Column(Boolean)
+    alive = Column(Boolean)
 
     def __init__(self, usage=None, package=None, reset_at=None, last_reset_at=None, created_at=None, expired_at=None,
-                 total_usage=None, template_id=None, available=True):
+                 total_usage=None, template_id=None, available=True, alive=True):
         self.usage = usage
         self.package = package
         self.reset_at = reset_at
@@ -236,6 +237,7 @@ class Service(Base):
         self.total_usage = total_usage
         self.template_id = template_id
         self.available = available
+        self.alive = alive
 
     def __repr__(self):
         return '<Service %s %s>' % (self.usage, self.package)
