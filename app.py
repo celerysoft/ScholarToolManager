@@ -425,11 +425,28 @@ def show_event(event_id):
 
 @app.route('/product/')
 def product():
-    user_id = derive_user_id_from_session()
-    db_session = derive_db_session()
+    permission.check_user_permission()
 
     return render_template('product.html',
                            title='我的学术')
+
+
+@app.route('/product/detail/<service_id>')
+def product_detail(service_id):
+    # 防止查看不属于当前登录用户的套餐详情
+    user_id = derive_user_id_from_session()
+    db_session = derive_db_session()
+
+    user_service = db_session.query(model.UserService) \
+        .filter(model.Service.id == service_id) \
+        .filter(model.UserService.service_id == model.Service.id) \
+        .filter(model.UserService.user_id == user_id).first()
+    if user_service is None:
+        return redirect(url_for('product'))
+
+    return render_template('product_detail.html',
+                           service_id=service_id,
+                           title='学术详情')
 
 
 @app.route('/product/create/')
@@ -468,14 +485,48 @@ def pay_product(service_template_id):
     service_template.descriptions = service_template.description.split('#')
     service_template.total_price = service_template.price + service_template.initialization_fee
 
-    user_scholar_balance = db_session.query(model.UserScholarBalance)\
+    user_scholar_balance = db_session.query(model.UserScholarBalance) \
         .filter(model.UserScholarBalance.user_id == user_id).first()
     balance = user_scholar_balance.balance
 
-    return render_template('product_create_pay.html',
+    return render_template('product_pay.html',
+                           action='create',
                            service=service_template,
                            balance=balance,
                            title='支付')
+
+
+@app.route('/product/renew/pay/<service_id>')
+def renew_product(service_id):
+    # 防止当前登录用户续费不属于自己的套餐
+    user_id = derive_user_id_from_session()
+    db_session = derive_db_session()
+
+    user_service = db_session.query(model.UserService) \
+        .filter(model.Service.id == service_id) \
+        .filter(model.UserService.service_id == model.Service.id) \
+        .filter(model.UserService.user_id == user_id).first()
+    if user_service is None:
+        return redirect(url_for('product'))
+
+    service = db_session.query(model.Service).filter(model.Service.id == service_id).first()
+
+    service_template = db_session.query(model.ServiceTemplate) \
+        .filter(model.ServiceTemplate.id == service.template_id).first()
+    if service_template is None:
+        return abort(404)
+    service_template.descriptions = service_template.description.split('#')
+    service_template.total_price = service_template.price
+
+    user_scholar_balance = db_session.query(model.UserScholarBalance) \
+        .filter(model.UserScholarBalance.user_id == user_id).first()
+    balance = user_scholar_balance.balance
+
+    return render_template('product_pay.html',
+                           action='renew',
+                           service=service_template,
+                           balance=balance,
+                           title='续费')
 
 
 @app.route('/agreement/')
@@ -1541,8 +1592,11 @@ def api_get_service():
     permission.check_user_api_permission()
 
     query_user_id = request.args.get('user_id')
+    query_service_id = request.args.get('id')
     if query_user_id is not None:
         return api_get_user_service(query_user_id)
+    if query_service_id is not None:
+        return api_get_service_by_id(query_service_id)
     else:
         return api_get_service_on_sale()
 
@@ -1584,6 +1638,38 @@ def api_get_user_service(query_user_id):
     )
 
 
+def api_get_service_by_id(service_id):
+    db_session = derive_db_session()
+
+    query = db_session.query(model.Service).filter(model.Service.id == service_id)
+    service = query.first()
+
+    if service is None:
+        return service_api_document('指定id的套餐不存在', 404)
+
+    template = db_session.query(model.ServiceTemplate).filter(model.ServiceTemplate.id == service.template_id).first()
+    service_password = db_session.query(model.ServicePassword) \
+        .filter(model.ServicePassword.service_id == service.id).first()
+    service_dict = model.to_dict(service)
+    service_dict['type'] = template.type
+    service_dict['title'] = template.title
+    service_dict['price'] = template.price
+    service_dict['port'] = service_password.port
+    service_dict['password'] = service_password.password
+    if template.type == model.ServiceTemplate.MONTHLY:
+        service_dict['renew_at'] = service.reset_at
+    else:
+        service_dict['renew_at'] = service.expired_at
+
+    return make_response(
+        jsonify({
+            'message': '获取套餐详情成功',
+            'service': service_dict,
+            'documentation_url': __SERVICE_API_DOCUMENTATION_URL
+        }), 200
+    )
+
+
 def api_get_service_on_sale():
     pass
 
@@ -1594,11 +1680,14 @@ def api_create_service():
     if not permission.check_manage_service_permission(db_session, user_id, True):
         raise exception.api.Forbidden("无权创建套餐")
 
-    service_template_id = request.json['template_id']
-    if service_template_id is None:
-        return service_api_document('Need service_template_id field.')
-    password = request.json['password']
-    if password is None:
+        service_template_id = None
+    try:
+        service_template_id = request.json['template_id']
+    except KeyError:
+        return service_api_document('Need template_id field.')
+    try:
+        password = request.json['password']
+    except KeyError:
         return service_api_document('Need password field.')
     service_template = db_session.query(model.ServiceTemplate) \
         .filter(model.ServiceTemplate.id == service_template_id).first()
@@ -1619,23 +1708,23 @@ def api_create_service():
     created_at = now.timestamp()
     last_reset_at = None
     if service_type == model.ServiceTemplate.MONTHLY:
-        auto_renew = request.json['auto_renew']
-        if auto_renew is None:
+        try:
+            auto_renew = request.json['auto_renew']
+        except KeyError:
             return service_api_document('Need auto_renew field.')
+        reset_at = date_util.derive_1st_of_next_month(now)
         if auto_renew:
-            reset_at = date_util.derive_1st_of_next_month(now)
             expired_at = datetime.datetime(2099, 12, 31, 23, 59, 59).timestamp()
         else:
-            reset_at = None
-            expired_at = created_at + 365 * 24 * 60 * 60
+            expired_at = reset_at
     elif service_type == model.ServiceTemplate.DATA:
         reset_at = None
         expired_at = created_at + 365 * 24 * 60 * 60
     else:
-        reset_at = None
-        expired_at = created_at
+        return service_api_document('Unknow template type.')
 
-    service = model.Service(0, service_template.balance, reset_at, last_reset_at, created_at, expired_at, 0, service_template_id)
+    service = model.Service(0, service_template.balance, auto_renew, reset_at, last_reset_at, created_at, expired_at, 0,
+                            service_template_id)
     db_session.add(service)
 
     try:
@@ -1688,7 +1777,106 @@ def derive_available_shadowsocks_port(db_session):
 
 
 def api_update_service():
-    pass
+    user_id = derive_user_id_from_session(True)
+    db_session = derive_db_session()
+    # if not permission.check_manage_service_permission(db_session, user_id, True):
+    #     raise exception.api.Forbidden("无权创建套餐")
+
+    # 获取key示例
+    service_id = None
+    try:
+        service_id = request.json['id']
+    except KeyError:
+        return service_api_document('Need service_id field.')
+    auto_renew = None
+    try:
+        auto_renew = request.json['auto_renew']
+    except KeyError:
+        pass
+    renew = None
+    try:
+        renew = request.json['renew']
+    except KeyError:
+        pass
+
+    user_service = db_session.query(model.UserService) \
+        .filter(model.UserService.user_id == user_id) \
+        .filter(model.UserService.service_id == service_id).first()
+    if user_service is None:
+        raise exception.api.Forbidden("无权修改套餐")
+
+    service = db_session.query(model.Service) \
+        .filter(model.Service.id == service_id).first()
+
+    service_template_id = service.template_id
+    service_template = db_session.query(model.ServiceTemplate) \
+        .filter(model.ServiceTemplate.id == service_template_id).first()
+
+    # 修改自动续费
+    now = datetime.datetime.now()
+    if auto_renew is not None:
+        service.auto_renew = auto_renew
+        service.reset_at = date_util.derive_1st_of_next_month(now)
+        if service_template.type == model.ServiceTemplate.MONTHLY:
+            if auto_renew:
+                service.expired_at = datetime.datetime(2099, 12, 31, 23, 59, 59).timestamp()
+            else:
+                service.expired_at = service.reset_at
+
+    # 续费
+    if renew is not None and renew is True:
+        # 判断是否在可续费时间内
+        if service_template.type == model.ServiceTemplate.MONTHLY:
+            if service.reset_at < now.timestamp() < (service.reset_at + 24 * 60 * 60):
+                pass
+            else:
+                return service_api_document('当前不是有效的续费时间，请在每月1号进行续费')
+        elif service_template.type == model.ServiceTemplate.DATA:
+            if (service.package - service.usage <= 0 and now.timestamp() < service.expired_at) or (
+                    service.expired_at < now.timestamp() < date_util.derive_1st_of_next_month(
+                        datetime.datetime.fromtimestamp(service.expired_at))):
+                pass
+            else:
+                return service_api_document('当前不是有效的续费时间，或者流量未用尽，无法续费')
+        # 扣费
+        total_payment = service_template.price
+        user_scholar_balance = db_session.query(model.UserScholarBalance) \
+            .filter(model.UserScholarBalance.user_id == user_id).first()
+        balance = user_scholar_balance.balance
+        if balance < total_payment:
+            return service_api_document('余额不足', 403)
+        else:
+            user_scholar_balance.balance -= total_payment
+
+        # 更新服务
+        service.last_reset_at = now.timestamp()
+        if service_template.type == model.ServiceTemplate.MONTHLY:
+            auto_renew = request.json['auto_renew']
+            if auto_renew is None:
+                return service_api_document('Need auto_renew field.')
+            if auto_renew:
+                service.reset_at = date_util.derive_1st_of_next_month(now)
+                service.expired_at = datetime.datetime(2099, 12, 31, 23, 59, 59).timestamp()
+            else:
+                service.reset_at = None
+                service.expired_at = date_util.derive_1st_of_next_month(now)
+        elif service_template.type == model.ServiceTemplate.DATA:
+            service.expired_at = now.timestamp() + 365 * 24 * 60 * 60
+
+    try:
+        db_session.commit()
+    except sqlalchemy.exc.DataError as e:
+        db_session.rollback()
+        return abort(make_response(str(e), 500))
+    finally:
+        db_session.close()
+
+    return make_response(
+        jsonify({
+            'message': '修改套餐成功',
+            'documentation_url': __SERVICE_API_DOCUMENTATION_URL
+        }), 201
+    )
 
 
 def api_delete_service():
@@ -1700,14 +1888,15 @@ def usage_api():
     data = request.data.decode('utf-8')
     data = data[6:]
 
-    print(data)
+    # print(data)
 
     db_session = derive_db_session()
 
     data = json.loads(data)
     for port, usage in data.items():
-        print('port %s use data: %s' % (port, usage))
-        service = db_session.query(model.Service).filter(model.ServicePassword.port == port).filter(model.Service.id == model.ServicePassword.service_id).first()
+        # print('port %s use data: %s' % (port, usage))
+        service = db_session.query(model.Service).filter(model.ServicePassword.port == port).filter(
+            model.Service.id == model.ServicePassword.service_id).first()
         service.usage += usage
         service.total_usage += usage
         if service.usage > service.package:
@@ -1762,7 +1951,7 @@ def api_get_scholar_balance():
         return scholar_balance_api_document('Need user_id field.')
 
     db_session = derive_db_session()
-    user_scholar_balance = db_session.query(model.UserScholarBalance)\
+    user_scholar_balance = db_session.query(model.UserScholarBalance) \
         .filter(model.UserScholarBalance.user_id == query_user_id).first()
 
     balance = user_scholar_balance.balance
@@ -1790,11 +1979,9 @@ def api_update_scholar_balance():
     if amount is None:
         return scholar_balance_api_document('Need amount field.')
 
-    user_scholar_balance = db_session.query(model.UserScholarBalance)\
+    user_scholar_balance = db_session.query(model.UserScholarBalance) \
         .filter(model.UserScholarBalance.user_id == query_user_id).first()
 
-    print(type(user_scholar_balance.balance))
-    print(type(amount))
     user_scholar_balance.balance += amount
 
     try:
@@ -1811,6 +1998,86 @@ def api_update_scholar_balance():
             'documentation_url': __SERVICE_API_DOCUMENTATION_URL
         }), 201
     )
+
+
+@app.route('/api/service-password', methods=['GET', 'POST', 'PATCH', 'DELETE'])
+def service_password_api():
+    if request.method == 'GET':
+        return api_get_service_password()
+    elif request.method == 'POST':
+        return api_create_service_password()
+    elif request.method == 'PATCH':
+        return api_update_service_password()
+    elif request.method == 'DELETE':
+        return api_delete_service_password()
+    else:
+        return service_api_document()
+
+
+# TODO 文档链接
+__SERVICE_PASSWORD_API_DOCUMENTATION_URL = 'coming soon...'
+
+
+def service_password_api_document(message='', code=400):
+    msg = jsonify({
+        'message': message,
+        'documentation_url': __SERVICE_PASSWORD_API_DOCUMENTATION_URL
+    })
+    return make_response(msg, code)
+
+
+def api_get_service_password():
+    return service_password_api_document()
+
+
+def api_create_service_password():
+    return service_password_api_document()
+
+
+def api_update_service_password():
+    user_id = derive_user_id_from_session(True)
+    db_session = derive_db_session()
+
+    service_id = None
+    try:
+        service_id = request.json['service_id']
+    except KeyError:
+        return service_password_api_document('Need service_id field.')
+    new_password = None
+    try:
+        new_password = request.json['new_password']
+    except KeyError:
+        return service_password_api_document('Need new_password field.')
+    if len(new_password) == 0:
+        return service_password_api_document('密码长度至少为1，当前为0')
+
+    service_password = db_session.query(model.ServicePassword) \
+        .filter(model.ServicePassword.service_id == service_id) \
+        .filter(model.UserService.service_id == model.ServicePassword.service_id) \
+        .filter(model.UserService.user_id == user_id).first()
+    if service_password is None:
+        return service_password_api_document('套餐不存在或该套餐不属于当前用户', 404)
+
+    service_password.password = new_password
+
+    try:
+        db_session.commit()
+    except sqlalchemy.exc.DataError as e:
+        db_session.rollback()
+        return abort(make_response(str(e), 500))
+    finally:
+        db_session.close()
+
+    return make_response(
+        jsonify({
+            'message': '修改连接密码成功',
+            'documentation_url': __SERVICE_PASSWORD_API_DOCUMENTATION_URL
+        }), 201
+    )
+
+
+def api_delete_service_password():
+    return service_password_api_document()
 
 
 if __name__ == '__main__':

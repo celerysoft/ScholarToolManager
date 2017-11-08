@@ -221,6 +221,7 @@ class Service(Base):
     id = Column(Integer, primary_key=True)
     usage = Column(Integer)
     package = Column(Integer)
+    auto_renew = Column(Boolean)
     reset_at = Column(Float)
     last_reset_at = Column(Float)
     created_at = Column(Float)
@@ -230,10 +231,11 @@ class Service(Base):
     available = Column(Boolean)
     alive = Column(Boolean)
 
-    def __init__(self, usage=None, package=None, reset_at=None, last_reset_at=None, created_at=None, expired_at=None,
+    def __init__(self, usage=None, package=None, auto_renew=None, reset_at=None, last_reset_at=None, created_at=None, expired_at=None,
                  total_usage=None, template_id=None, available=True, alive=True):
         self.usage = usage
         self.package = package
+        self.auto_renew = auto_renew
         self.reset_at = reset_at
         self.last_reset_at = last_reset_at
         self.created_at = created_at if created_at else time.time()

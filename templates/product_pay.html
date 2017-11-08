@@ -4,15 +4,21 @@
     <script>
         $(function () {
             const
-                TEMPLATE_ID = '{{ service.id }}',
+                ACTION = '{{ action }}',
+                ID = '{{ service.id }}',
                 TEMPLATE_TYPE = {{ service.type }}
 
             $('#btn-cancel').click(() => {
-                return location.assign('/product/create/')
+                if (ACTION === 'create') {
+                    return location.assign('/product/create/')
+                } else if (ACTION === 'renew') {
+                    return location.assign('/product/')
+                }
             });
             $('#label-customer-service').click(() => {
                 return mdui.snackbar({message: '客服？不存在的！'});
             });
+
             $('#btn-pay').click(() => {
                 if (!$('#cb-agreement').prop('checked')) {
                     return mdui.snackbar({
@@ -20,6 +26,14 @@
                     });
                 }
 
+                if (ACTION === 'create') {
+                    createProduct();
+                } else if (ACTION === 'renew') {
+                    renewProduct();
+                }
+            });
+
+            function createProduct() {
                 let password = $('#input-password').val();
                 if (password === null || password === '' || password.length <= 0) {
                     return mdui.snackbar({
@@ -28,7 +42,7 @@
                 }
 
                 let data = {
-                    template_id: TEMPLATE_ID,
+                    template_id: ID,
                     password: password
                 };
                 if (TEMPLATE_TYPE === 0) {
@@ -48,7 +62,31 @@
                         }
                     });
                 });
-            });
+            }
+
+            function renewProduct() {
+                let data = {
+                    id: ID
+                };
+                if (TEMPLATE_TYPE === 0) {
+                    data['auto_renew'] = $('#cb-auto-renew').prop('checked');
+                    data['renew'] = true;
+                }
+
+                httpPatch('/api/service', data, function (error, data, jqXHR) {
+                    if (error) {
+                        return mdui.snackbar({message: error.message});
+                    }
+
+                    return mdui.snackbar({
+                        message: '续费成功，点击屏幕继续',
+                        closeOnOutsideClick: true,
+                        onClose: function () {
+                            location.assign('/product/detail/' + ID);
+                        }
+                    });
+                });
+            }
         });
     </script>
 
@@ -77,10 +115,12 @@
                         </label>
                     </div>
                 {% endif %}
-                <div class="mdui-textfield mdui-textfield-floating-label">
-                    <label class="mdui-textfield-label">连接密码</label>
-                    <input id="input-password" class="mdui-textfield-input" type="password"/>
-                </div>
+                {% if action == 'create' %}
+                    <div class="mdui-textfield mdui-textfield-floating-label">
+                        <label class="mdui-textfield-label">连接密码</label>
+                        <input id="input-password" class="mdui-textfield-input" type="password"/>
+                    </div>
+                {% endif %}
             </div>
         </div>
 
@@ -92,10 +132,17 @@
                     <div class="mdui-float-left">{{ service.title }}</div>
                     <div class="mdui-float-right">{{ service.price }} 学术积分</div>
                 </div>
-                <div class="mdui-clearfix">
-                    <div class="mdui-float-left">初装费</div>
-                    <div class="mdui-float-right">{{ service.initialization_fee }} 学术积分</div>
-                </div>
+                {% if action == 'create' %}
+                    <div class="mdui-clearfix">
+                        <div class="mdui-float-left">初装费</div>
+                        <div class="mdui-float-right">{{ service.initialization_fee }} 学术积分</div>
+                    </div>
+                {% elif action == 'renew' %}
+                    <div class="mdui-clearfix">
+                        <div class="mdui-float-left"><del>初装费</del></div>
+                        <div class="mdui-float-right"><del>{{ service.initialization_fee }} 学术积分</del></div>
+                    </div>
+                {% endif %}
                 <div class="mdui-divider"></div>
                 <div class="mdui-clearfix">
                     <div class="mdui-float-left">总计</div>
@@ -108,7 +155,7 @@
                 </div>
 
                 <p style="margin-top: 16px;"><small>如果你有任何疑问可以随时咨询我们的<a href="#label-customer-service" id="label-customer-service">客服</a></small></p>
-            </di
+            </div>
         </div>
 
         <div class="mdui-col-xs-12 mdui-text-center mdui-typo" style="margin-top: 16px;">
@@ -122,13 +169,29 @@
         <div class="mdui-center" style="width: 192px;">
             <button id="btn-pay" class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-theme-accent mdui-float-left"
                     style="width: 80px;margin-top: 16px;margin-bottom: 16px;">
-                订购
+                {% if action == 'create' %}
+                    订购
+                {% elif action == 'renew' %}
+                    续费
+                {% endif %}
             </button>
             <button id="btn-cancel" class="mdui-btn mdui-btn-raised mdui-ripple mdui-float-right"
                     style="width: 80px;margin-top: 16px;margin-bottom: 16px;">
                 取消
             </button>
         </div>
+
+        {% if action == 'renew' %}
+            <div class="mdui-typo mdui-col-xs-12">
+                <div class="mdui-divider"></div>
+                <h6>续费说明</h6>
+                {% if service.type == 0 %}
+                    <p class="mdui-text-color-theme-secondary">每月1号为手动续费的时间，如上个月流量未用尽在这天可以继续使用。如果在1号没有及时续费，2号起学术服务会中断，在续费成功后才会重新开通学术服务。如果当月未续费，在下月2号会终止该学术服务，无法再次续费，并且不返还初装费，请知悉。</p>
+                {% elif service.type == 1 %}
+                    <p class="mdui-text-color-theme-secondary">流量在有效期内用尽可以提前续费。套餐超出有效期后可以手动续费，续费时间截止到超出有效期的下个月的2号（例如1月3号到期，则需要在2月2号前续费），如未按时续费，会终止该学术服务，无法再次续费，并且不返还初装费，请知悉。</p>
+                {% endif %}
+            </div>
+        {% endif %}
     </div>
 
 

@@ -139,6 +139,7 @@ CREATE TABLE service (
   `id`            INT(16) NOT NULL  AUTO_INCREMENT,
   `usage`         INT(16) NOT NULL,
   `package`       INT(16) NOT NULL,
+  `auto_renew`    BOOL,
   `reset_at`      REAL,
   `last_reset_at` REAL,
   `created_at`    REAL    NOT NULL,

@@ -7,3 +7,4 @@ def derive_1st_of_next_month(dt):
     else:
         first_day = datetime.datetime(dt.year, dt.month + 1, 1).timestamp()
     return first_day
+

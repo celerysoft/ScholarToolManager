@@ -1,0 +1,308 @@
+{% extends '__base__.html' %}
+
+{% block script %}
+    <script>
+        $(function () {
+            const DEFAULT_PASSWORD_TEXT = '点击查看';
+            const SERVICE_ID = '{{ service_id }}';
+            let password = '';
+
+            let vm_scholar_detail = new Vue({
+                el: '#scholar-detail',
+                data: {
+                    title: '',
+                    renewAt: '',
+                    usage: 0.00,
+                    balance: 0.00,
+                    port: '',
+                    password: DEFAULT_PASSWORD_TEXT,
+                    price: '',
+                    autoRenew: null,
+                    autoRenewStr: null
+                },
+                methods: {
+                    togglePassword: function () {
+                        if (vm_scholar_detail.$data.password === DEFAULT_PASSWORD_TEXT) {
+                            vm_scholar_detail.$data.password = password;
+                        } else {
+                            vm_scholar_detail.$data.password = DEFAULT_PASSWORD_TEXT;
+                        }
+                    }
+                }
+            });
+
+            let
+                modifyPasswordDialogInstance = new mdui.Dialog('#dialog-modify-password'),
+                modifyPasswordDialog = $('#dialog-modify-password'),
+                modifyPasswordButton = $('#btn-recharge'),
+                newPasswordInput = $('#input-new-password'),
+                confirmNewPasswordInput = $('#input-confirm-new-password');
+
+            $('#btn-open-modify-password-dialog').click(() => {
+                modifyPasswordDialogInstance.open();
+            });
+
+
+            modifyPasswordDialog.on('open.mdui.dialog', () => {
+                newPasswordInput.val('');
+                confirmNewPasswordInput.val('');
+            });
+            modifyPasswordButton.click(() => {
+                let
+                    newPassword = newPasswordInput.val(),
+                    confirmPassword = confirmNewPasswordInput.val();
+
+                if (newPassword !== confirmPassword) {
+                    return mdui.snackbar({
+                        message: '两次输入的密码不一致'
+                    });
+                }
+
+                if (newPassword.length < 6) {
+                    return mdui.snackbar({
+                        message: '连接密码至少为6位'
+                    });
+                }
+
+                httpPatch('/api/service-password', { service_id: SERVICE_ID, new_password: newPassword }, function (error, data, jqXHR) {
+                    modifyPasswordDialogInstance.close();
+                    if (error) {
+                        return mdui.snackbar({
+                            message: error.message
+                        });
+                    }
+
+                    password = newPassword;
+                    if (vm_scholar_detail.$data.password !== DEFAULT_PASSWORD_TEXT) {
+                        vm_scholar_detail.$data.password = password;
+                    }
+
+                    return mdui.snackbar({
+                        message: '修改连接密码成功'
+                    });
+                })
+            });
+
+            document.getElementById('test').addEventListener('click', function () {
+                modifyPasswordDialogInstance.open();
+            });
+
+            let autoRenewDialog = $('#dialog-auto-renew');
+            let autoRenewCheckbox = $('#cb-auto-renew');
+            autoRenewDialog.on('open.mdui.dialog', function () {
+                autoRenewCheckbox.prop('checked', vm_scholar_detail.$data.autoRenew);
+            });
+
+            let saveAutoRenewButton = $('#btn-save-auto-renew');
+            saveAutoRenewButton.click(() => {
+                httpPatch('/api/service', { id: SERVICE_ID, auto_renew: autoRenewCheckbox.prop('checked') }, function (error, data, jqXHR) {
+                    if (error) {
+                        return mdui.snackbar({
+                            message: error.message
+                        });
+                    }
+                    mdui.snackbar({
+                        message: '修改自动续费状态成功'
+                    });
+                    getProductDetail()
+                });
+            });
+
+
+            function getProductDetail() {
+                httpGet('/api/service', { id: SERVICE_ID }, function (error, data, jqXHR) {
+                    $('#loading').hide();
+
+                    let service = data.service;
+                    {#                service.balance = ((service.package - service.usage) / 1024 / 1024).toFixed(2);#}
+                    {#                service.status_str = service.alive ? '有效' : '失效';#}
+
+                    vm_scholar_detail.$data.title = service.title;
+                    vm_scholar_detail.$data.renewAt = timestampToDate(service.renew_at * 1000);
+                    vm_scholar_detail.$data.usage = (service.usage / 1024 / 1024).toFixed(2);
+                    vm_scholar_detail.$data.balance = ((service.package - service.usage) / 1024 / 1024).toFixed(2);
+                    vm_scholar_detail.$data.port = service.port;
+                    password = service.password;
+                    vm_scholar_detail.$data.price = service.price;
+                    if (service.type === 0) {
+                        let autoRenew = service.auto_renew;
+                        vm_scholar_detail.$data.autoRenew = autoRenew;
+                        vm_scholar_detail.$data.autoRenewStr = autoRenew ? "是" : "否";
+                    }
+
+                })
+            }
+
+            getProductDetail()
+        });
+    </script>
+
+    <script src="{{ static_route }}/static/js/scroll_to_top.js"></script>
+{% endblock %}
+
+{% block under_toolbar %}
+    <div id="loading" class="mdui-progress">
+        <div class="mdui-progress-indeterminate"></div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div id="scholar-detail">
+        <div class="mdui-row mdui-valign">
+            <div class="mdui-col-xs-6">
+                <h2 id="test">{{title}}</h2>
+                <p>下次付款日期：{{renewAt}}</p>
+            </div>
+            <div class="mdui-col-xs-3 mdui-text-center mdui-color-theme" style="padding: 16px 16px;">已用流量：{{usage}} M</div>
+            <div class="mdui-col-xs-3 mdui-text-center mdui-color-theme-accent" style="padding: 16px 16px;">可用流量：{{balance}} M</div>
+        </div>
+
+        <div class="mdui-row">
+            <div class="mdui-col-sm-6 mdui-col-md-4 mdui-col-lg-3">
+                <div class="mdui-card mdui-shadow-6 mdui-hoverable">
+                    <div class="mdui-card-primary">
+                        <div class="mdui-card-primary-title">学术信息</div>
+                    </div>
+
+                    <div class="mdui-card-content mdui-typo">
+                        <div class="mdui-clearfix">
+                            <div class="mdui-float-left">端口</div>
+                            <div class="mdui-float-right">{{port}}</div>
+                        </div>
+                        <div class="mdui-clearfix">
+                            <div class="mdui-float-left">加密方式</div>
+                            <div class="mdui-float-right">aes-256-cfb</div>
+                        </div>
+                        <div class="mdui-clearfix">
+                            <div class="mdui-float-left">连接密码</div>
+                            <div @click="togglePassword" class="mdui-float-right mdui-text-color-theme-accent">{{password}}</div>
+                        </div>
+                    </div>
+
+                    <div class="mdui-card-actions">
+                        <button id="btn-open-modify-password-dialog" class="mdui-btn mdui-text-color-theme-accent mdui-ripple">修改连接密码</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mdui-col-sm-6 mdui-col-md-4 mdui-col-lg-3">
+                <div class="mdui-card mdui-shadow-6 mdui-hoverable">
+                    <div class="mdui-card-primary">
+                        <div class="mdui-card-primary-title">账单信息</div>
+                    </div>
+
+                    <div class="mdui-card-content mdui-typo">
+                        <div class="mdui-clearfix">
+                            <div class="mdui-float-left">续费金额</div>
+                            <div class="mdui-float-right">{{price}}学术积分</div>
+                        </div>
+                        <div class="mdui-clearfix">
+                            <div class="mdui-float-left">续费日期</div>
+                            <div class="mdui-float-right">{{renewAt}}</div>
+                        </div>
+                        <div v-if="autoRenewStr" class="mdui-clearfix">
+                            <div class="mdui-float-left">自动续费</div>
+                            <div class="mdui-float-right">{{autoRenewStr}}</div>
+                        </div>
+                    </div>
+
+                    <div class="mdui-card-actions">
+                        <a href="/product/renew/pay/{{ service_id }}"><button class="mdui-btn mdui-text-color-theme-accent mdui-ripple">续费</button></a>
+                        <button class="mdui-btn mdui-text-color-theme-accent mdui-ripple" mdui-dialog="{target: '#dialog-auto-renew'}">自动续费</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <p class="mdui-text-color-theme-secondary">节点信息</p>
+
+        <div id="vue" class="mdui-row-sm-2 mdui-row-md-3 mdui-row-lg-4 mdui-grid-card-list">
+            <div class="mdui-col">
+                <div class="mdui-card mdui-shadow-6 mdui-hoverable mdui-grid-tile">
+                    <div class="mdui-card-primary">
+                        <div class="mdui-card-primary-title">香港</div>
+                        <div class="mdui-card-primary-subtitle"></div>
+                    </div>
+
+                    <div class="mdui-card-content mdui-typo">
+                        <div class="mdui-clearfix">
+                            <div class="mdui-float-left">节点地址</div>
+                            <div class="mdui-float-right">www.celerysoft.science</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mdui-col">
+                <div class="mdui-card mdui-shadow-6 mdui-hoverable mdui-grid-tile">
+                    <div class="mdui-card-primary">
+                        <div class="mdui-card-primary-title">洛杉矶</div>
+                        <div class="mdui-card-primary-subtitle"></div>
+                    </div>
+
+                    <div class="mdui-card-content mdui-typo">
+                        <div class="mdui-clearfix">
+                            <div class="mdui-float-left">节点地址</div>
+                            <div class="mdui-float-right">即将到来</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mdui-col">
+                <div class="mdui-card mdui-shadow-6 mdui-hoverable mdui-grid-tile">
+                    <div class="mdui-card-primary">
+                        <div class="mdui-card-primary-title">新加坡</div>
+                        <div class="mdui-card-primary-subtitle"></div>
+                    </div>
+
+                    <div class="mdui-card-content mdui-typo">
+                        <div class="mdui-clearfix">
+                            <div class="mdui-float-left">节点地址</div>
+                            <div class="mdui-float-right">即将到来</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 修改学术连接密码对话框 -->
+    <div id="dialog-modify-password" class="mdui-dialog">
+        <div class="mdui-dialog-title">修改学术连接密码</div>
+        <div class="mdui-dialog-content" style="padding: 0 24px">
+            <div class="mdui-textfield">
+                <label class="mdui-textfield-label">新密码</label>
+                <input id="input-new-password" class="mdui-textfield-input" type="password"/>
+            </div>
+            <div class="mdui-textfield">
+                <label class="mdui-textfield-label">确认新密码</label>
+                <input id="input-confirm-new-password" class="mdui-textfield-input" type="password"/>
+            </div>
+        </div>
+        <div class="mdui-dialog-actions">
+            <button class="mdui-btn mdui-ripple" mdui-dialog-cancel>取消</button>
+            <button id="btn-recharge" class="mdui-btn mdui-ripple" >修改密码</button>
+        </div>
+    </div>
+
+    <!-- 自动续费对话框 -->
+    <div id="dialog-auto-renew" class="mdui-dialog">
+        <div class="mdui-dialog-title">自动续费</div>
+        <div class="mdui-dialog-content">
+            开启自动续费将在每个套餐周期的第一天（包月套餐即每月1号）自动扣除该套餐周期的费用，免去由于忘记手动续费而导致学术服务中断的困扰。
+            <br/>
+            <label class="mdui-checkbox">
+                <input id="cb-auto-renew" type="checkbox"/>
+                <i class="mdui-checkbox-icon"></i>
+                自动续费
+            </label>
+        </div>
+        <div class="mdui-dialog-actions">
+            <button class="mdui-btn mdui-ripple" mdui-dialog-cancel="true">取消</button>
+            <button id="btn-save-auto-renew" class="mdui-btn mdui-ripple" mdui-dialog-cancel="true">保存</button>
+        </div>
+    </div>
+
+    {% include '__scroll_to_top_button_base__.html' %}
+{% endblock %}
