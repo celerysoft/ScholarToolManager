@@ -84,8 +84,8 @@ class ProductionConfig(Config):
     """
     生产环境
     """
-    URL_OF_STATIC = 'http://ow92gcjek.bkt.clouddn.com'
-    URL_OF_BLOG_IMAGE = 'http://ow92gcjek.bkt.clouddn.com/static/image/blog/'
+    URL_OF_STATIC = 'http://oz3d04vwf.bkt.clouddn.com'
+    URL_OF_BLOG_IMAGE = 'http://oz3d04vwf.bkt.clouddn.com/static/image/blog/'
 
 
 if __name__ == '__main__':
