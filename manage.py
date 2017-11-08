@@ -6,8 +6,8 @@ from flask_script import Manager, Shell
 from app import create_app
 
 # 通过配置创建 app
-app = create_app('configs.DevelopmentConfig')
-# app = create_app('configs.ProductionConfig')
+# app = create_app('configs.DevelopmentConfig')
+app = create_app('configs.ProductionConfig')
 manager = Manager(app)
 
 
