@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*-coding:utf-8 -*-
 import datetime
+import logging
 import math
 import time
 import urllib.request
@@ -77,6 +78,12 @@ def create_app(config='configs.DevelopmentConfig'):
 # -------------------------------------------------- Error Handler -------------------------------------------------- #
 # -------------------------------------------------- Error Handler -------------------------------------------------- #
 # -------------------------------------------------- Error Handler -------------------------------------------------- #
+
+
+@app.errorhandler(Exception)
+def handle_base_exception(error):
+    app.logger.exception(error)
+
 
 # ------------------------------------------------ Page Error Handler ------------------------------------------------ #
 
@@ -2092,4 +2099,12 @@ if __name__ == '__main__':
     host = app.config['HOST']
     port = app.config['PORT']
     processes = app.config['PROCESSES']
+
+    handler = logging.FileHandler(app.config['LOG_FILE'], encoding='UTF-8')
+    handler.setLevel(logging.WARNING)
+    logging_format = logging.Formatter(
+        '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')
+    handler.setFormatter(logging_format)
+    app.logger.addHandler(handler)
+
     app.run(host=host, port=port, processes=processes)
