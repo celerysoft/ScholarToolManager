@@ -9,7 +9,6 @@ if __name__ == '__main__':
     print('__main__')
 
 # address of the client
-# TODO 写到配置文件
 CLIENT_ADDRESS = configs.Config.SS_LISTENER_UDS_CLIEND_ADDRESS
 try:
     os.unlink(CLIENT_ADDRESS)
@@ -20,7 +19,6 @@ except OSError:
 cli = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
 cli.bind(CLIENT_ADDRESS)
 
-# TODO 写到配置文件
 SERVER_ADDRESS = configs.Config.SS_SERVER_UDS_ADDRESS
 
 print('send "ping"')
