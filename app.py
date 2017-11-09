@@ -1899,6 +1899,10 @@ def usage_api():
         # print('port %s use data: %s' % (port, usage))
         service = db_session.query(model.Service).filter(model.ServicePassword.port == port).filter(
             model.Service.id == model.ServicePassword.service_id).first()
+
+        if service is None:
+            continue
+
         service.usage += usage
         service.total_usage += usage
         if service.usage > service.package:

@@ -1,7 +1,7 @@
 {
   "server": "0.0.0.0",
   "port_password": {
-    "60000": "celerysoft.com"
+    "59999": "celerysoft.com"
   },
   "timeout": 300,
   "method": "aes-256-cfb",
