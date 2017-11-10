@@ -79,10 +79,10 @@ def create_app(config='configs.DevelopmentConfig'):
     handler.setFormatter(logging_format)
     app.logger.addHandler(handler)
 
-    action_before_app_run()
-
     global engine
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+
+    action_before_app_run()
     return app
 
 
