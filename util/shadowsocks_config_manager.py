@@ -69,22 +69,30 @@ def recreate_shadowsocks_config_file(db_session, method='aes-256-cfb', timeout=3
     lines.append('%s"port_password": {%s' % (__CONFIG_FILE_INDENT, os.linesep))
 
     service_password_count = len(service_passwords)
-    for x in range(service_password_count):
-        service_password = service_passwords[x]
-        if x == service_password_count - 1:
-            lines.append('%s%s"%s": "%s"%s'
-                         % (__CONFIG_FILE_INDENT,
-                            __CONFIG_FILE_INDENT,
-                            service_password.port,
-                            service_password.password,
-                            os.linesep))
-        else:
-            lines.append('%s%s"%s": "%s",%s'
-                         % (__CONFIG_FILE_INDENT,
-                            __CONFIG_FILE_INDENT,
-                            service_password.port,
-                            service_password.password,
-                            os.linesep))
+    if service_password_count == 0:
+        lines.append('%s%s"%s": "%s"%s'
+                     % (__CONFIG_FILE_INDENT,
+                        __CONFIG_FILE_INDENT,
+                        '59999',
+                        'celerysoft.com',
+                        os.linesep))
+    else:
+        for x in range(service_password_count):
+            service_password = service_passwords[x]
+            if x == service_password_count - 1:
+                lines.append('%s%s"%s": "%s"%s'
+                             % (__CONFIG_FILE_INDENT,
+                                __CONFIG_FILE_INDENT,
+                                service_password.port,
+                                service_password.password,
+                                os.linesep))
+            else:
+                lines.append('%s%s"%s": "%s",%s'
+                             % (__CONFIG_FILE_INDENT,
+                                __CONFIG_FILE_INDENT,
+                                service_password.port,
+                                service_password.password,
+                                os.linesep))
 
     lines.append('%s},%s' % (__CONFIG_FILE_INDENT, os.linesep))
     lines.append('%s"timeout": %s,%s' % (__CONFIG_FILE_INDENT, timeout, os.linesep))

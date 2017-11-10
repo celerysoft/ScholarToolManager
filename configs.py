@@ -48,6 +48,8 @@ class Config(object):
     URL_OF_AVATAR_IMAGE = 'static/image/avatar/'
     # 上传头像到七牛时图片的外链默认域名
     URL_OF_QINIU_AVATAR = 'http://ow92gcjek.bkt.clouddn.com/'
+    # 新注册用户默认学术积分
+    NEW_USER_SCHOLAR_BALANCE = 5120
     # 日志文件
     LOG_FILE = '/Users/admin/Developer/Python/scholar-tool-manager/app.log'
     # SS服务监听器日志文件

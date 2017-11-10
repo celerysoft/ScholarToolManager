@@ -729,7 +729,7 @@ def api_create_user():
     invitation_code.invited_at = time.time()
 
     # 将记录写入user_scholar_balance表
-    __SCHOLAR_BALANCE_FOR_NEW_USER = 56
+    __SCHOLAR_BALANCE_FOR_NEW_USER = app.config['NEW_USER_SCHOLAR_BALANCE']
     user_scholar_balance = model.UserScholarBalance(user.id, __SCHOLAR_BALANCE_FOR_NEW_USER)
     db_session.add(user_scholar_balance)
 
@@ -1843,7 +1843,7 @@ def api_update_service():
                 return service_api_document('当前不是有效的续费时间，请在每月1号进行续费')
         elif service_template.type == model.ServiceTemplate.DATA:
             if (service.package - service.usage <= 0 and now.timestamp() < service.expired_at) or (
-                    service.expired_at < now.timestamp() < date_util.derive_1st_of_next_month(
+                            service.expired_at < now.timestamp() < date_util.derive_1st_of_next_month(
                         datetime.datetime.fromtimestamp(service.expired_at))):
                 pass
             else:
@@ -2094,6 +2094,10 @@ def api_delete_service_password():
     return service_password_api_document()
 
 
+def action_before_app_run():
+    shadowsocks_controller.recreate_shadowsocks_config_file(derive_db_session())
+
+
 if __name__ == '__main__':
     create_app()
     # create_app('configs.ProductionConfig')
@@ -2107,5 +2111,7 @@ if __name__ == '__main__':
         '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')
     handler.setFormatter(logging_format)
     app.logger.addHandler(handler)
+
+    action_before_app_run()
 
     app.run(host=host, port=port, processes=processes)
