@@ -137,14 +137,14 @@ CREATE TABLE user_service (
 
 CREATE TABLE service (
   `id`            INT(16) NOT NULL  AUTO_INCREMENT,
-  `usage`         INT(16) NOT NULL,
-  `package`       INT(16) NOT NULL,
+  `usage`         BIGINT(16) NOT NULL,
+  `package`       BIGINT(16) NOT NULL,
   `auto_renew`    BOOL,
   `reset_at`      REAL,
   `last_reset_at` REAL,
   `created_at`    REAL    NOT NULL,
   `expired_at`    REAL    NOT NULL,
-  `total_usage`   INT(16) NOT NULL,
+  `total_usage`   BIGINT(16) NOT NULL,
   `template_id`   INT(16) NOT NULL,
   `available`     BOOL    NOT NULL,
   `alive`         BOOL    NOT NULL,
@@ -169,7 +169,7 @@ CREATE TABLE service_template (
   `title`              VARCHAR(64)  NOT NULL,
   `subtitle`           VARCHAR(64)  NOT NULL,
   `description`        VARCHAR(512) NOT NULL,
-  `balance`            INT(16)      NOT NULL,
+  `balance`            BIGINT(16)      NOT NULL,
   `price`              INT(16)      NOT NULL,
   `initialization_fee` INT(16)      NOT NULL,
   PRIMARY KEY (`id`)

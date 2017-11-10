@@ -4,7 +4,7 @@ import random
 import time
 from datetime import datetime, date
 
-from sqlalchemy import Table, Column, Integer, String, Date, Float, Boolean, LargeBinary,DATETIME
+from sqlalchemy import Table, Column, Integer, String, Date, Float, Boolean, LargeBinary, DATETIME, BIGINT
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -56,7 +56,7 @@ class Role(Base):
     def __init__(self, name, label, description=None):
         self.name = name
         self.label = label
-        self. description = description
+        self.description = description
 
     def __repr__(self):
         return '<Role %s: %s>' % (self.name, self.description)
@@ -96,7 +96,7 @@ class Permission(Base):
     def __init__(self, name, label, description=None):
         self.name = name
         self.label = label
-        self. description = description
+        self.description = description
 
     def __repr__(self):
         return '<Permission %s(%s): %s>' % (self.name, self.label, self.description)
@@ -192,7 +192,7 @@ class ServiceTemplate(Base):
     title = Column(String)
     subtitle = Column(String)
     description = Column(String)
-    balance = Column(Integer)
+    balance = Column(BIGINT)
     price = Column(Integer)
     initialization_fee = Column(Integer)
 
@@ -219,19 +219,20 @@ class Service(Base):
     __tablename__ = 'service'
 
     id = Column(Integer, primary_key=True)
-    usage = Column(Integer)
-    package = Column(Integer)
+    usage = Column(BIGINT)
+    package = Column(BIGINT)
     auto_renew = Column(Boolean)
     reset_at = Column(Float)
     last_reset_at = Column(Float)
     created_at = Column(Float)
     expired_at = Column(Float)
-    total_usage = Column(Integer)
+    total_usage = Column(BIGINT)
     template_id = Column(Integer)
     available = Column(Boolean)
     alive = Column(Boolean)
 
-    def __init__(self, usage=None, package=None, auto_renew=None, reset_at=None, last_reset_at=None, created_at=None, expired_at=None,
+    def __init__(self, usage=None, package=None, auto_renew=None, reset_at=None, last_reset_at=None, created_at=None,
+                 expired_at=None,
                  total_usage=None, template_id=None, available=True, alive=True):
         self.usage = usage
         self.package = package
@@ -294,4 +295,3 @@ class UserScholarBalance(Base):
 
     def __repr__(self):
         return '<UserScholarBalance %s %s>' % (self.user_id, self.balance)
-
