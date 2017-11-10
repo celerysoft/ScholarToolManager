@@ -48,8 +48,10 @@ class Config(object):
     URL_OF_AVATAR_IMAGE = 'static/image/avatar/'
     # 上传头像到七牛时图片的外链默认域名
     URL_OF_QINIU_AVATAR = 'http://ow92gcjek.bkt.clouddn.com/'
-    # 日志文件输出目录
+    # 日志文件
     LOG_FILE = '/Users/admin/Developer/Python/scholar-tool-manager/app.log'
+    # SS服务监听器日志文件
+    SS_LISTENER_LOG_FILE = '/Users/admin/Developer/Python/scholar-tool-manager/ss-listener.log'
     # SS服务起始端口号
     SERVICE_MIN_PORT = 20001
     # SS服务配置文件路径

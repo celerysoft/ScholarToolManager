@@ -1,4 +1,6 @@
+import datetime
 import json
+import logging
 import socket
 import os
 import urllib.request
@@ -7,6 +9,11 @@ import configs
 
 if __name__ == '__main__':
     print('__main__')
+
+LOG_FILE = configs.Config.SS_LISTENER_LOG_FILE
+logging.basicConfig(filename=LOG_FILE,
+                    level=logging.DEBUG,
+                    format='%(asctime)s - %(message)s')
 
 # address of the client
 CLIENT_ADDRESS = configs.Config.SS_LISTENER_UDS_CLIEND_ADDRESS
@@ -37,7 +44,9 @@ print(cli.recv(1506))  # You'll receive 'pong'
 while True:
     # when data is transferred on Shadowsocks, you'll receive stat info every 10 seconds
     msg = cli.recv(1506)
-    print(msg)
+    now = datetime.datetime.now()
+    print('TIME[%s] || MESSAGE[%s]' % (now, msg))
+    logging.info(msg.decode())
 
     api_url = configs.Config.MAIN_SERVER_ADDRESS + '/api/usage'
 

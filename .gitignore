@@ -153,3 +153,8 @@ venv.bak/
 
 # uwsgi
 uwsgi_config.ini
+
+# custom
+config/multiple_users_config.json
+**/multiple_users_config.json
+multiple_users_config.json

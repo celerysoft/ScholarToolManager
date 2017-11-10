@@ -23,7 +23,7 @@ import exception.http
 import init_app
 import model
 import permission
-from util import date_util, shadowsocks_controller, shadowsocks_config_manager
+from util import date_util, shadowsocks_controller
 
 app = Flask(__name__)
 app.config.from_object('configs.Config')
@@ -566,7 +566,7 @@ def derive_page_parameter(query):
 
     record_count = query.count()
 
-    if record_count <= offset:
+    if 0 < record_count <= offset:
         raise exception.api.InvalidRequest('Item index is out of bounds, try modify page and page_size.')
     max_page = math.ceil(record_count / page_size)
 
@@ -1680,7 +1680,7 @@ def api_get_service_by_id(service_id):
 
 
 def api_get_service_on_sale():
-    pass
+    return service_api_document()
 
 
 def api_create_service():
@@ -1689,7 +1689,7 @@ def api_create_service():
     if not permission.check_manage_service_permission(db_session, user_id, True):
         raise exception.api.Forbidden("无权创建套餐")
 
-        service_template_id = None
+    service_template_id = None
     try:
         service_template_id = request.json['template_id']
     except KeyError:
@@ -1716,6 +1716,7 @@ def api_create_service():
     now = datetime.datetime.now()
     created_at = now.timestamp()
     last_reset_at = None
+    auto_renew = None
     if service_type == model.ServiceTemplate.MONTHLY:
         try:
             auto_renew = request.json['auto_renew']
@@ -1889,7 +1890,7 @@ def api_update_service():
 
 
 def api_delete_service():
-    pass
+    return service_api_document()
 
 
 @app.route('/api/usage', methods=['POST'])
