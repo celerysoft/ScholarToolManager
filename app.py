@@ -55,6 +55,10 @@ def derive_user_id_from_session(call_by_api=False):
     return session['user']['id']
 
 
+def action_before_app_run():
+    shadowsocks_controller.recreate_shadowsocks_config_file(derive_db_session())
+
+
 def create_app(config='configs.DevelopmentConfig'):
     """
     生成app实例
@@ -67,6 +71,15 @@ def create_app(config='configs.DevelopmentConfig'):
 
     init_app.init_jinja2()
     init_app.init_jinja2_global(app)
+
+    handler = logging.FileHandler(app.config['LOG_FILE'], encoding='UTF-8')
+    handler.setLevel(logging.WARNING)
+    logging_format = logging.Formatter(
+        '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')
+    handler.setFormatter(logging_format)
+    app.logger.addHandler(handler)
+
+    action_before_app_run()
 
     global engine
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
@@ -2094,24 +2107,11 @@ def api_delete_service_password():
     return service_password_api_document()
 
 
-def action_before_app_run():
-    shadowsocks_controller.recreate_shadowsocks_config_file(derive_db_session())
-
-
 if __name__ == '__main__':
     create_app()
     # create_app('configs.ProductionConfig')
     host = app.config['HOST']
     port = app.config['PORT']
     processes = app.config['PROCESSES']
-
-    handler = logging.FileHandler(app.config['LOG_FILE'], encoding='UTF-8')
-    handler.setLevel(logging.WARNING)
-    logging_format = logging.Formatter(
-        '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')
-    handler.setFormatter(logging_format)
-    app.logger.addHandler(handler)
-
-    action_before_app_run()
 
     app.run(host=host, port=port, processes=processes)
