@@ -106,7 +106,7 @@
             btnRecharge.click(function () {
                 let amount = vmBalanceDialog.$data.recharge;
 
-                httpPatch('/api/scholar_balance', { user_id: modifyUserId, amount: amount }, function (error, data, jqXHR) {
+                httpPatch('/api/scholar-balance', { user_id: modifyUserId, amount: amount }, function (error, data, jqXHR) {
                     balanceDialogInst.close();
                     vmBalanceDialog.$data.recharge = '';
                     if (error) {
@@ -137,7 +137,7 @@
             function getScholarBalance(userId) {
                 let data = userId === null ? null : { user_id: userId};
 
-                httpGet('/api/scholar_balance', data, function (error, data, jqXHR) {
+                httpGet('/api/scholar-balance', data, function (error, data, jqXHR) {
                     if (error) {
                         return mdui.alert(error.message);
                     }

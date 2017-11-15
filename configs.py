@@ -42,12 +42,16 @@ class Config(object):
     URL_OF_BLOG_IMAGE = '/static/image/blog/'
     # 匿名评论用户的用户名（username）字段
     ANONYMOUS_USER_NAME = 'anonymous'
+    # 七牛access_key
+    QINIU_ACCESS_KEY = 'zyU-3uBcybs47Arv5d3xE2y5YseIzgTxtwseG4z543'
+    # 七牛secret_key
+    QINIU_SECRET_KEY = 'jKVM34omWibkOPQjqjOPpFjHewa62LYRxLkLF1OGHJ'
     # 上传头像到七牛时七牛空间名
-    QINIU_BUCKET_NAME = 'celerysoft-com'
+    QINIU_BUCKET_NAME = 'celerysoft-science'
     # 上传头像到七牛时图片名前缀
     URL_OF_AVATAR_IMAGE = 'static/image/avatar/'
     # 上传头像到七牛时图片的外链默认域名
-    URL_OF_QINIU_AVATAR = 'http://ow92gcjek.bkt.clouddn.com/'
+    URL_OF_QINIU_AVATAR = 'http://oz3d04vwf.bkt.clouddn.com/'
     # 新注册用户默认学术积分
     NEW_USER_SCHOLAR_BALANCE = 5120
     # 日志文件

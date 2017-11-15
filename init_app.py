@@ -8,12 +8,13 @@ import time
 # import qiniu
 
 
-# def init_qiniu():
-#     access_key = 'zyU-3uBcybs47Arv5d3xE2y5YseIzgTxtwseG4z5'
-#     secret_key = 'jKVM34omWibkOPQjqjOPpFjHewa62LYRxLkLF1OG'
+# def init_qiniu(app):
+#     access_key = app.config['QINIU_ACCESS_KEY']
+#     secret_key = app.config['QINIU_SECRET_KEY']
 #     q = qiniu.Auth(access_key, secret_key)
 #
 #     return q
+from view import method_views
 
 
 def init_jinja2_global(app):
@@ -29,6 +30,14 @@ def init_jinja2():
     jinja2.filters.FILTERS['datetime'] = datetime_filter2
     jinja2.filters.FILTERS['boolean_to_yes'] = boolean_to_yes_or_no
     jinja2.filters.FILTERS['service_type'] = service_type_to_str
+
+
+def init_method_views(app):
+    method_views.set_sha1_password_salt(app.config['SHA1_SALT'])
+    method_views.set_sqlalchemy_database_uri(app.config['SQLALCHEMY_DATABASE_URI'])
+    method_views.set_item_per_page(app.config['ITEM_PER_PAGE'])
+    method_views.set_url_of_blog_image(app.config['URL_OF_BLOG_IMAGE'])
+    method_views.set_service_min_port(app.config['SERVICE_MIN_PORT'])
 
 
 def datetime_filter(t):
