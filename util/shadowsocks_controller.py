@@ -73,8 +73,8 @@ def remove_port(port):
     shadowsocks_config_manager.remove_port(port)
 
 
-def recreate_shadowsocks_config_file(db_session):
-    shadowsocks_config_manager.recreate_shadowsocks_config_file(db_session)
+def recreate_shadowsocks_config_file(db_session, debug=False):
+    shadowsocks_config_manager.recreate_shadowsocks_config_file(db_session, debug=debug)
 
 
 def restart_service(db_session):

@@ -72,7 +72,7 @@ def derive_app_logger():
 
 
 def action_before_app_run():
-    shadowsocks_controller.recreate_shadowsocks_config_file(sessionmaker(bind=engine)())
+    shadowsocks_controller.recreate_shadowsocks_config_file(sessionmaker(bind=engine)(), app.debug)
 
 
 def create_app(config='configs.DevelopmentConfig'):
@@ -97,6 +97,7 @@ def create_app(config='configs.DevelopmentConfig'):
 
     init_app.init_jinja2()
     init_app.init_jinja2_global(app)
+    init_app.init_views(app)
     init_app.init_method_views(app)
 
     action_before_app_run()
@@ -170,396 +171,437 @@ def handle_api_unauthorized(error):
 # -------------------------------------------------- PAGE -------------------------------------------------- #
 # -------------------------------------------------- PAGE -------------------------------------------------- #
 # -------------------------------------------------- PAGE -------------------------------------------------- #
-# app.add_url_rule('/', view_func=views.UserView.as_view('home_page', 'index.html', '主页'))
-@app.route('/')
-def home_page():
-    permission.check_user_permission()
-
-    return render_template('index.html',
-                           title='主页')
-
-
-app.add_url_rule('/login/', view_func=views.BaseView.as_view('login', 'login.html', '登录'))
-app.add_url_rule('/register/', view_func=views.BaseView.as_view('register', 'register.html', '注册'))
-
-
 @app.route('/logout/')
 def logout():
     session.pop('user', None)
     return redirect(url_for('home_page'))
 
 
-@app.route('/manage/')
-def manage():
-    if not permission.check_manage_permission(derive_db_session(), derive_user_id_from_session()):
-        return redirect(url_for('home_page'))
-
-    return render_template('manage.html',
-                           title='后台管理')
-
-
-@app.route('/manage/invitation/')
-def manage_invitation():
-    db_session = derive_db_session(pagination=True)
-    if not permission.check_manage_invitation_code_permission(db_session, derive_user_id_from_session()):
-        raise exception.http.Forbidden()
-
-    page = request.args.get('page')
-    try:
-        page = int(page) if page is not None else 1
-    except ValueError:
-        return redirect(url_for('manage_invitation'))
-
-    pagination = db_session.query(model.InvitationCode).order_by(model.InvitationCode.created_at.desc()).paginate(
-        page, __ITEM_PER_PAGE, False)
-    if page > 1 and len(pagination.items) is 0:
-        return redirect(url_for('manage_invitation'))
-    else:
-        for invitation in pagination.items:
-            inviter = db_session.query(model.User).filter_by(id=invitation.inviter_id).first()
-            invitation.inviter_username = inviter.username
-            if invitation.invitee_id is not None:
-                invitee = db_session.query(model.User).filter_by(id=invitation.invitee_id).first()
-                invitation.invitee_username = invitee.username
-
-    return render_template('manage_invitation.html',
-                           title='邀请码管理',
-                           pagination=pagination,
-                           pagination_url_for='manage_invitation')
-
-
-@app.route('/manage/role/')
-def manage_role():
-    db_session = derive_db_session(pagination=True)
-    if not permission.check_manage_role_permission(db_session, derive_user_id_from_session()):
-        raise exception.http.Forbidden()
-
-    page = request.args.get('page')
-    try:
-        page = int(page) if page is not None else 1
-    except ValueError:
-        return redirect(url_for('manage_role'))
-
-    pagination = db_session.query(model.Role).order_by(model.Role.id).paginate(
-        page, __ITEM_PER_PAGE, False)
-    if page > 1 and len(pagination.items) is 0:
-        return redirect(url_for('manage_role'))
-
-    return render_template('manage_role.html',
-                           title='角色管理',
-                           pagination=pagination,
-                           pagination_url_for='manage_role')
-
-
-@app.route('/manage/role/create/')
-def create_role():
-    if not permission.check_manage_role_permission(derive_db_session(), derive_user_id_from_session()):
-        return redirect(url_for('home_page'))
-
-    return render_template('manage_role_edit.html',
-                           title='创建角色',
-                           action='POST')
-
-
-@app.route('/manage/role/edit/')
-def edit_role():
-    if not permission.check_manage_role_permission(derive_db_session(), derive_user_id_from_session()):
-        return redirect(url_for('home_page'))
-
-    role_id = request.args.get('id')
-    return render_template('manage_role_edit.html',
-                           title='编辑角色',
-                           id=role_id,
-                           action='PATCH')
-
-
-@app.route('/manage/service-template/')
-def manage_service_template():
-    db_session = derive_db_session(pagination=True)
-    if not permission.check_manage_service_template_permission(db_session, derive_user_id_from_session()):
-        raise exception.http.Forbidden()
-
-    page = request.args.get('page')
-    try:
-        page = int(page) if page is not None else 1
-    except ValueError:
-        return redirect(url_for('manage_service_template'))
-
-    pagination = db_session.query(model.ServiceTemplate).order_by(model.ServiceTemplate.id).paginate(
-        page, __ITEM_PER_PAGE, False)
-    if page > 1 and len(pagination.items) is 0:
-        return redirect(url_for('manage_service_template'))
-
-    return render_template('manage_service_template.html',
-                           title='套餐模版管理',
-                           pagination=pagination,
-                           pagination_url_for='manage_service_template')
-
-
-@app.route('/manage/service-template/create/')
-def create_service_template():
-    if not permission.check_manage_service_template_permission(derive_db_session(), derive_user_id_from_session()):
-        raise exception.http.Forbidden()
-
-    service_type = request.args.get('type') if request.args.get('type') else 0
-
-    return render_template('manage_service_template_edit.html',
-                           title='创建套餐',
-                           type=service_type,
-                           action='POST')
-
-
-@app.route('/manage/service-template/edit/')
-def edit_service_template():
-    if not permission.check_manage_service_template_permission(derive_db_session(), derive_user_id_from_session()):
-        raise exception.http.Forbidden()
-
-    service_template_id = request.args.get('id')
-
-    return render_template('manage_service_template_edit.html',
-                           title='编辑套餐',
-                           id=service_template_id,
-                           action='PATCH')
-
-
-@app.route('/manage/event/')
-def manage_event():
-    db_session = derive_db_session(pagination=True)
-    if not permission.check_manage_event_permission(db_session, derive_user_id_from_session()):
-        raise exception.http.Forbidden()
-
-    page = request.args.get('page')
-    try:
-        page = int(page) if page is not None else 1
-    except ValueError:
-        return redirect(url_for('manage_event'))
-
-    pagination = db_session.query(model.Event).order_by(model.Event.created_at.desc()).paginate(
-        page, __ITEM_PER_PAGE, False)
-    if page > 1 and len(pagination.items) is 0:
-        return redirect(url_for('manage_event'))
-    else:
-        for product in pagination.items:
-            user = db_session.query(model.User).filter_by(id=product.user_id).first()
-            product.user_name = user.name
-
-    return render_template('manage_event.html',
-                           title='公告管理',
-                           pagination=pagination,
-                           pagination_url_for='manage_event')
-
-
-@app.route('/manage/event/create/')
-def create_event():
-    if not permission.check_manage_event_permission(derive_db_session(), derive_user_id_from_session()):
-        return redirect(url_for('home_page'))
-
-    return render_template('manage_event_edit.html',
-                           title='发布公告',
-                           action='POST')
-
-
-@app.route('/manage/event/edit/')
-def edit_event():
-    if not permission.check_manage_event_permission(derive_db_session(), derive_user_id_from_session()):
-        return redirect(url_for('home_page'))
-
-    product_id = request.args.get('id')
-    return render_template('manage_event_edit.html',
-                           title='编辑公告',
-                           id=product_id,
-                           action='PATCH')
-
-
-@app.route('/manage/user/')
-def manage_user():
-    db_session = derive_db_session(pagination=True)
-    if not permission.check_manage_user_permission(db_session, derive_user_id_from_session()):
-        return redirect(url_for('home_page'))
-
-    url = url_for('manage_user')
-    page = request.args.get('page')
-    try:
-        page = int(page) if page is not None else 1
-    except ValueError:
-        return redirect(url)
-
-    pagination = db_session.query(model.User).order_by(model.User.created_at).paginate(
-        page, __ITEM_PER_PAGE, False)
-    if page > 1 and len(pagination.items) is 0:
-        return redirect(url)
-
-    return render_template('manage_user.html',
-                           title='用户管理',
-                           pagination=pagination,
-                           pagination_url_for='manage_user')
-
-
-@app.route('/user/<name>')
-def show_user_profile(name):
+@app.route('/')
+def home_page1():
     permission.check_user_permission()
 
-    db_session = derive_db_session()
-    user = db_session.query(model.User).filter_by(name=name).first()
-    if user is None:
-        return abort(404)
-
-    return render_template('user.html',
-                           title='用户' + name,
-                           user=user)
+    return render_template('index.html',
+                           title='主页')
 
 
-@app.route('/event/')
-def event():
-    permission.check_user_permission()
-
-    page = request.args.get('page')
-    try:
-        page = int(page) if page is not None else 1
-    except ValueError:
-        return redirect(url_for('event'))
-
-    db_session = derive_db_session(pagination=True)
-    pagination = db_session.query(model.Event).order_by(model.Event.created_at.desc()).paginate(
-        page, __ITEM_PER_PAGE, False
-    )
-    if page > 1 and len(pagination.items) is 0:
-        return redirect(url_for('event'))
-
-    for evenet in pagination.items:
-        user = db_session.query(model.User).filter_by(id=evenet.user_id).first()
-        evenet.user_name = user.name
-        evenet.user_image = user.image
-
-    return render_template('event.html',
-                           title='公告',
-                           pagination=pagination,
-                           pagination_url_for='event')
+app.add_url_rule('/', view_func=views.BaseView.as_view('home_page', 'index.html', '主页'))
+app.add_url_rule('/login/', view_func=views.BaseView.as_view('login', 'login.html', '登录'))
+app.add_url_rule('/register/', view_func=views.BaseView.as_view('register', 'register.html', '注册'))
 
 
-@app.route('/event/<int:event_id>')
-def show_event(event_id):
-    permission.check_user_permission()
+app.add_url_rule('/manage/', view_func=views.PermissionRequiredView.as_view('manage', 'manage.html', '后台管理',
+                                                                            permission.check_manage_permission))
+# @app.route('/manage/')
+# def manage():
+#     if not permission.check_manage_permission(derive_db_session(), derive_user_id_from_session()):
+#         return redirect(url_for('home_page'))
+#
+#     return render_template('manage.html',
+#                            title='后台管理')
 
-    db_session = derive_db_session()
-    event = db_session.query(model.Event).filter_by(id=event_id).first()
-    if event is None:
-        return abort(404)
 
-    user = db_session.query(model.User).filter_by(id=event.user_id).first()
+app.add_url_rule('/manage/invitation/', view_func=views.ManageInvitationView.as_view('manage_invitation'))
+# @app.route('/manage/invitation/')
+# def manage_invitation():
+#     db_session = derive_db_session(pagination=True)
+#     if not permission.check_manage_invitation_code_permission(db_session, derive_user_id_from_session()):
+#         raise exception.http.Forbidden()
+#
+#     page = request.args.get('page')
+#     try:
+#         page = int(page) if page is not None else 1
+#     except ValueError:
+#         return redirect(url_for('manage_invitation'))
+#
+#     pagination = db_session.query(model.InvitationCode).order_by(model.InvitationCode.created_at.desc()).paginate(
+#         page, __ITEM_PER_PAGE, False)
+#     if page > 1 and len(pagination.items) is 0:
+#         return redirect(url_for('manage_invitation'))
+#     else:
+#         for invitation in pagination.items:
+#             inviter = db_session.query(model.User).filter_by(id=invitation.inviter_id).first()
+#             invitation.inviter_username = inviter.username
+#             if invitation.invitee_id is not None:
+#                 invitee = db_session.query(model.User).filter_by(id=invitation.invitee_id).first()
+#                 invitation.invitee_username = invitee.username
+#
+#     return render_template('manage_invitation.html',
+#                            title='邀请码管理',
+#                            pagination=pagination,
+#                            pagination_url_for='manage_invitation')
 
-    event.html_content = markdown2.markdown(event.content, extras=['fenced-code-blocks', 'tables', 'toc'])
 
-    event.html_content = event.html_content.replace('{{ image }}', app.config['URL_OF_BLOG_IMAGE'])
+app.add_url_rule('/manage/role/', view_func=views.ManageRoleView.as_view('manage_role'))
+# @app.route('/manage/role/')
+# def manage_role():
+#     db_session = derive_db_session(pagination=True)
+#     if not permission.check_manage_role_permission(db_session, derive_user_id_from_session()):
+#         raise exception.http.Forbidden()
+#
+#     page = request.args.get('page')
+#     try:
+#         page = int(page) if page is not None else 1
+#     except ValueError:
+#         return redirect(url_for('manage_role'))
+#
+#     pagination = db_session.query(model.Role).order_by(model.Role.id).paginate(
+#         page, __ITEM_PER_PAGE, False)
+#     if page > 1 and len(pagination.items) is 0:
+#         return redirect(url_for('manage_role'))
+#
+#     return render_template('manage_role.html',
+#                            title='角色管理',
+#                            pagination=pagination,
+#                            pagination_url_for='manage_role')
 
-    event.tags = event.tag.split(' ')
-    event.user_name = user.name
-    event.user_image = user.image
 
-    return render_template('event_view.html',
-                           title='公告',
-                           event=event)
+app.add_url_rule('/manage/role/create/',
+                 view_func=views.PermissionRequiredView.as_view('create_role',
+                                                                'manage_role_edit.html',
+                                                                '创建角色',
+                                                                permission.check_manage_role_permission,
+                                                                action='POST'))
+# @app.route('/manage/role/create/')
+# def create_role():
+#     if not permission.check_manage_role_permission(derive_db_session(), derive_user_id_from_session()):
+#         return redirect(url_for('home_page'))
+#
+#     return render_template('manage_role_edit.html',
+#                            title='创建角色',
+#                            action='POST')
+
+
+app.add_url_rule('/manage/role/edit/', view_func=views.EditRoleView.as_view('edit_role'))
+# @app.route('/manage/role/edit/')
+# def edit_role():
+#     if not permission.check_manage_role_permission(derive_db_session(), derive_user_id_from_session()):
+#         return redirect(url_for('home_page'))
+#
+#     role_id = request.args.get('id')
+#     return render_template('manage_role_edit.html',
+#                            title='编辑角色',
+#                            id=role_id,
+#                            action='PATCH')
+
+
+app.add_url_rule('/manage/service-template/', view_func=views.ManageServiceTemplateView.as_view('manage_service_template'))
+# @app.route('/manage/service-template/')
+# def manage_service_template():
+#     db_session = derive_db_session(pagination=True)
+#     if not permission.check_manage_service_template_permission(db_session, derive_user_id_from_session()):
+#         raise exception.http.Forbidden()
+#
+#     page = request.args.get('page')
+#     try:
+#         page = int(page) if page is not None else 1
+#     except ValueError:
+#         return redirect(url_for('manage_service_template'))
+#
+#     pagination = db_session.query(model.ServiceTemplate).order_by(model.ServiceTemplate.id).paginate(
+#         page, __ITEM_PER_PAGE, False)
+#     if page > 1 and len(pagination.items) is 0:
+#         return redirect(url_for('manage_service_template'))
+#
+#     return render_template('manage_service_template.html',
+#                            title='套餐模版管理',
+#                            pagination=pagination,
+#                            pagination_url_for='manage_service_template')
+
+
+app.add_url_rule('/manage/service-template/create/',
+                 view_func=views.CreateServiceTemplateView.as_view('create_service_template'))
+# @app.route('/manage/service-template/create/')
+# def create_service_template():
+#     if not permission.check_manage_service_template_permission(derive_db_session(), derive_user_id_from_session()):
+#         raise exception.http.Forbidden()
+#
+#     service_type = request.args.get('type') if request.args.get('type') else 0
+#
+#     return render_template('manage_service_template_edit.html',
+#                            title='创建套餐',
+#                            type=service_type,
+#                            action='POST')
+
+
+app.add_url_rule('/manage/service-template/edit/',
+                 view_func=views.EditServiceTemplateView.as_view('edit_service_template'))
+# @app.route('/manage/service-template/edit/')
+# def edit_service_template():
+#     if not permission.check_manage_service_template_permission(derive_db_session(), derive_user_id_from_session()):
+#         raise exception.http.Forbidden()
+#
+#     service_template_id = request.args.get('id')
+#
+#     return render_template('manage_service_template_edit.html',
+#                            title='编辑套餐',
+#                            id=service_template_id,
+#                            action='PATCH')
+
+
+app.add_url_rule('/manage/event/',
+                 view_func=views.ManageEventView.as_view('manage_event'))
+# @app.route('/manage/event/')
+# def manage_event():
+#     db_session = derive_db_session(pagination=True)
+#     if not permission.check_manage_event_permission(db_session, derive_user_id_from_session()):
+#         raise exception.http.Forbidden()
+#
+#     page = request.args.get('page')
+#     try:
+#         page = int(page) if page is not None else 1
+#     except ValueError:
+#         return redirect(url_for('manage_event'))
+#
+#     pagination = db_session.query(model.Event).order_by(model.Event.created_at.desc()).paginate(
+#         page, __ITEM_PER_PAGE, False)
+#     if page > 1 and len(pagination.items) is 0:
+#         return redirect(url_for('manage_event'))
+#     else:
+#         for product in pagination.items:
+#             user = db_session.query(model.User).filter_by(id=product.user_id).first()
+#             product.user_name = user.name
+#
+#     return render_template('manage_event.html',
+#                            title='公告管理',
+#                            pagination=pagination,
+#                            pagination_url_for='manage_event')
+
+
+app.add_url_rule('/manage/event/create/',
+                 view_func=views.PermissionRequiredView.as_view('create_event',
+                                                                'manage_event_edit.html',
+                                                                '发布公告',
+                                                                permission.check_manage_event_permission,
+                                                                action='POST'))
+# @app.route('/manage/event/create/')
+# def create_event():
+#     if not permission.check_manage_event_permission(derive_db_session(), derive_user_id_from_session()):
+#         return redirect(url_for('home_page'))
+#
+#     return render_template('manage_event_edit.html',
+#                            title='发布公告',
+#                            action='POST')
+
+
+app.add_url_rule('/manage/event/edit/',
+                 view_func=views.EditEventView.as_view('edit_event'))
+# @app.route('/manage/event/edit/')
+# def edit_event():
+#     if not permission.check_manage_event_permission(derive_db_session(), derive_user_id_from_session()):
+#         return redirect(url_for('home_page'))
+#
+#     product_id = request.args.get('id')
+#     return render_template('manage_event_edit.html',
+#                            title='编辑公告',
+#                            id=product_id,
+#                            action='PATCH')
+
+
+app.add_url_rule('/manage/user/',
+                 view_func=views.ManageUserView.as_view('manage_user'))
+# @app.route('/manage/user/')
+# def manage_user():
+#     db_session = derive_db_session(pagination=True)
+#     if not permission.check_manage_user_permission(db_session, derive_user_id_from_session()):
+#         return redirect(url_for('home_page'))
+#
+#     url = url_for('manage_user')
+#     page = request.args.get('page')
+#     try:
+#         page = int(page) if page is not None else 1
+#     except ValueError:
+#         return redirect(url)
+#
+#     pagination = db_session.query(model.User).order_by(model.User.created_at).paginate(
+#         page, __ITEM_PER_PAGE, False)
+#     if page > 1 and len(pagination.items) is 0:
+#         return redirect(url)
+#
+#     return render_template('manage_user.html',
+#                            title='用户管理',
+#                            pagination=pagination,
+#                            pagination_url_for='manage_user')
+
+
+app.add_url_rule('/user/<name>',
+                 view_func=views.UserProfileView.as_view('user_profile'))
+# @app.route('/user/<name>')
+# def show_user_profile(name):
+#     permission.check_user_permission()
+#
+#     db_session = derive_db_session()
+#     user = db_session.query(model.User).filter_by(name=name).first()
+#     if user is None:
+#         return abort(404)
+#
+#     return render_template('user.html',
+#                            title='用户' + name,
+#                            user=user)
+
+
+app.add_url_rule('/event/',
+                 view_func=views.EventView.as_view('event'))
+# @app.route('/event/')
+# def event():
+#     permission.check_user_permission()
+#
+#     page = request.args.get('page')
+#     try:
+#         page = int(page) if page is not None else 1
+#     except ValueError:
+#         return redirect(url_for('event'))
+#
+#     db_session = derive_db_session(pagination=True)
+#     pagination = db_session.query(model.Event).order_by(model.Event.created_at.desc()).paginate(
+#         page, __ITEM_PER_PAGE, False
+#     )
+#     if page > 1 and len(pagination.items) is 0:
+#         return redirect(url_for('event'))
+#
+#     for evenet in pagination.items:
+#         user = db_session.query(model.User).filter_by(id=evenet.user_id).first()
+#         evenet.user_name = user.name
+#         evenet.user_image = user.image
+#
+#     return render_template('event.html',
+#                            title='公告',
+#                            pagination=pagination,
+#                            pagination_url_for='event')
+
+
+app.add_url_rule('/event/<int:event_id>',
+                 view_func=views.EventDetailView.as_view('event_detail'))
+# @app.route('/event/<int:event_id>')
+# def event_detail(event_id):
+#     permission.check_user_permission()
+#
+#     db_session = derive_db_session()
+#     event = db_session.query(model.Event).filter_by(id=event_id).first()
+#     if event is None:
+#         return abort(404)
+#
+#     user = db_session.query(model.User).filter_by(id=event.user_id).first()
+#
+#     event.html_content = markdown2.markdown(event.content, extras=['fenced-code-blocks', 'tables', 'toc'])
+#
+#     event.html_content = event.html_content.replace('{{ image }}', app.config['URL_OF_BLOG_IMAGE'])
+#
+#     event.tags = event.tag.split(' ')
+#     event.user_name = user.name
+#     event.user_image = user.image
+#
+#     return render_template('event_view.html',
+#                            title='公告',
+#                            event=event)
 
 
 app.add_url_rule('/product/', view_func=views.UserView.as_view('product', 'product.html', '我的学术'))
 
 
-@app.route('/product/detail/<service_id>')
-def product_detail(service_id):
-    # 防止查看不属于当前登录用户的套餐详情
-    user_id = derive_user_id_from_session()
-    db_session = derive_db_session()
+app.add_url_rule('/product/detail/<service_id>',
+                 view_func=views.ProductDetailView.as_view('product_detail'))
+# @app.route('/product/detail/<service_id>')
+# def product_detail(service_id):
+#     # 防止查看不属于当前登录用户的套餐详情
+#     user_id = derive_user_id_from_session()
+#     db_session = derive_db_session()
+#
+#     user_service = db_session.query(model.UserService) \
+#         .filter(model.Service.id == service_id) \
+#         .filter(model.UserService.service_id == model.Service.id) \
+#         .filter(model.UserService.user_id == user_id).first()
+#     if user_service is None:
+#         return redirect(url_for('product'))
+#
+#     return render_template('product_detail.html',
+#                            service_id=service_id,
+#                            title='学术详情')
 
-    user_service = db_session.query(model.UserService) \
-        .filter(model.Service.id == service_id) \
-        .filter(model.UserService.service_id == model.Service.id) \
-        .filter(model.UserService.user_id == user_id).first()
-    if user_service is None:
-        return redirect(url_for('product'))
-
-    return render_template('product_detail.html',
-                           service_id=service_id,
-                           title='学术详情')
-
-
-@app.route('/product/create/')
-def create_product():
-    permission.check_user_permission()
-
-    db_session = derive_db_session()
-
-    monthly_services = db_session.query(model.ServiceTemplate) \
-        .filter(model.ServiceTemplate.type == model.ServiceTemplate.MONTHLY) \
-        .all()
-    for s in monthly_services:
-        s.descriptions = s.description.split('#')
-
-    data_services = db_session.query(model.ServiceTemplate) \
-        .filter(model.ServiceTemplate.type == model.ServiceTemplate.DATA) \
-        .all()
-    for s in data_services:
-        s.descriptions = s.description.split('#')
-
-    return render_template('product_create.html',
-                           monthly_services=monthly_services,
-                           data_services=data_services,
-                           title='获取新学术')
-
-
-@app.route('/product/create/pay/<service_template_id>')
-def pay_product(service_template_id):
-    user_id = derive_user_id_from_session()
-
-    db_session = derive_db_session()
-    service_template = db_session.query(model.ServiceTemplate) \
-        .filter(model.ServiceTemplate.id == service_template_id).first()
-    if service_template is None:
-        return abort(404)
-    service_template.descriptions = service_template.description.split('#')
-    service_template.total_price = service_template.price + service_template.initialization_fee
-
-    user_scholar_balance = db_session.query(model.UserScholarBalance) \
-        .filter(model.UserScholarBalance.user_id == user_id).first()
-    balance = user_scholar_balance.balance
-
-    return render_template('product_pay.html',
-                           action='create',
-                           service=service_template,
-                           balance=balance,
-                           title='支付')
+app.add_url_rule('/product/create/',
+                 view_func=views.CreateProductView.as_view('create_product'))
+# @app.route('/product/create/')
+# def create_product():
+#     permission.check_user_permission()
+#
+#     db_session = derive_db_session()
+#
+#     monthly_services = db_session.query(model.ServiceTemplate) \
+#         .filter(model.ServiceTemplate.type == model.ServiceTemplate.MONTHLY) \
+#         .all()
+#     for s in monthly_services:
+#         s.descriptions = s.description.split('#')
+#
+#     data_services = db_session.query(model.ServiceTemplate) \
+#         .filter(model.ServiceTemplate.type == model.ServiceTemplate.DATA) \
+#         .all()
+#     for s in data_services:
+#         s.descriptions = s.description.split('#')
+#
+#     return render_template('product_create.html',
+#                            monthly_services=monthly_services,
+#                            data_services=data_services,
+#                            title='获取新学术')
 
 
-@app.route('/product/renew/pay/<service_id>')
-def renew_product(service_id):
-    # 防止当前登录用户续费不属于自己的套餐
-    user_id = derive_user_id_from_session()
-    db_session = derive_db_session()
+app.add_url_rule('/product/create/pay/<service_template_id>',
+                 view_func=views.PayProductView.as_view('pay_product'))
+# @app.route('/product/create/pay/<service_template_id>')
+# def pay_product(service_template_id):
+#     user_id = derive_user_id_from_session()
+#
+#     db_session = derive_db_session()
+#     service_template = db_session.query(model.ServiceTemplate) \
+#         .filter(model.ServiceTemplate.id == service_template_id).first()
+#     if service_template is None:
+#         return abort(404)
+#     service_template.descriptions = service_template.description.split('#')
+#     service_template.total_price = service_template.price + service_template.initialization_fee
+#
+#     user_scholar_balance = db_session.query(model.UserScholarBalance) \
+#         .filter(model.UserScholarBalance.user_id == user_id).first()
+#     balance = user_scholar_balance.balance
+#
+#     return render_template('product_pay.html',
+#                            action='create',
+#                            service=service_template,
+#                            balance=balance,
+#                            title='支付')
 
-    user_service = db_session.query(model.UserService) \
-        .filter(model.Service.id == service_id) \
-        .filter(model.UserService.service_id == model.Service.id) \
-        .filter(model.UserService.user_id == user_id).first()
-    if user_service is None:
-        return redirect(url_for('product'))
 
-    service = db_session.query(model.Service).filter(model.Service.id == service_id).first()
-
-    service_template = db_session.query(model.ServiceTemplate) \
-        .filter(model.ServiceTemplate.id == service.template_id).first()
-    if service_template is None:
-        return abort(404)
-    service_template.descriptions = service_template.description.split('#')
-    service_template.total_price = service_template.price
-
-    user_scholar_balance = db_session.query(model.UserScholarBalance) \
-        .filter(model.UserScholarBalance.user_id == user_id).first()
-    balance = user_scholar_balance.balance
-
-    return render_template('product_pay.html',
-                           action='renew',
-                           service=service_template,
-                           balance=balance,
-                           title='续费')
+app.add_url_rule('/product/renew/pay/<service_id>',
+                 view_func=views.RenewProductView.as_view('renew_product'))
+# @app.route('/product/renew/pay/<service_id>')
+# def renew_product(service_id):
+#     # 防止当前登录用户续费不属于自己的套餐
+#     user_id = derive_user_id_from_session()
+#     db_session = derive_db_session()
+#
+#     user_service = db_session.query(model.UserService) \
+#         .filter(model.Service.id == service_id) \
+#         .filter(model.UserService.service_id == model.Service.id) \
+#         .filter(model.UserService.user_id == user_id).first()
+#     if user_service is None:
+#         return redirect(url_for('product'))
+#
+#     service = db_session.query(model.Service).filter(model.Service.id == service_id).first()
+#
+#     service_template = db_session.query(model.ServiceTemplate) \
+#         .filter(model.ServiceTemplate.id == service.template_id).first()
+#     if service_template is None:
+#         return abort(404)
+#     service_template.descriptions = service_template.description.split('#')
+#     service_template.total_price = service_template.price
+#
+#     user_scholar_balance = db_session.query(model.UserScholarBalance) \
+#         .filter(model.UserScholarBalance.user_id == user_id).first()
+#     balance = user_scholar_balance.balance
+#
+#     return render_template('product_pay.html',
+#                            action='renew',
+#                            service=service_template,
+#                            balance=balance,
+#                            title='续费')
 
 
 app.add_url_rule('/agreement/', view_func=views.BaseView.as_view('agreement', 'agreement.html', '用户协议'))

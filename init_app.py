@@ -14,7 +14,9 @@ import time
 #     q = qiniu.Auth(access_key, secret_key)
 #
 #     return q
-from view import method_views
+from flask_sqlalchemy import SQLAlchemy
+
+from view import method_views, views
 
 
 def init_jinja2_global(app):
@@ -38,6 +40,13 @@ def init_method_views(app):
     method_views.set_item_per_page(app.config['ITEM_PER_PAGE'])
     method_views.set_url_of_blog_image(app.config['URL_OF_BLOG_IMAGE'])
     method_views.set_service_min_port(app.config['SERVICE_MIN_PORT'])
+
+
+def init_views(app):
+    views.set_db(SQLAlchemy(app))
+    views.set_sqlalchemy_database_uri(app.config['SQLALCHEMY_DATABASE_URI'])
+    views.set_item_per_page(app.config['ITEM_PER_PAGE'])
+    views.set_url_of_blog_image(app.config['URL_OF_BLOG_IMAGE'])
 
 
 def datetime_filter(t):

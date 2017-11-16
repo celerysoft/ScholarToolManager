@@ -2,7 +2,9 @@ import datetime
 import json
 import logging
 import socket
+
 import os
+import urllib.error
 import urllib.request
 
 import configs
@@ -52,4 +54,8 @@ while True:
 
     data = json.dumps(msg.decode('utf-8')).encode('utf-8')
     request = urllib.request.Request(api_url, data=msg, headers={'Content-type': 'application/json'})
-    response = urllib.request.urlopen(request).read()
+
+    try:
+        response = urllib.request.urlopen(request).read()
+    except urllib.error.HTTPError as e:
+        logging.error(msg.decode())

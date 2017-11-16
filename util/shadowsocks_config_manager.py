@@ -46,7 +46,7 @@ def remove_port(port):
         f.writelines(lines)
 
 
-def recreate_shadowsocks_config_file(db_session, method='aes-256-cfb', timeout=300):
+def recreate_shadowsocks_config_file(db_session, method='aes-256-cfb', timeout=300, debug=False):
     """
 
     :param db_session: SQLAlchemy
@@ -65,7 +65,10 @@ def recreate_shadowsocks_config_file(db_session, method='aes-256-cfb', timeout=3
     port2, password2 = 20001, 12345678
     lines = []
     lines.append('{%s' % os.linesep)
-    lines.append('%s"server": "0.0.0.0",%s' % (__CONFIG_FILE_INDENT, os.linesep))
+    if debug:
+        lines.append('%s"server": "127.0.0.1",%s' % (__CONFIG_FILE_INDENT, os.linesep))
+    else:
+        lines.append('%s"server": "0.0.0.0",%s' % (__CONFIG_FILE_INDENT, os.linesep))
     lines.append('%s"port_password": {%s' % (__CONFIG_FILE_INDENT, os.linesep))
 
     service_password_count = len(service_passwords)
