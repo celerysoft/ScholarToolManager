@@ -54,6 +54,8 @@ class Config(object):
     URL_OF_QINIU_AVATAR = 'http://oz3d04vwf.bkt.clouddn.com/'
     # 新注册用户默认学术积分
     NEW_USER_SCHOLAR_BALANCE = 5120
+    # reCAPTCHA secret key
+    RE_CAPTCHA_SECRET_KEY = '6LenHTkUAAAAACSATcazsqs3kuH6NkT7KQMz4-dvdcps'
     # 日志文件
     LOG_FILE = '/Users/admin/Developer/Python/scholar-tool-manager/app.log'
     # SS服务监听器日志文件

@@ -3,8 +3,53 @@
 {% block beforehead %}
 
     <script>
+        let
+            vm = null,
+            reCaptchaDialogInst = null;
+        var dataCallback = function () {
+            let grecaptchaResponse = grecaptcha.getResponse();
+            if (grecaptchaResponse.length === 0) {
+                return mdui.snackbar({
+                    message: '请先完成人机身份验证'
+                });
+            }
+
+            httpPost('/api/grecaptcha', { response: grecaptchaResponse }, function (error, data, jqXHR) {
+                if (error) {
+                    grecaptcha.reset();
+                    return mdui.snackbar({message: error.message});
+                }
+
+                return httpPost('/api/login', {
+                    name: vm.name.trim(),
+                    password: CryptoJS.SHA1(vm.password).toString()
+                }, function (error, data, jqXHR) {
+                    if (error) {
+                        reCaptchaDialogInst.close();
+                        return mdui.snackbar({message: error.message});
+                    }
+
+                    return mdui.snackbar({
+                        message: '登录成功，点击屏幕继续',
+                        closeOnOutsideClick: true,
+                        onClose: function () {
+                            location.assign('/');
+                        }
+                    });
+                });
+            });
+        };
+
         $(function () {
-            let vm = new Vue({
+            reCaptchaDialogInst = new mdui.Dialog('#dialog-recaptcha');
+            let reCaptchaDialog = $('#dialog-recaptcha');
+            reCaptchaDialog.on('close.mdui.dialog', () => {
+                if (grecaptcha) {
+                    grecaptcha.reset()
+                }
+            });
+
+            vm = new Vue({
                 el: '#vm',
                 data: {
                     name: '',
@@ -13,7 +58,6 @@
                 methods: {
                     submit: function (event) {
                         event.preventDefault();
-                        let $form = $('#vm');
                         if (!this.name.trim()) {
                             return mdui.snackbar({
                                 message: '请输入用户名或邮箱地址'
@@ -24,28 +68,15 @@
                                 message: '口令长度至少为6个字符'
                             });
                         }
-                        $form.httpPost('/api/login', {
-                            name: this.name.trim(),
-                            password: CryptoJS.SHA1(this.password).toString()
-                        }, function (error, data, jqXHR) {
-                            if (error) {
-                                return mdui.snackbar({message: error.message});
-                            }
 
-                            return mdui.snackbar({
-                                message: '登录成功，点击屏幕继续',
-                                closeOnOutsideClick: true,
-                                onClose: function () {
-                                    location.assign('/');
-                                }
-                            });
-                        });
+                        reCaptchaDialogInst.open();
                     }
                 }
             });
         });
     </script>
 
+    <script src="https://www.recaptcha.net/recaptcha/api.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -56,34 +87,49 @@
     </div>
 
     <div class="mdui-row">
-    <div class="mdui-card mdui-typo login-card mdui-hoverable mdui-col-xs-12 mdui-col-sm-6 mdui-col-offset-sm-3">
-        <h1>登录
-            <small style="margin-left: 16px;">畅游Celery Soft</small>
-        </h1>
-        <form id="vm">
-            <div class="mdui-textfield mdui-textfield-floating-label">
-                <label class="mdui-textfield-label">用户名或邮箱地址</label>
-                <input class="mdui-textfield-input" v-model="name" type="text" required/>
-                <div class="mdui-textfield-error">用户名或邮箱地址不能为空</div>
-            </div>
+        <div class="mdui-card mdui-typo login-card mdui-hoverable mdui-col-xs-12 mdui-col-sm-6 mdui-col-offset-sm-3">
+            <h1>登录
+                <small style="margin-left: 16px;">畅游Celery Soft</small>
+            </h1>
+            <form id="vm">
+                <div class="mdui-textfield mdui-textfield-floating-label">
+                    <label class="mdui-textfield-label">用户名或邮箱地址</label>
+                    <input class="mdui-textfield-input" v-model="name" type="text" required/>
+                    <div class="mdui-textfield-error">用户名或邮箱地址不能为空</div>
+                </div>
 
-            <div class="mdui-textfield mdui-textfield-floating-label">
-                <label class="mdui-textfield-label">密码</label>
-                <input class="mdui-textfield-input" v-model="password" type="password"
-                       pattern="^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z]).*$" required/>
-                <div class="mdui-textfield-error">密码至少 6 位，且包含大小写字母</div>
-            </div>
+                <div class="mdui-textfield mdui-textfield-floating-label">
+                    <label class="mdui-textfield-label">密码</label>
+                    <input class="mdui-textfield-input" v-model="password" type="password"
+                           pattern="^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z]).*$" required/>
+                    <div class="mdui-textfield-error">密码至少 6 位，且包含大小写字母</div>
+                </div>
 
-            <button v-on:click="submit" type="submit" class="mdui-btn mdui-color-theme-accent mdui-ripple mdui-center">
-                登录
-            </button>
-        </form>
-    </div>
+                <button v-on:click="submit" type="submit" class="mdui-btn mdui-color-theme-accent mdui-ripple mdui-center">
+                    登录
+                </button>
+            </form>
+        </div>
     </div>
 
     <div class="mdui-row">
-    <div class="mdui-typo text-under-login-card mdui-text-color-theme-secondary mdui-col-xs-12 mdui-col-sm-6 mdui-col-offset-sm-3">
-        还没有账号？请先<a href="/register/">注册</a>
+        <div class="mdui-typo text-under-login-card mdui-text-color-theme-secondary mdui-col-xs-12 mdui-col-sm-6 mdui-col-offset-sm-3">
+            还没有账号？请先<a href="/register/">注册</a>
+        </div>
     </div>
+
+    <!-- 人机身份验证对话框 -->
+    <div id="dialog-recaptcha" class="mdui-dialog">
+        <div class="mdui-dialog-title">完成人机身份验证</div>
+        <div class="mdui-dialog-content">
+            为了本站的良好运行，防止受到爬虫机器人的攻击，请协助完成人机身份验证。
+            <div style="text-align: center; margin-top: 16px">
+                {% if debug %}
+                    <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" data-callback="dataCallback" style="display: inline-block"></div>
+                {% else %}
+                    <div class="g-recaptcha" data-sitekey="6LenHTkUAAAAAC4Mf2VShWviwK8YGJfLeZlyspgV" data-callback="dataCallback" style="display: inline-block"></div>
+                {% endif %}
+            </div>
+        </div>
     </div>
 {% endblock %}

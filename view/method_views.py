@@ -12,6 +12,7 @@ import random
 import re
 import sqlalchemy
 from flask import make_response, jsonify, json, request, session, abort, g
+from flask import current_app as app
 from flask.views import MethodView
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -22,58 +23,65 @@ import model
 import permission
 from util import date_util, shadowsocks_controller
 
-__RE_EMAIL = re.compile(r'^[a-z0-9\.\-\_]+\@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$')
-__RE_SHA1 = re.compile(r'^[0-9a-f]{40}$')
+_RE_EMAIL = re.compile(r'^[a-z0-9\.\-\_]+\@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$')
+_RE_SHA1 = re.compile(r'^[0-9a-f]{40}$')
 __SHA1_PASSWORD_SALT = None
 
 
-def set_sha1_password_salt(salt):
-    global __SHA1_PASSWORD_SALT
-    __SHA1_PASSWORD_SALT = salt
+# def set_sha1_password_salt(salt):
+#     global __SHA1_PASSWORD_SALT
+#     __SHA1_PASSWORD_SALT = salt
 
 
 def derive_sha1_password_salt():
+    global __SHA1_PASSWORD_SALT
+    if __SHA1_PASSWORD_SALT is None:
+        __SHA1_PASSWORD_SALT = app.config['SHA1_SALT']
     return __SHA1_PASSWORD_SALT
 
 
 __ITEM_PER_PAGE = None
 
 
-def set_item_per_page(page):
-    global __ITEM_PER_PAGE
-    __ITEM_PER_PAGE = page
+# def set_item_per_page(page):
+#     global __ITEM_PER_PAGE
+#     __ITEM_PER_PAGE = page
 
 
 def get_item_per_page():
     global __ITEM_PER_PAGE
     if __ITEM_PER_PAGE is None:
-        __ITEM_PER_PAGE = 10
+        __ITEM_PER_PAGE = app.config['ITEM_PER_PAGE']
     return __ITEM_PER_PAGE
 
 
 __URL_OF_BLOG_IMAGE = None
 
 
-def set_url_of_blog_image(url):
-    global __URL_OF_BLOG_IMAGE
-    __URL_OF_BLOG_IMAGE = url
+# def set_url_of_blog_image(url):
+#     global __URL_OF_BLOG_IMAGE
+#     __URL_OF_BLOG_IMAGE = url
 
 
 def get_url_of_blog_image():
     global __URL_OF_BLOG_IMAGE
+    if __URL_OF_BLOG_IMAGE is None:
+        __URL_OF_BLOG_IMAGE = app.config['URL_OF_BLOG_IMAGE']
     return __URL_OF_BLOG_IMAGE
 
 
 __SERVICE_MIN_PORT = None
 
 
-def set_service_min_port(port):
-    global __SERVICE_MIN_PORT
-    __SERVICE_MIN_PORT = port
+# def set_service_min_port(port):
+#     global __SERVICE_MIN_PORT
+#     __SERVICE_MIN_PORT = port
 
 
 def get_service_min_port():
     global __SERVICE_MIN_PORT
+    if __SERVICE_MIN_PORT is None:
+        __SERVICE_MIN_PORT = app.config['SERVICE_MIN_PORT']
     return __SERVICE_MIN_PORT
 
 
@@ -187,6 +195,48 @@ class TodayInHistoryAPI(MethodView):
         return make_response(jsonify(json.loads(response)), 200)
 
 
+class ReCaptchaApi(MethodView):
+    methods = ['POST']
+
+    def post(self):
+        api_url = 'https://www.recaptcha.net/recaptcha/api/siteverify'
+
+        g_response = request.json['response']
+
+        secret_key = None
+        debug = app.config['DEBUG']
+        if debug:
+            secret_key = '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'
+        else:
+            secret_key = app.config['RE_CAPTCHA_SECRET_KEY']
+        data = {
+            'secret': secret_key,
+            'response': g_response,
+        }
+        data = urllib.parse.urlencode(data).encode()
+        # noinspection PyUnresolvedReferences
+        http_request = urllib.request.Request(api_url, method='POST', data=data)
+        response = None
+        # 6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
+        try:
+            # noinspection PyUnresolvedReferences
+            response = urllib.request.urlopen(http_request).read()
+        except Exception as e:
+            return make_response('人机身份验证过程发生未知错误，请重试', 500)
+
+        response_dict = json.loads(response)
+        if response_dict['success']:
+            api_response = {
+                'message': '人机身份验证成功'
+            }
+            return make_response(jsonify(api_response), 200)
+        else:
+            api_response = {
+                'message': '你没有通过人机身份验证'
+            }
+            return make_response(jsonify(api_response), 400)
+
+
 class LoginAPI(BaseView):
     methods = ['GET', 'POST']
 
@@ -257,13 +307,13 @@ class RegisterAPI(BaseView):
         password = request.json['password']
         code = request.json['invitation_code']
 
-        global __RE_EMAIL
-        global __RE_SHA1
+        global _RE_EMAIL
+        global _RE_SHA1
         if not username or not username.strip():
             return self.api_document('请输入用户名', 400)
-        if not email or not __RE_EMAIL.match(email):
+        if not email or not _RE_EMAIL.match(email):
             return self.api_document('请输入正确的邮箱', 400)
-        if not password or not __RE_SHA1.match(password):
+        if not password or not _RE_SHA1.match(password):
             return self.api_document('请输入符合规则的密码', 400)
 
         db_session = derive_db_session()

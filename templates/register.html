@@ -4,12 +4,67 @@
 
     <script>
         function validateEmail(email) {
-            var re = /^[a-z0-9\.\-\_]+\@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$/;
+            let re = /^[a-z0-9\.\-\_]+\@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$/;
             return re.test(email.toLowerCase());
         }
 
+        function validatePassword(password) {
+            let re = /^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z]).*$/;
+            return re.test(password);
+        }
+
+        let
+            vm = null,
+            reCaptchaDialogInst = null;
+        var dataCallback = function () {
+            let grecaptchaResponse = grecaptcha.getResponse();
+            if (grecaptchaResponse.length === 0) {
+                return mdui.snackbar({
+                    message: '请先完成人机身份验证'
+                });
+            }
+
+            httpPost('/api/grecaptcha', { response: grecaptchaResponse }, function (error, data, jqXHR) {
+                if (error) {
+                    grecaptcha.reset();
+                    return mdui.snackbar({message: error.message});
+                }
+
+                let email = vm.email.trim().toLowerCase();
+                return httpPost('/api/register', {
+                    name: vm.name.trim(),
+                    email: email,
+                    password: CryptoJS.SHA1(vm.password.trim()).toString(),
+                    invitation_code: vm.invitation_code.trim()
+                }, function (error, data, jqXHR) {
+                    if (error) {
+                        reCaptchaDialogInst.close();
+                        return mdui.snackbar({
+                            message: error.message
+                        });
+                    }
+
+                    return mdui.snackbar({
+                        message: '注册成功，开始畅游Celery Soft学术吧，点击屏幕继续',
+                        closeOnOutsideClick: true,
+                        onClose: function () {
+                            location.assign('/');
+                        }
+                    });
+                });
+            });
+        };
+
         $(function () {
-            var vm = new Vue({
+            reCaptchaDialogInst = new mdui.Dialog('#dialog-recaptcha');
+            let reCaptchaDialog = $('#dialog-recaptcha');
+            reCaptchaDialog.on('close.mdui.dialog', () => {
+                if (grecaptcha) {
+                    grecaptcha.reset()
+                }
+            });
+
+            vm = new Vue({
                 el: '#vm',
                 data: {
                     name: '',
@@ -22,7 +77,6 @@
                     submit: function (event) {
                         event.preventDefault();
 
-                        let $form = $('#vm');
                         if (!this.name.trim()) {
                             return mdui.snackbar({
                                 message: '请输入用户名'
@@ -38,6 +92,11 @@
                                 message: '口令长度至少为6个字符'
                             });
                         }
+                        if (!validatePassword(this.password.trim())) {
+                            return mdui.snackbar({
+                                message: '密码至少 6 位，且至少包含一个大写字母和一个小写字母'
+                            });
+                        }
                         if (this.password !== this.password_confirm) {
                             return mdui.snackbar({
                                 message: '两次输入的口令不一致'
@@ -50,33 +109,14 @@
                             });
                         }
 
-                        let email = this.email.trim().toLowerCase();
-                        $form.httpPost('/api/register', {
-                            name: this.name.trim(),
-                            email: email,
-                            password: CryptoJS.SHA1(this.password).toString(),
-                            invitation_code: this.invitation_code.trim()
-                        }, function (error, data, jqXHR) {
-                            if (error) {
-                                return mdui.snackbar({
-                                    message: error.message
-                                });
-                            }
-
-                            return mdui.snackbar({
-                                message: '注册成功，开始畅游Celery Soft学术吧，点击屏幕继续',
-                                closeOnOutsideClick: true,
-                                onClose: function () {
-                                    location.assign('/');
-                                }
-                            });
-                        });
+                        reCaptchaDialogInst.open();
                     }
                 }
             });
         });
     </script>
 
+    <script src='https://www.recaptcha.net/recaptcha/api.js'></script>
 {% endblock %}
 
 {% block content %}
@@ -104,14 +144,14 @@
                     <label class="mdui-textfield-label">密码</label>
                     <input class="mdui-textfield-input" v-model="password" type="password"
                            pattern="^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z]).*$" required/>
-                    <div class="mdui-textfield-error">密码至少 6 位，且包含大小写字母</div>
+                    <div class="mdui-textfield-error">密码至少 6 位，且至少包含一个大写字母和一个小写字母</div>
                 </div>
 
                 <div class="mdui-textfield mdui-textfield-floating-label">
                     <label class="mdui-textfield-label">确认密码</label>
                     <input class="mdui-textfield-input" v-model="password_confirm" type="password"
                            pattern="^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z]).*$" required/>
-                    <div class="mdui-textfield-error">密码至少 6 位，且包含大小写字母</div>
+                    <div class="mdui-textfield-error">密码至少 6 位，且至少包含一个大写字母和一个小写字母</div>
                 </div>
 
                 <div class="mdui-textfield mdui-textfield-floating-label">
@@ -139,4 +179,18 @@
         </div>
     </div>
 
+    <!-- 人机身份验证对话框 -->
+    <div id="dialog-recaptcha" class="mdui-dialog">
+        <div class="mdui-dialog-title">完成人机身份验证</div>
+        <div class="mdui-dialog-content">
+            为了本站的良好运行，防止受到爬虫机器人的攻击，请协助完成人机身份验证。
+            <div style="text-align: center; margin-top: 16px">
+                {% if debug %}
+                    <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" data-callback="dataCallback" style="display: inline-block"></div>
+                {% else %}
+                    <div class="g-recaptcha" data-sitekey="6LenHTkUAAAAAC4Mf2VShWviwK8YGJfLeZlyspgV" data-callback="dataCallback" style="display: inline-block"></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 {% endblock %}

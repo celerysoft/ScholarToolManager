@@ -2,6 +2,7 @@
 # -*-coding:utf-8 -*-
 import markdown2
 from flask import render_template, session, g, request, redirect, url_for, abort
+from flask import current_app as app
 from flask.views import View
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -35,28 +36,30 @@ def set_db(db_inst):
 __ITEM_PER_PAGE = None
 
 
-def set_item_per_page(page):
-    global __ITEM_PER_PAGE
-    __ITEM_PER_PAGE = page
+# def set_item_per_page(page):
+#     global __ITEM_PER_PAGE
+#     __ITEM_PER_PAGE = page
 
 
 def get_item_per_page():
     global __ITEM_PER_PAGE
     if __ITEM_PER_PAGE is None:
-        __ITEM_PER_PAGE = 10
+        __ITEM_PER_PAGE = app.config['ITEM_PER_PAGE']
     return 5
 
 
 __URL_OF_BLOG_IMAGE = None
 
 
-def set_url_of_blog_image(url):
-    global __URL_OF_BLOG_IMAGE
-    __URL_OF_BLOG_IMAGE = url
+# def set_url_of_blog_image(url):
+#     global __URL_OF_BLOG_IMAGE
+#     __URL_OF_BLOG_IMAGE = url
 
 
 def get_url_of_blog_image():
     global __URL_OF_BLOG_IMAGE
+    if __URL_OF_BLOG_IMAGE is None:
+        __URL_OF_BLOG_IMAGE = app.config['URL_OF_BLOG_IMAGE']
     return __URL_OF_BLOG_IMAGE
 
 
@@ -116,6 +119,42 @@ class PermissionRequiredView(UserView):
         if self.permission_func is not None:
             if not self.permission_func(derive_db_session(), derive_user_id_from_session()):
                 raise exception.http.Forbidden()
+
+
+class LoginView(BaseView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.template = 'login.html'
+        self.title = '登录'
+
+    def dispatch_request(self):
+        debug = app.config['DEBUG']
+
+        if session.get('user', None) is not None:
+            return redirect(url_for('home_page'))
+
+        return render_template(self.template,
+                               title=self.title,
+                               debug=debug,
+                               **self.kwargs)
+
+
+class RegisterView(BaseView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.template = 'register.html'
+        self.title = '注册'
+
+    def dispatch_request(self):
+        debug = app.config['DEBUG']
+
+        if session.get('user', None) is not None:
+            return redirect(url_for('home_page'))
+
+        return render_template(self.template,
+                               title=self.title,
+                               debug=debug,
+                               **self.kwargs)
 
 
 class ManageInvitationView(PermissionRequiredView):

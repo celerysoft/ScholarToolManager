@@ -35,18 +35,18 @@ def init_jinja2():
 
 
 def init_method_views(app):
-    method_views.set_sha1_password_salt(app.config['SHA1_SALT'])
     method_views.set_sqlalchemy_database_uri(app.config['SQLALCHEMY_DATABASE_URI'])
-    method_views.set_item_per_page(app.config['ITEM_PER_PAGE'])
-    method_views.set_url_of_blog_image(app.config['URL_OF_BLOG_IMAGE'])
-    method_views.set_service_min_port(app.config['SERVICE_MIN_PORT'])
+    # method_views.set_sha1_password_salt(app.config['SHA1_SALT'])
+    # method_views.set_item_per_page(app.config['ITEM_PER_PAGE'])
+    # method_views.set_url_of_blog_image(app.config['URL_OF_BLOG_IMAGE'])
+    # method_views.set_service_min_port(app.config['SERVICE_MIN_PORT'])
 
 
 def init_views(app):
     views.set_db(SQLAlchemy(app))
     views.set_sqlalchemy_database_uri(app.config['SQLALCHEMY_DATABASE_URI'])
-    views.set_item_per_page(app.config['ITEM_PER_PAGE'])
-    views.set_url_of_blog_image(app.config['URL_OF_BLOG_IMAGE'])
+    # views.set_item_per_page(app.config['ITEM_PER_PAGE'])
+    # views.set_url_of_blog_image(app.config['URL_OF_BLOG_IMAGE'])
 
 
 def datetime_filter(t):

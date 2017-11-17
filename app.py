@@ -2,7 +2,7 @@
 # -*-coding:utf-8 -*-
 import logging
 
-from flask import Flask, redirect, url_for, session, g
+from flask import Flask, redirect, url_for, session, g, current_app
 from flask.json import jsonify
 from flask_session import Session
 from sqlalchemy import create_engine
@@ -187,8 +187,8 @@ def logout():
 
 app.add_url_rule('/', view_func=views.UserView.as_view('home_page', 'index.html', '主页'))
 
-app.add_url_rule('/login/', view_func=views.BaseView.as_view('login', 'login.html', '登录'))
-app.add_url_rule('/register/', view_func=views.BaseView.as_view('register', 'register.html', '注册'))
+app.add_url_rule('/login/', view_func=views.LoginView.as_view('login'))
+app.add_url_rule('/register/', view_func=views.RegisterView.as_view('register'))
 app.add_url_rule('/manage/', view_func=views.PermissionRequiredView.as_view('manage', 'manage.html', '后台管理',
                                                                             permission.check_manage_permission))
 app.add_url_rule('/manage/invitation/', view_func=views.ManageInvitationView.as_view('manage_invitation'))
@@ -244,7 +244,8 @@ app.add_url_rule('/agreement/', view_func=views.BaseView.as_view('agreement', 'a
 # -------------------------------------------------- API -------------------------------------------------- #
 
 
-app.add_url_rule('/api/today_in_history', view_func=method_views.TodayInHistoryAPI.as_view('api_today_in_history'))
+app.add_url_rule('/api/grecaptcha', view_func=method_views.ReCaptchaApi.as_view('api_g_re_captcha'))
+app.add_url_rule('/api/today-in-history', view_func=method_views.TodayInHistoryAPI.as_view('api_today_in_history'))
 app.add_url_rule('/api/login', view_func=method_views.LoginAPI.as_view('api_login'))
 app.add_url_rule('/api/register', view_func=method_views.RegisterAPI.as_view('api_register'))
 app.add_url_rule('/api/user', view_func=method_views.UserAPI.as_view('api_user'))
