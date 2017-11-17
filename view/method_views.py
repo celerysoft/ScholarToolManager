@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 # -*-coding:utf-8 -*-
 import datetime
+import ssl
+
 import hashlib
 import urllib
 
@@ -187,10 +189,14 @@ class TodayInHistoryAPI(MethodView):
     def get(self):
         api_url = 'http://www.ipip5.com/today/api.php?type=json'
 
+        context = ssl.create_default_context()
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+
         # noinspection PyUnresolvedReferences
-        request = urllib.request.Request(api_url)
+        http_request = urllib.request.Request(api_url)
         # noinspection PyUnresolvedReferences
-        response = urllib.request.urlopen(request).read()
+        response = urllib.request.urlopen(http_request, context=context).read()
 
         return make_response(jsonify(json.loads(response)), 200)
 

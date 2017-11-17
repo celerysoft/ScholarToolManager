@@ -45,7 +45,7 @@ def get_item_per_page():
     global __ITEM_PER_PAGE
     if __ITEM_PER_PAGE is None:
         __ITEM_PER_PAGE = app.config['ITEM_PER_PAGE']
-    return 5
+    return __ITEM_PER_PAGE
 
 
 __URL_OF_BLOG_IMAGE = None
