@@ -5,7 +5,9 @@
         $(function () {
             const
                 ACTION = '{{ action }}',
-                ID = '{{ service.id }}',
+                ID = '{{ service_id }}',
+                DEFAULT_AUTO_RENEW = '{{ auto_renew }}',
+                TEMPLATE_ID = '{{ service.id }}',
                 TEMPLATE_TYPE = {{ service.type }}
 
             $('#btn-cancel').click(() => {
@@ -41,15 +43,11 @@
                     });
                 }
 
-                let data = {
-                    template_id: ID,
-                    password: password
-                };
+                let autoRenew = null;
                 if (TEMPLATE_TYPE === 0) {
-                    data['auto_renew'] = $('#cb-auto-renew').prop('checked');
+                    autoRenew = $('#cb-auto-renew').prop('checked');
                 }
-
-                httpPost('/api/service', data, function (error, data, jqXHR) {
+                Api.createService(TEMPLATE_ID, password, autoRenew, function (error, data, jqXHR) {
                     if (error) {
                         return mdui.snackbar({message: error.message});
                     }
@@ -65,15 +63,12 @@
             }
 
             function renewProduct() {
-                let data = {
-                    id: ID
-                };
+                let autoRenew = null;
                 if (TEMPLATE_TYPE === 0) {
-                    data['auto_renew'] = $('#cb-auto-renew').prop('checked');
-                    data['renew'] = true;
+                    autoRenew = $('#cb-auto-renew').prop('checked');
                 }
 
-                httpPatch('/api/service', data, function (error, data, jqXHR) {
+                Api.renewService(ID, autoRenew, function (error, data, jqXHR) {
                     if (error) {
                         return mdui.snackbar({message: error.message});
                     }
@@ -82,11 +77,13 @@
                         message: '续费成功，点击屏幕继续',
                         closeOnOutsideClick: true,
                         onClose: function () {
-                            location.assign('/product/detail/' + ID);
+                            location.assign('/product/detail/' + TEMPLATE_ID);
                         }
                     });
                 });
             }
+
+            $('#cb-auto-renew').prop('checked', DEFAULT_AUTO_RENEW === 'True');
         });
     </script>
 

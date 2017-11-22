@@ -16,7 +16,7 @@
 
         $(function () {
             $('#today_in_history_container').hide();
-            httpGet('/api/today-in-history', function (error, data, jqXHR) {
+            Api.getTodayInHistory(function (error, data, jqXHR) {
                 if (error) {
                     $('#loading').hide();
                     return mdui.alert(error.message);

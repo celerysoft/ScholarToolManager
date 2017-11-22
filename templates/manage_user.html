@@ -37,13 +37,31 @@
                     edit_role: function (id) {
                         stopPropagation();
                         modifyUserId = id;
-                        getRoles(modifyUserId)
 
+                        Api.getUserRole(id, function (error, data, jqXHR) {
+                            if (error) {
+                                return mdui.alert(error.message);
+                            }
+                            modifyUserRole = data.user_role.id;
+                            vmDialog.$data.roles = data.roles;
+                            vmDialog.$data.user_role = data.user_role.id;
+
+                            dialogInst.open()
+                        });
                     },
                     edit_scholar_balance: function (id) {
                         stopPropagation();
                         modifyUserId = id;
-                        getScholarBalance(modifyUserId)
+                        Api.getUserScholarBalance(modifyUserId, function (error, data, jqXHR) {
+                            if (error) {
+                                return mdui.alert(error.message);
+                            }
+
+                            vmBalanceDialog.$data.balance = data.balance;
+
+                            balanceDialogInst.open()
+                        });
+{#                        getScholarBalance(modifyUserId)#}
                     },
                     redirect_to_user_page: function (userName) {
                         stopPropagation();
@@ -79,7 +97,7 @@
                 },
                 methods: {
                     modifyUserRole: function () {
-                        httpPatch('/api/user', {user_id: modifyUserId, role_id: vmDialog.$data.user_role}, function (err, data, jqXHR) {
+                        Api.updateUserRole(modifyUserId, vmDialog.$data.user_role, function (err, data, jqXHR) {
                             dialogInst.close();
                             if (err) {
                                 return mdui.alert(err.message || err.error || err);
@@ -106,7 +124,7 @@
             btnRecharge.click(function () {
                 let amount = vmBalanceDialog.$data.recharge;
 
-                httpPatch('/api/scholar-balance', { user_id: modifyUserId, amount: amount }, function (error, data, jqXHR) {
+                Api.rechargeUserScholarBalance(modifyUserId, amount, function (error, data, jqXHR) {
                     balanceDialogInst.close();
                     vmBalanceDialog.$data.recharge = '';
                     if (error) {
@@ -118,35 +136,6 @@
                     });
                 });
             });
-
-            function getRoles(userId) {
-                let data = userId === null ? null : { user_id: userId};
-
-                httpGet('/api/role', data, function (error, data, jqXHR) {
-                    if (error) {
-                        return mdui.alert(error.message);
-                    }
-                    modifyUserRole = data.user_role.id;
-                    vmDialog.$data.roles = data.roles;
-                    vmDialog.$data.user_role = data.user_role.id;
-
-                    dialogInst.open()
-                })
-            }
-
-            function getScholarBalance(userId) {
-                let data = userId === null ? null : { user_id: userId};
-
-                httpGet('/api/scholar-balance', data, function (error, data, jqXHR) {
-                    if (error) {
-                        return mdui.alert(error.message);
-                    }
-
-                    vmBalanceDialog.$data.balance = data.balance;
-
-                    balanceDialogInst.open()
-                });
-            }
         });
     </script>
 

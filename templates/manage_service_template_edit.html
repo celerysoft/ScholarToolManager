@@ -48,11 +48,26 @@
                             initialization_fee: this.$data.initialization_fee
                         };
                         if (action === 'POST') {
-                            console.log(data);
-                            httpPost('/api/service-template', data, callback);
+                            Api.createServiceTemplate(
+                                this.$data.type,
+                                this.$data.title,
+                                this.$data.subtitle,
+                                this.$data.description,
+                                this.$data.balance,
+                                this.$data.price,
+                                this.$data.initialization_fee,
+                                callback);
                         } else if (action === 'PATCH') {
-                            data.id = ID;
-                            httpPatch('/api/service-template', data, callback);
+                            Api.updateServiceTemplate(
+                                ID,
+                                this.$data.type,
+                                this.$data.title,
+                                this.$data.subtitle,
+                                this.$data.description,
+                                this.$data.balance,
+                                this.$data.price,
+                                this.$data.initialization_fee,
+                                callback);
                         }
                     },
                     cancel: function (event) {
@@ -60,38 +75,30 @@
                         return location.assign('/manage/service-template/');
                     }
                 }
-            })
-
-            function getServiceTemplate(serviceId, renderFunc) {
-                let data = serviceId === null || serviceId === '' ? null : { id: serviceId };
-
-                httpGet('/api/service-template', data, function (error, data, jqXHR) {
-                    if (error) {
-                        return mdui.alert(error.message);
-                    }
-
-                    renderFunc(data.template);
-                });
-            }
+            });
 
             if (TYPE === '0') {
                 vm_service_template.$data.type = 0;
             } else if (TYPE === '1') {
                 vm_service_template.$data.type = 1;
             }
-            $('#loading').hide();
 
             if (ID) {
-                getServiceTemplate(ID, function (data) {
+                Api.getServiceTemplate(ID, function (error, data, jqXHR) {
                     $('#loading').hide();
 
-                    vm_service_template.$data.type = data.type;
-                    vm_service_template.$data.title  = data.title;
-                    vm_service_template.$data.subtitle = data.subtitle;
-                    vm_service_template.$data.description = data.description;
-                    vm_service_template.$data.balance = data.balance;
-                    vm_service_template.$data.price = data.price;
-                    vm_service_template.$data.initialization_fee = data.initialization_fee;
+                    if (error) {
+                        return mdui.alert(error.message);
+                    }
+
+                    let template = data.template;
+                    vm_service_template.$data.type = template.type;
+                    vm_service_template.$data.title  = template.title;
+                    vm_service_template.$data.subtitle = template.subtitle;
+                    vm_service_template.$data.description = template.description;
+                    vm_service_template.$data.balance = template.balance;
+                    vm_service_template.$data.price = template.price;
+                    vm_service_template.$data.initialization_fee = template.initialization_fee;
                 });
             }
             else {
@@ -139,12 +146,12 @@
                       style="padding-right: 10px;"></textarea>
         </div>
 
-         <div class="mdui-textfield">
+        <div class="mdui-textfield">
             <label class="mdui-textfield-label">流量</label>
             <input v-model="balance" class="mdui-textfield-input" type="text" style="padding-right: 10px;"/>
         </div>
 
-         <div class="mdui-textfield">
+        <div class="mdui-textfield">
             <label class="mdui-textfield-label">价格</label>
             <input v-model="price" class="mdui-textfield-input" type="text" style="padding-right: 10px;"/>
         </div>

@@ -34,7 +34,7 @@
                         stopPropagation();
                         mdui.confirm('确认要删除角色“' + name + '”？\n删除后不可恢复！',
                             function () {
-                                httpDelete('/api/role', {id: id}, function (err, r) {
+                                Api.deleteRole(id, function (err, r) {
                                     if (err) {
                                         return mdui.alert(err.message || err.error || err);
                                     }

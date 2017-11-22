@@ -24,34 +24,33 @@
                 });
             }
 
-            httpPost('/api/grecaptcha', { response: grecaptchaResponse }, function (error, data, jqXHR) {
+            Api.verifyGoogleReCaptcha(grecaptchaResponse, function (error, data, jqXHR) {
                 if (error) {
                     grecaptcha.reset();
                     return mdui.snackbar({message: error.message});
                 }
 
                 let email = vm.email.trim().toLowerCase();
-                return httpPost('/api/register', {
-                    name: vm.name.trim(),
-                    email: email,
-                    password: CryptoJS.SHA1(vm.password.trim()).toString(),
-                    invitation_code: vm.invitation_code.trim()
-                }, function (error, data, jqXHR) {
-                    if (error) {
-                        reCaptchaDialogInst.close();
-                        return mdui.snackbar({
-                            message: error.message
-                        });
-                    }
-
-                    return mdui.snackbar({
-                        message: '注册成功，开始畅游Celery Soft学术吧，点击屏幕继续',
-                        closeOnOutsideClick: true,
-                        onClose: function () {
-                            location.assign('/');
+                return Api.register(vm.name.trim(),
+                    email,
+                    CryptoJS.SHA1(vm.password.trim()).toString(),
+                    vm.invitation_code.trim(),
+                    function (error, data, jqXHR) {
+                        if (error) {
+                            reCaptchaDialogInst.close();
+                            return mdui.snackbar({
+                                message: error.message
+                            });
                         }
+
+                        return mdui.snackbar({
+                            message: '注册成功，开始畅游Celery Soft学术吧，点击屏幕继续',
+                            closeOnOutsideClick: true,
+                            onClose: function () {
+                                location.assign('/');
+                            }
+                        });
                     });
-                });
             });
         };
 

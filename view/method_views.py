@@ -1373,12 +1373,12 @@ class ServiceAPI(UserView):
                 else:
                     return self.api_document('当前不是有效的续费时间，请在每月1号进行续费')
             elif service_template.type == model.ServiceTemplate.DATA:
-                if (service.package - service.usage <= 0 and now.timestamp() < service.expired_at) or (
-                                service.expired_at < now.timestamp() < date_util.derive_1st_of_next_month(
+                if (service.package - service.usage <= service.package * 0.2 and now.timestamp() < service.expired_at) \
+                        or (service.expired_at < now.timestamp() < date_util.derive_1st_of_next_month(
                             datetime.datetime.fromtimestamp(service.expired_at))):
                     pass
                 else:
-                    return self.api_document('当前不是有效的续费时间，或者流量未用尽，无法续费')
+                    return self.api_document('当前不是有效的续费时间，或者剩余流量大于总流量的20%，无法续费')
             # 扣费
             total_payment = service_template.price
             user_scholar_balance = db_session.query(model.UserScholarBalance) \

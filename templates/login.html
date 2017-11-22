@@ -14,16 +14,13 @@
                 });
             }
 
-            httpPost('/api/grecaptcha', { response: grecaptchaResponse }, function (error, data, jqXHR) {
+            Api.verifyGoogleReCaptcha(grecaptchaResponse, function (error, data, jqXHR) {
                 if (error) {
                     grecaptcha.reset();
                     return mdui.snackbar({message: error.message});
                 }
 
-                return httpPost('/api/login', {
-                    name: vm.name.trim(),
-                    password: CryptoJS.SHA1(vm.password).toString()
-                }, function (error, data, jqXHR) {
+                return Api.login(vm.name.trim(), CryptoJS.SHA1(vm.password).toString(), function (error, data, jqXHR) {
                     if (error) {
                         reCaptchaDialogInst.close();
                         return mdui.snackbar({message: error.message});

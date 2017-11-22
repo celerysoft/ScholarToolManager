@@ -231,6 +231,7 @@ class EditRoleView(PermissionRequiredView):
         return render_template(self.template,
                                title=self.title,
                                id=id,
+                               action='PATCH',
                                **self.kwargs)
 
 
@@ -560,8 +561,11 @@ class RenewProductView(UserView):
             .filter(model.UserScholarBalance.user_id == user_id).first()
         balance = user_scholar_balance.balance
 
+        print(service.auto_renew)
         return render_template(self.template,
                                title=self.title,
                                action='renew',
+                               service_id=service_id,
                                service=service_template,
+                               auto_renew=service.auto_renew,
                                balance=balance)

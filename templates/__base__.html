@@ -25,6 +25,8 @@
         <script src="{{ static_route }}/static/js/base.js"></script>
         <script src="{{ static_route }}/static/js/ajax.js"></script>
         <script src="{{ static_route }}/static/js/sha1.min.js"></script>
+        <script src="{{ static_route }}/static/js/config-debug.js"></script>
+        <script src="{{ static_route }}/static/js/api.js"></script>
     {% else %}
         <script src="{{ static_route }}/static/js/jquery-3.2.1.min.js"></script>
         <script src="{{ static_route }}/static/js/vue.min.js"></script>
@@ -32,6 +34,8 @@
         <script src="{{ static_route }}/static/js/base.js"></script>
         <script src="{{ static_route }}/static/js/ajax.js"></script>
         <script src="{{ static_route }}/static/js/sha1.min.js"></script>
+        <script src="{{ static_route }}/static/js/config.js"></script>
+        <script src="{{ static_route }}/static/js/api.js"></script>
     {% endif %}
 
     {% block beforehead %}<!-- before head  -->{% endblock %}
@@ -51,7 +55,7 @@
 
             function checkManagePermission() {
                 let userId = '{{ session.user.id }}';
-                httpGet(permission_url, {user_id: userId}, function (error, data, jqXHR) {
+                Api.getUserPermissions(userId, function (error, data, jqXHR) {
                     let permissions = data.permissions;
 
                     let length = permissions.length;

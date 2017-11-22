@@ -16,8 +16,8 @@
         $(function () {
             let btnCreateInvitationCode = $('#btn_create_invitation_code');
             btnCreateInvitationCode.click(function () {
-                btnCreateInvitationCode.prop('disabled', true)
-                httpPost('/api/invitation', null, function (error, data, jqXHR) {
+                btnCreateInvitationCode.prop('disabled', true);
+                Api.createInvitationCode(function (error, data, jqXHR) {
                     btnCreateInvitationCode.prop('disabled', false);
                     if (error) {
                         return mdui.snackbar({
@@ -25,11 +25,10 @@
                         });
                     } else {
                         return mdui.snackbar({
-                            message: data.code
+                            message: '邀请码创建成功'
                         });
-{#                        return location.assign('/manage/event/');#}
                     }
-                })
+                });
             })
         })
     </script>

@@ -36,17 +36,10 @@
                                 return location.assign('/manage/role/');
                             }
                         };
-                        let data = {
-                            name: this.$data.name,
-                            label: this.$data.label,
-                            description: this.$data.description,
-                            permissions: this.$data.rolePermission
-                        };
                         if (action === 'POST') {
-                            httpPost('/api/role', data, callback);
+                            Api.createRole(this.$data.name, this.$data.label, this.$data.description, this.$data.rolePermission, callback);
                         } else if (action === 'PATCH') {
-                            data.id = ID;
-                            httpPatch('/api/role', data, callback);
+                            Api.updateRole(ID, this.$data.name, this.$data.label, this.$data.description, this.$data.rolePermission, callback);
                         }
                     },
                     cancel: function (event) {
@@ -54,27 +47,19 @@
                         return location.assign('/manage/role/');
                     },
                     derive_mdui_tooltip: function (content) {
-                        var tooltip = { content: content };
+                        let tooltip = { content: content };
                         return JSON.stringify(tooltip);
                     }
                 }
-            })
+            });
 
-            function getPermissions(roleId, renderFunc) {
-                let data = roleId === null || roleId === '' ? null : { role_id: roleId, all_permissions: true};
+            if (ID) {
+                Api.getRolePermissions(ID, function (error, data, jqXHR) {
+                    $('#loading').hide();
 
-                httpGet('/api/permission', data, function (error, data, jqXHR) {
                     if (error) {
                         return mdui.alert(error.message);
                     }
-
-                    renderFunc(data);
-                });
-            }
-
-            if (ID) {
-                getPermissions(ID, function (data) {
-                    $('#loading').hide();
 
                     vm_.$data.permissions = data.all_permissions;
                     vm_.$data.rolePermission  = data.permissions.map(permission => permission.id);
@@ -82,10 +67,13 @@
                     vm_.$data.label = data.role_label;
                     vm_.$data.description = data.role_description;
                 });
-            }
-            else {
-                getPermissions(null, function (data) {
+            } else {
+                Api.getPermissions(function (error, data, jqXHR) {
                     $('#loading').hide();
+
+                    if (error) {
+                        return mdui.alert(error.message);
+                    }
 
                     vm_.$data.permissions = data.all_permissions;
                 });

@@ -13,10 +13,29 @@
             ID = '{{ id }}',
             action = '{{ action }}';
 
+        let vm = null;
+
         function initVM(event) {
-            let vm = new Vue({
+            if (vm !== null && event !== null) {
+                vm.$data.name = event.name;
+                vm.$data.tag = event.tag;
+                vm.$data.summary = event.summary;
+                vm.$data.content = event.content;
+            }
+        }
+
+        $(function () {
+            ID = '{{ id }}';
+            action = '{{ action }}';
+
+            vm = new Vue({
                 el: '#form',
-                data: event,
+                data: {
+                    name: '',
+                    tag: '',
+                    summary: '',
+                    content: ''
+                },
                 methods: {
                     submit: function (event) {
                         event.preventDefault();
@@ -30,9 +49,9 @@
                                 }
                             };
                         if (action === 'POST') {
-                            httpPost('/api/event', this.$data, callback);
+                            Api.createEvent(this.$data.name, this.$data.tag, this.$data.summary, this.$data.content, callback);
                         } else if (action === 'PATCH') {
-                            httpPatch('/api/event', this.$data, callback);
+                            Api.updateEvent(ID, this.$data.name, this.$data.tag, this.$data.summary, this.$data.content, callback);
                         }
                     },
 
@@ -42,18 +61,15 @@
                     }
                 }
             });
-        }
-
-        $(function () {
-            ID = '{{ id }}';
-            action = '{{ action }}';
 
             if (ID) {
-                httpGet('/api/event', {id: ID}, function (error, data, jqXHR) {
+                Api.getEvent(ID, function (error, data, jqXHR) {
+                    $('#loading').hide();
+
                     if (error) {
                         return mdui.alert(error.message);
                     }
-                    $('#loading').hide();
+
                     initVM(data.event);
                 });
             }

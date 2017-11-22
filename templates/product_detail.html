@@ -64,7 +64,7 @@
                     });
                 }
 
-                httpPatch('/api/service-password', { service_id: SERVICE_ID, new_password: newPassword }, function (error, data, jqXHR) {
+                Api.updateServicePassword(SERVICE_ID, newPassword, function (error, data, jqXHR) {
                     modifyPasswordDialogInstance.close();
                     if (error) {
                         return mdui.snackbar({
@@ -80,7 +80,7 @@
                     return mdui.snackbar({
                         message: '修改连接密码成功'
                     });
-                })
+                });
             });
 
             document.getElementById('test').addEventListener('click', function () {
@@ -95,7 +95,7 @@
 
             let saveAutoRenewButton = $('#btn-save-auto-renew');
             saveAutoRenewButton.click(() => {
-                httpPatch('/api/service', { id: SERVICE_ID, auto_renew: autoRenewCheckbox.prop('checked') }, function (error, data, jqXHR) {
+                Api.modifyAutoRenewForService(SERVICE_ID, autoRenewCheckbox.prop('checked'), function (error, data, jqXHR) {
                     if (error) {
                         return mdui.snackbar({
                             message: error.message
@@ -110,12 +110,10 @@
 
 
             function getProductDetail() {
-                httpGet('/api/service', { id: SERVICE_ID }, function (error, data, jqXHR) {
+                Api.getService(SERVICE_ID, function (error, data, jqXHR) {
                     $('#loading').hide();
 
                     let service = data.service;
-                    {#                service.balance = ((service.package - service.usage) / 1024 / 1024).toFixed(2);#}
-                    {#                service.status_str = service.alive ? '有效' : '失效';#}
 
                     vm_scholar_detail.$data.title = service.title;
                     vm_scholar_detail.$data.renewAt = timestampToDate(service.renew_at * 1000);
@@ -129,8 +127,8 @@
                         vm_scholar_detail.$data.autoRenew = autoRenew;
                         vm_scholar_detail.$data.autoRenewStr = autoRenew ? "是" : "否";
                     }
-
-                })
+                    console.log(vm_scholar_detail.$data.autoRenewStr);
+                });
             }
 
             getProductDetail()
@@ -208,7 +206,7 @@
 
                     <div class="mdui-card-actions">
                         <a href="/product/renew/pay/{{ service_id }}"><button class="mdui-btn mdui-text-color-theme-accent mdui-ripple">续费</button></a>
-                        <button class="mdui-btn mdui-text-color-theme-accent mdui-ripple" mdui-dialog="{target: '#dialog-auto-renew'}">自动续费</button>
+                        <button v-if="autoRenewStr" class="mdui-btn mdui-text-color-theme-accent mdui-ripple" mdui-dialog="{target: '#dialog-auto-renew'}">自动续费</button>
                     </div>
                 </div>
             </div>
@@ -227,7 +225,7 @@
                     <div class="mdui-card-content mdui-typo">
                         <div class="mdui-clearfix">
                             <div class="mdui-float-left">节点地址</div>
-                            <div class="mdui-float-right">www.celerysoft.science</div>
+                            <div class="mdui-float-right">hk.celerysoft.science</div>
                         </div>
                     </div>
                 </div>

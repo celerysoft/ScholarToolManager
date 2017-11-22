@@ -45,9 +45,9 @@
                         stopPropagation();
                         mdui.confirm('确认要删除套餐“' + name + '”？\n删除后不可恢复！',
                             function () {
-                                httpDelete('/api/service-template', {id: id}, function (err, r) {
-                                    if (err) {
-                                        return mdui.alert(err.message || err.error || err);
+                                Api.deleteServiceTemplate(id, function (error, data, jqXHR) {
+                                    if (error) {
+                                        return mdui.alert(error.message);
                                     }
                                     refresh();
                                 });
