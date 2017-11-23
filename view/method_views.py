@@ -1391,6 +1391,7 @@ class ServiceAPI(UserView):
 
             # 更新服务
             service.last_reset_at = now.timestamp()
+            service.usage = 0
             if service_template.type == model.ServiceTemplate.MONTHLY:
                 auto_renew = request.json['auto_renew']
                 if auto_renew is None:
