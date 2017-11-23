@@ -10,7 +10,8 @@
 function _httpJSON(method, url, data, contentType, callback) {
     let option = {
         type: method,
-        dataType: 'json'
+        dataType: 'json',
+        withCredentials: true
     };
     if (method === 'GET') {
         option.url = url + '?' + data;
