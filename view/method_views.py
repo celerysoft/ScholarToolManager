@@ -12,9 +12,10 @@ import markdown2
 import mysql
 import random
 import re
+
+import os
 import sqlalchemy
 from flask import make_response, jsonify, json, request, session, abort, g
-from flask import current_app as app
 from flask.views import MethodView
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -24,6 +25,14 @@ import exception
 import model
 import permission
 from util import date_util, shadowsocks_controller
+
+app = None
+
+
+def init_app(app_instance):
+    global app
+    app = app_instance
+
 
 _RE_EMAIL = re.compile(r'^[a-z0-9\.\-\_]+\@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$')
 _RE_SHA1 = re.compile(r'^[0-9a-f]{40}$')
@@ -1425,7 +1434,52 @@ class ServiceAPI(UserView):
 
 
 class UsageAPI(BaseView):
-    methods = ['POST']
+    methods = ['GET', 'POST', 'PUT']
+
+    def get(self):
+        user_id = derive_user_id_from_session()
+        db_session = derive_db_session()
+        if not permission.check_manage_permission(db_session, user_id):
+            raise exception.api.Forbidden("无权限")
+
+        SHADOWSOCKS_LOG_FILE_PATH = app.config['SS_LISTENER_LOG_FILE']
+        lines = []
+        with open(SHADOWSOCKS_LOG_FILE_PATH, 'r') as f:
+            lines = f.readlines()
+
+        lines = lines[-10:] if len(lines) >= 10 else lines
+
+        warning_message = None
+        last_record = lines[-1] if len(lines) > 0 else None
+        if last_record is not None:
+            datetime_str = last_record.split(' - ')[0]
+            last_record_datetime = datetime.datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S,%f')
+            if datetime.datetime.now().timestamp() - last_record_datetime.timestamp() > 12 * 60 * 60:
+                warning_message = '最后一条记录产生于12小时之前，请检查是否需要重启监听服务'
+            elif datetime.datetime.now().timestamp() - last_record_datetime.timestamp() < 0:
+                warning_message = '最后一条记录产生在未来，我的天！请检查是否需要重启监听服务'
+            else:
+                warning_message = '监听服务运行正常'
+
+        return make_response(
+            jsonify({
+                'usages': lines,
+                'warning_message': warning_message,
+                'message': '获取学术统计信息成功',
+                'documentation_url': self._API_DOCUMENTATION_URL
+            }), 200
+        )
+
+    def put(self):
+        restart_shell_file = app.config['SS_LISTENER_RESTART_SHELL_FILE_PATH']
+        status = os.system('. %s' % restart_shell_file)
+
+        return make_response(
+            jsonify({
+                'message': '执行重启任务成功，返回信息：%s' % status,
+                'documentation_url': self._API_DOCUMENTATION_URL
+            }), 201
+        )
 
     def post(self):
         # TODO 加强安全性

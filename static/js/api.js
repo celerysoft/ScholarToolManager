@@ -22,6 +22,12 @@ class Api {
         });
     }
 
+    static _putApi(url, data, callback) {
+        httpPut(url, data, function (error, data, jqXHR) {
+            callback(error, data, jqXHR);
+        });
+    }
+
     static _deleteApi(url, data, callback) {
         httpDelete(url, data, function (error, data, jqXHR) {
             callback(error, data, jqXHR);
@@ -239,6 +245,22 @@ class Api {
 
     /**
      *
+     * @param callback
+     */
+    static getUsages(callback) {
+        this._getApi(this.USAGE_URL, callback);
+    }
+
+    /**
+     *
+     * @param callback
+     */
+    static restartListenerServer(callback) {
+        this._putApi(this.USAGE_URL, null, callback);
+    }
+
+    /**
+     *
      * @param type
      * @param title
      * @param subtitle
@@ -416,7 +438,7 @@ Api.EVENT_URL = BASE_URL + 'event';
 Api.ROLE_URL = BASE_URL + 'role';
 Api.SERVICE_TEMPLATE_URL = BASE_URL + 'service-template';
 Api.SERVICE_URL = BASE_URL + 'service';
-// Api.USAGE_URL = BASE_URL + 'usage';
+Api.USAGE_URL = BASE_URL + 'usage';
 Api.SCHOLAR_BALANCE_URL = BASE_URL + 'scholar-balance';
 Api.SERVICE_PASSWORD_URL = BASE_URL + 'service-password';
 

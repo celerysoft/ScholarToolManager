@@ -27,6 +27,9 @@
                     },
                     redirect_to_manage_product: function () {
                         return location.assign('/manage/service-template/')
+                    },
+                    redirect_to_manage_usage: function () {
+                        return location.assign('/manage/usage/')
                     }
                 }
             });
@@ -96,6 +99,19 @@
                     <div class="mdui-card-media-covered">
                         <div class="mdui-card-primary">
                             <div class="mdui-card-primary-title">套餐管理</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mdui-col">
+            <div class="mdui-card mdui-hoverable mdui-grid-tile clickable" v-on:click="redirect_to_manage_usage">
+                <div class="mdui-card-media">
+                    <img src="{{ static_route }}/static/image/manage_usage.jpg"/>
+                    <div class="mdui-card-media-covered">
+                        <div class="mdui-card-primary">
+                            <div class="mdui-card-primary-title">流量管理</div>
                         </div>
                     </div>
                 </div>

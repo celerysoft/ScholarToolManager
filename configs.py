@@ -60,6 +60,8 @@ class Config(object):
     RE_CAPTCHA_SECRET_KEY = '6LenHTkUAAAAACSATcazsqs3kuH6NkT7KQMz4-dvdcps'
     # 日志文件
     LOG_FILE = '/Users/admin/Developer/Python/scholar-tool-manager/app.log'
+    # SS服务监听器重启脚本地址
+    SS_LISTENER_RESTART_SHELL_FILE_PATH = '/Users/admin/Developer/Script/restart_ss_listener.sh'
     # SS服务监听器日志文件
     SS_LISTENER_LOG_FILE = '/Users/admin/Developer/Python/scholar-tool-manager/ss-listener.log'
     # SS服务起始端口号

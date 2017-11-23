@@ -35,6 +35,7 @@ def init_jinja2():
 
 
 def init_method_views(app):
+    method_views.init_app(app)
     method_views.set_sqlalchemy_database_uri(app.config['SQLALCHEMY_DATABASE_URI'])
     # method_views.set_sha1_password_salt(app.config['SHA1_SALT'])
     # method_views.set_item_per_page(app.config['ITEM_PER_PAGE'])
@@ -43,6 +44,7 @@ def init_method_views(app):
 
 
 def init_views(app):
+    views.init_app(app)
     views.set_db(SQLAlchemy(app))
     views.set_sqlalchemy_database_uri(app.config['SQLALCHEMY_DATABASE_URI'])
     # views.set_item_per_page(app.config['ITEM_PER_PAGE'])

@@ -2,7 +2,6 @@
 # -*-coding:utf-8 -*-
 import markdown2
 from flask import render_template, session, g, request, redirect, url_for, abort
-from flask import current_app as app
 from flask.views import View
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -10,6 +9,13 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 import exception
 import model
 import permission
+
+app = None
+
+
+def init_app(app_instance):
+    global app
+    app = app_instance
 
 
 def derive_db_session(pagination=False):

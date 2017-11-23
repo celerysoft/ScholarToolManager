@@ -235,7 +235,9 @@ app.add_url_rule('/product/create/pay/<service_template_id>',
 app.add_url_rule('/product/renew/pay/<service_id>',
                  view_func=views.RenewProductView.as_view('renew_product'))
 app.add_url_rule('/agreement/', view_func=views.BaseView.as_view('agreement', 'agreement.html', '用户协议'))
-
+app.add_url_rule('/manage/usage/', view_func=views.PermissionRequiredView.as_view('manage_usage',
+                                                                                  'manage_usage.html', '流量管理',
+                                                                                  permission.check_manage_permission))
 
 # -------------------------------------------------- API -------------------------------------------------- #
 # -------------------------------------------------- API -------------------------------------------------- #
