@@ -29,6 +29,8 @@ class Config(object):
     PORT = 20000
     # 本地测试时的线程数
     PROCESSES = 2
+    # session的域名
+    # SESSION_COOKIE_DOMAIN = 'celerysoft.science'
     # session类型 http://pythonhosted.org/Flask-Session/
     SESSION_TYPE = 'sqlalchemy'
     SESSION_USE_SIGNER = True
