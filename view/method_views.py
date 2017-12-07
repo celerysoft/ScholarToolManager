@@ -9,7 +9,6 @@ import urllib
 import math
 
 import markdown2
-import mysql
 import random
 import re
 
@@ -356,7 +355,7 @@ class RegisterAPI(BaseView):
             db_session.add(user)
             db_session.commit()
             session['user'] = model.to_dict(user)
-        except mysql.connector.errors.OperationalError as e:
+        except BaseException as e:
             log_exception(e)
             return self.api_document('服务器内部错误，请刷新重试', 500)
         except sqlalchemy.exc.DataError as e:
@@ -381,7 +380,7 @@ class RegisterAPI(BaseView):
 
         try:
             db_session.commit()
-        except mysql.connector.errors.OperationalError as e:
+        except BaseException as e:
             log_exception(e)
             return self.api_document('服务器内部错误，请刷新重试', 500)
         except sqlalchemy.exc.DataError as e:
@@ -428,7 +427,7 @@ class UserAPI(UserView):
 
         try:
             db_session.commit()
-        except mysql.connector.errors.OperationalError as e:
+        except BaseException as e:
             log_exception(e)
             return self.api_document('服务器内部错误，请刷新重试', 500)
         except sqlalchemy.exc.DataError as e:
@@ -479,7 +478,7 @@ class InvitationCodeAPI(UserAPI):
         try:
             db_session.add(invitation)
             db_session.commit()
-        except mysql.connector.errors.OperationalError as e:
+        except BaseException as e:
             log_exception(e)
             return self.api_document('服务器内部错误，请刷新重试', 500)
         except sqlalchemy.exc.DataError as e:
@@ -620,7 +619,7 @@ class EventAPI(UserView):
         try:
             db_session.add(event)
             db_session.commit()
-        except mysql.connector.errors.OperationalError as e:
+        except BaseException as e:
             log_exception(e)
             return self.api_document('服务器内部错误，请刷新重试', 500)
         except sqlalchemy.exc.DataError as e:
@@ -667,7 +666,7 @@ class EventAPI(UserView):
 
         try:
             db_session.commit()
-        except mysql.connector.errors.OperationalError as e:
+        except BaseException as e:
             log_exception(e)
             return self.api_document('服务器内部错误，请刷新重试', 500)
         except sqlalchemy.exc.DataError as e:
@@ -701,7 +700,7 @@ class EventAPI(UserView):
         try:
             db_session.delete(product)
             db_session.commit()
-        except mysql.connector.errors.OperationalError as e:
+        except BaseException as e:
             log_exception(e)
             return self.api_document('服务器内部错误，请刷新重试', 500)
         except sqlalchemy.exc.DataError as e:
@@ -777,7 +776,7 @@ class RoleAPI(UserView):
         try:
             db_session.add(role)
             db_session.commit()
-        except mysql.connector.errors.OperationalError as e:
+        except BaseException as e:
             log_exception(e)
             return self.api_document('服务器内部错误，请刷新重试', 500)
         except sqlalchemy.exc.DataError as e:
@@ -795,7 +794,7 @@ class RoleAPI(UserView):
 
         try:
             db_session.commit()
-        except mysql.connector.errors.OperationalError as e:
+        except BaseException as e:
             log_exception(e)
             return self.api_document('服务器内部错误，请刷新重试', 500)
         except sqlalchemy.exc.DataError as e:
@@ -873,7 +872,7 @@ class RoleAPI(UserView):
 
         try:
             db_session.commit()
-        except mysql.connector.errors.OperationalError as e:
+        except BaseException as e:
             log_exception(e)
             return self.api_document('服务器内部错误，请刷新重试', 500)
         except sqlalchemy.exc.DataError as e:
@@ -925,7 +924,7 @@ class RoleAPI(UserView):
         try:
             db_session.delete(role)
             db_session.commit()
-        except mysql.connector.errors.OperationalError as e:
+        except BaseException as e:
             log_exception(e)
             return self.api_document('服务器内部错误，请刷新重试', 500)
         except sqlalchemy.exc.DataError as e:
@@ -1001,7 +1000,7 @@ class ServiceTemplateAPI(UserView):
 
         try:
             db_session.commit()
-        except mysql.connector.errors.OperationalError as e:
+        except BaseException as e:
             log_exception(e)
             return self.api_document('服务器内部错误，请刷新重试', 500)
         except sqlalchemy.exc.DataError as e:
@@ -1069,7 +1068,7 @@ class ServiceTemplateAPI(UserView):
 
         try:
             db_session.commit()
-        except mysql.connector.errors.OperationalError as e:
+        except BaseException as e:
             log_exception(e)
             return self.api_document('服务器内部错误，请刷新重试', 500)
         except sqlalchemy.exc.DataError as e:
@@ -1106,7 +1105,7 @@ class ServiceTemplateAPI(UserView):
 
         try:
             db_session.commit()
-        except mysql.connector.errors.OperationalError as e:
+        except BaseException as e:
             log_exception(e)
             return self.api_document('服务器内部错误，请刷新重试', 500)
         except sqlalchemy.exc.DataError as e:
@@ -1271,7 +1270,7 @@ class ServiceAPI(UserView):
 
         try:
             db_session.commit()
-        except mysql.connector.errors.OperationalError as e:
+        except BaseException as e:
             log_exception(e)
             return self.api_document('服务器内部错误，请刷新重试', 500)
         except sqlalchemy.exc.DataError as e:
@@ -1292,7 +1291,7 @@ class ServiceAPI(UserView):
 
         try:
             db_session.commit()
-        except mysql.connector.errors.OperationalError as e:
+        except BaseException as e:
             log_exception(e)
             return self.api_document('服务器内部错误，请刷新重试', 500)
         except sqlalchemy.exc.DataError as e:
@@ -1416,7 +1415,7 @@ class ServiceAPI(UserView):
 
         try:
             db_session.commit()
-        except mysql.connector.errors.OperationalError as e:
+        except BaseException as e:
             log_exception(e)
             return self.api_document('服务器内部错误，请刷新重试', 500)
         except sqlalchemy.exc.DataError as e:
@@ -1508,7 +1507,7 @@ class UsageAPI(BaseView):
 
         try:
             db_session.commit()
-        except mysql.connector.errors.OperationalError as e:
+        except BaseException as e:
             log_exception(e)
             return abort(make_response(str(e), 500))
         except sqlalchemy.exc.DataError as e:
@@ -1576,7 +1575,7 @@ class ScholarBalanceAPI(UserAPI):
 
         try:
             db_session.commit()
-        except mysql.connector.errors.OperationalError as e:
+        except BaseException as e:
             log_exception(e)
             return self.api_document('服务器内部错误，请刷新重试', 500)
         except sqlalchemy.exc.DataError as e:
@@ -1628,7 +1627,7 @@ class ServicePasswordAPI(UserAPI):
 
         try:
             db_session.commit()
-        except mysql.connector.errors.OperationalError as e:
+        except BaseException as e:
             log_exception(e)
             return self.api_document('服务器内部错误，请刷新重试', 500)
         except sqlalchemy.exc.DataError as e:

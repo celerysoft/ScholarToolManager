@@ -121,16 +121,22 @@ let $$ = mdui.JQ;
         let hasCookie = false;
 
         let primaryCookie = getCookie(PRIMARY_COOKIE_KEY);
-        if (primaryCookie !== null && primaryCookie !== 'null') {
+        if (!isNull(primaryCookie)) {
             hasCookie = true;
         }
         let accentCookie = getCookie(ACCENT_COOKIE_KEY);
-        if (accentCookie !== null && accentCookie !== 'null') {
+        if (!isNull(accentCookie)) {
             hasCookie = true;
         }
         let layoutCookie = getCookie(LAYOUT_COOKIE_KEY);
-        if (layoutCookie !== null && layoutCookie !== 'null') {
+        if (!isNull(layoutCookie)) {
             hasCookie = true;
+        }
+
+        if (hasCookie) {
+            primaryCookie = isNull(primaryCookie) ? DEFAULT_PRIMARY : primaryCookie;
+            accentCookie = isNull(accentCookie) ? DEFAULT_PRIMARY : accentCookie;
+            layoutCookie = isNull(layoutCookie) ? DEFAULT_PRIMARY : layoutCookie;
         }
 
         if (hasCookie) {
@@ -153,7 +159,7 @@ $(function () {
     $.fn.extend({
         showFormError: function (err) {
             return this.each(function () {
-                var
+                let
                     $form = $(this),
                     $alert = $form && $form.find('.uk-alert-danger'),
                     fieldName = err && err.data;
@@ -189,7 +195,7 @@ $(function () {
         },
         showFormLoading: function (isLoading) {
             return this.each(function () {
-                var
+                let
                     $form = $(this),
                     $submit = $form && $form.find('button[type=submit]'),
                     $buttons = $form && $form.find('button');
@@ -216,8 +222,12 @@ $(function () {
     });
 });
 
+function isNull(str) {
+    return str === null || str === 'null' || str === 'undefined'
+}
+
 function redirect(url) {
-    var
+    let
         hash_pos = url.indexOf('#'),
         query_pos = url.indexOf('?'),
         hash = '';
@@ -231,7 +241,7 @@ function redirect(url) {
 }
 
 function refresh() {
-    var
+    let
         t = new Date().getTime(),
         url = location.pathname;
     if (location.search) {

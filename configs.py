@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 # -*-coding:utf-8 -*-
-import os
 
 
 class Config(object):
@@ -35,8 +34,11 @@ class Config(object):
     SESSION_TYPE = 'sqlalchemy'
     SESSION_USE_SIGNER = True
     # 数据库的URI
-    SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://' \
-                              + _db_user + ':' + _db_password + '@' + _db_host + ':' + _db_port + '/' + _db_name
+    # SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://' \
+    #                           + _db_user + ':' + _db_password + '@' + _db_host + ':' + _db_port + '/' + _db_name
+    # SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://' + _db_user + ':' + _db_password \
+    #                           + '@' + _db_host + ':' + _db_port + '/' + _db_name
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' % (_db_user, _db_password, _db_host, _db_port, _db_name)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # static目录的路径，测试时为本地，上线时为cdn
     URL_OF_STATIC = ''
@@ -83,8 +85,11 @@ class DevelopmentConfig(Config):
     开发环境
     """
     _db_name = 'scholar_tool_manager_test'
-    SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://' + Config._db_user + ':' + Config._db_password \
-                              + '@' + Config._db_host + ':' + Config._db_port + '/' + _db_name
+    # SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://' + Config._db_user + ':' + Config._db_password \
+    #                           + '@' + Config._db_host + ':' + Config._db_port + '/' + _db_name
+    # SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://' + Config._db_user + ':' + Config._db_password \
+    #                           + '@' + Config._db_host + ':' + Config._db_port + '/' + _db_name
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' % (Config._db_user, Config._db_password, Config._db_host, Config._db_port, _db_name)
     DEBUG = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
 
