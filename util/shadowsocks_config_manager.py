@@ -52,6 +52,7 @@ def recreate_shadowsocks_config_file(db_session, method='aes-256-cfb', timeout=3
     :param db_session: SQLAlchemy
     :param method: Encryption method
     :param timeout: in seconds
+    :param debug:
     :return:
     """
 

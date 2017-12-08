@@ -1,10 +1,11 @@
 #!/usr/bin/python3
 # -*-coding:utf-8 -*-
+
 import markdown2
-from flask import render_template, session, g, request, redirect, url_for, abort
+from flask import render_template, session, request, redirect, url_for, abort
 from flask.views import View
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
+
+import database
 
 import exception
 import model
@@ -19,32 +20,10 @@ def init_app(app_instance):
 
 
 def derive_db_session(pagination=False):
-    if pagination:
-        db_session_with_pagination = getattr(g, '_db_session_with_pagination', None)
-        if db_session_with_pagination is None:
-            db_session_with_pagination = g._db_session_with_pagination = db.session
-        return db_session_with_pagination
-    else:
-        db_session = getattr(g, '_db_session', None)
-        if db_session is None:
-            db_session = g._db_session = scoped_session(sessionmaker(bind=engine))
-        return db_session
-
-
-db = None
-
-
-def set_db(db_inst):
-    global db
-    db = db_inst
+    return database.derive_db_session(pagination)
 
 
 __ITEM_PER_PAGE = None
-
-
-# def set_item_per_page(page):
-#     global __ITEM_PER_PAGE
-#     __ITEM_PER_PAGE = page
 
 
 def get_item_per_page():
@@ -57,27 +36,11 @@ def get_item_per_page():
 __URL_OF_BLOG_IMAGE = None
 
 
-# def set_url_of_blog_image(url):
-#     global __URL_OF_BLOG_IMAGE
-#     __URL_OF_BLOG_IMAGE = url
-
-
 def get_url_of_blog_image():
     global __URL_OF_BLOG_IMAGE
     if __URL_OF_BLOG_IMAGE is None:
         __URL_OF_BLOG_IMAGE = app.config['URL_OF_BLOG_IMAGE']
     return __URL_OF_BLOG_IMAGE
-
-
-engine = None
-__SQLALCHEMY_DATABASE_URI = None
-
-
-def set_sqlalchemy_database_uri(uri):
-    global __SQLALCHEMY_DATABASE_URI
-    __SQLALCHEMY_DATABASE_URI = uri
-    global engine
-    engine = create_engine(__SQLALCHEMY_DATABASE_URI)
 
 
 def derive_user_id_from_session():

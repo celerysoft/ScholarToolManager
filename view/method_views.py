@@ -16,10 +16,9 @@ import os
 import sqlalchemy
 from flask import make_response, jsonify, json, request, session, abort, g
 from flask.views import MethodView
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, scoped_session
 
 import configs
+import database
 import exception
 import model
 import permission
@@ -35,12 +34,8 @@ def init_app(app_instance):
 
 _RE_EMAIL = re.compile(r'^[a-z0-9\.\-\_]+\@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$')
 _RE_SHA1 = re.compile(r'^[0-9a-f]{40}$')
+
 __SHA1_PASSWORD_SALT = None
-
-
-# def set_sha1_password_salt(salt):
-#     global __SHA1_PASSWORD_SALT
-#     __SHA1_PASSWORD_SALT = salt
 
 
 def derive_sha1_password_salt():
@@ -53,11 +48,6 @@ def derive_sha1_password_salt():
 __ITEM_PER_PAGE = None
 
 
-# def set_item_per_page(page):
-#     global __ITEM_PER_PAGE
-#     __ITEM_PER_PAGE = page
-
-
 def get_item_per_page():
     global __ITEM_PER_PAGE
     if __ITEM_PER_PAGE is None:
@@ -68,11 +58,6 @@ def get_item_per_page():
 __URL_OF_BLOG_IMAGE = None
 
 
-# def set_url_of_blog_image(url):
-#     global __URL_OF_BLOG_IMAGE
-#     __URL_OF_BLOG_IMAGE = url
-
-
 def get_url_of_blog_image():
     global __URL_OF_BLOG_IMAGE
     if __URL_OF_BLOG_IMAGE is None:
@@ -81,11 +66,6 @@ def get_url_of_blog_image():
 
 
 __SERVICE_MIN_PORT = None
-
-
-# def set_service_min_port(port):
-#     global __SERVICE_MIN_PORT
-#     __SERVICE_MIN_PORT = port
 
 
 def get_service_min_port():
@@ -103,28 +83,13 @@ def log_exception(exception):
 
 def derive_app_logger():
     app_logger = getattr(g, '_app_logger', None)
-    # if app_logger is None:
-    #     app_logger = g._app_logger = app.logger
+    if app_logger is None:
+        app_logger = g._app_logger = app.logger
     return app_logger
 
 
 def derive_db_session():
-    db_session = getattr(g, '_db_session', None)
-    if db_session is None:
-        global engine
-        db_session = g._db_session = scoped_session(sessionmaker(bind=engine))
-    return db_session
-
-
-engine = None
-__SQLALCHEMY_DATABASE_URI = None
-
-
-def set_sqlalchemy_database_uri(uri):
-    global __SQLALCHEMY_DATABASE_URI
-    __SQLALCHEMY_DATABASE_URI = uri
-    global engine
-    engine = create_engine(__SQLALCHEMY_DATABASE_URI)
+    return database.derive_db_session()
 
 
 def derive_user_id_from_session():

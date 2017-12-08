@@ -2,12 +2,11 @@
 # -*-coding:utf-8 -*-
 import logging
 
-from flask import Flask, redirect, url_for, session, g, current_app
+from flask import Flask, redirect, url_for, session, g
 from flask.json import jsonify
 from flask_session import Session
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
+import database
 import exception.http
 import init_app
 import permission
@@ -17,58 +16,11 @@ from view import views, method_views
 app = Flask(__name__)
 app.config.from_object('configs.Config')
 
-# __SESSION_KEY = app.config['SECRET_KEY']
-# __SHA1_PASSWORD_SALT = app.config['SHA1_SALT']
-# __RE_EMAIL = re.compile(r'^[a-z0-9\.\-\_]+\@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$')
-# __RE_SHA1 = re.compile(r'^[0-9a-f]{40}$')
-# __ITEM_PER_PAGE = app.config['ITEM_PER_PAGE']
-
 Session(app)
-
-# db = SQLAlchemy(app)
-engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-
-
-# def update_engine():
-#     global engine
-#     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-#
-#
-# def derive_db_session(pagination=False):
-#     if pagination:
-#         return db.session
-#     else:
-#         return sessionmaker(bind=engine)()
-# def derive_db_session(pagination=False):
-#     if pagination:
-#         db_session_with_pagination = getattr(g, '_db_session_with_pagination', None)
-#         if db_session_with_pagination is None:
-#             db_session_with_pagination = g._db_session_with_pagination = db.session
-#         return db_session_with_pagination
-#     else:
-#         db_session = getattr(g, '_db_session', None)
-#         if db_session is None:
-#             db_session = g._db_session = scoped_session(sessionmaker(bind=engine))
-#         return db_session
-#
-#
-# def derive_user_id_from_session(call_by_api=False):
-#     if call_by_api:
-#         permission.check_user_api_permission()
-#     else:
-#         permission.check_user_permission()
-#     return session['user']['id']
-#
-#
-# def derive_app_logger():
-#     app_logger = getattr(g, '_app_logger', None)
-#     if app_logger is None:
-#         app_logger = g._app_logger = app.logger
-#     return app_logger
 
 
 def action_before_app_run():
-    shadowsocks_controller.recreate_shadowsocks_config_file(sessionmaker(bind=engine)(), app.debug)
+    shadowsocks_controller.recreate_shadowsocks_config_file(database.db_session, app.debug)
 
 
 def create_app(config='configs.DevelopmentConfig'):
@@ -88,13 +40,11 @@ def create_app(config='configs.DevelopmentConfig'):
     handler.setFormatter(logging_format)
     app.logger.addHandler(handler)
 
-    global engine
-    engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-
     init_app.init_jinja2()
     init_app.init_jinja2_global(app)
     init_app.init_views(app)
     init_app.init_method_views(app)
+    init_app.init_database(app)
 
     action_before_app_run()
     return app
@@ -102,17 +52,7 @@ def create_app(config='configs.DevelopmentConfig'):
 
 @app.teardown_appcontext
 def teardown_db(exception=None):
-    db_session = getattr(g, '_db_session', None)
-    if db_session is not None:
-        db_session.remove()
-
-    db_session_with_pagination = getattr(g, '_db_session_with_pagination', None)
-    if db_session_with_pagination is not None:
-        db_session_with_pagination.remove()
-
-    db = getattr(g, '_database', None)
-    if db is not None:
-        db.close()
+    database.close_database()
 
 
 # -------------------------------------------------- Error Handler -------------------------------------------------- #

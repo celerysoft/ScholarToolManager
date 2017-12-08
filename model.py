@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 # -*-coding:utf-8 -*-
-import random
 import time
-from datetime import datetime, date
 
 from sqlalchemy import Table, Column, Integer, String, Date, Float, Boolean, LargeBinary, DATETIME, BIGINT
 from sqlalchemy.ext.declarative import declarative_base
