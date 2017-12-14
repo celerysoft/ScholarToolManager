@@ -1339,6 +1339,10 @@ class ServiceAPI(UserView):
 
         # 续费
         if renew is not None and renew is True:
+            # 判断是否还可以续费
+            if not service.alive:
+                return self.api_document('由于长期没有续费，该套餐已经被系统释放，无法进行续费操作，如有需要请新开学术套餐')
+
             # 判断是否在可续费时间内
             if service_template.type == model.ServiceTemplate.MONTHLY:
                 if service.reset_at < now.timestamp() < (service.reset_at + 24 * 60 * 60):
@@ -1365,6 +1369,7 @@ class ServiceAPI(UserView):
             # 更新服务
             service.last_reset_at = now.timestamp()
             service.usage = 0
+            service.available = True
             if service_template.type == model.ServiceTemplate.MONTHLY:
                 auto_renew = request.json['auto_renew']
                 if auto_renew is None:

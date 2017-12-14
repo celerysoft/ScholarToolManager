@@ -62,8 +62,6 @@ def recreate_shadowsocks_config_file(db_session, method='aes-256-cfb', timeout=3
         .filter(model.ServicePassword.service_id == model.Service.id) \
         .order_by(model.ServicePassword.port).all()
 
-    port1, password1 = 20000, 123321
-    port2, password2 = 20001, 12345678
     lines = []
     lines.append('{%s' % os.linesep)
     if debug:
