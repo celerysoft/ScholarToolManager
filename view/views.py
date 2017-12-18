@@ -530,7 +530,6 @@ class RenewProductView(UserView):
             .filter(model.UserScholarBalance.user_id == user_id).first()
         balance = user_scholar_balance.balance
 
-        print(service.auto_renew)
         return render_template(self.template,
                                title=self.title,
                                action='renew',

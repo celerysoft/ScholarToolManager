@@ -1369,7 +1369,11 @@ class ServiceAPI(UserView):
             # 更新服务
             service.last_reset_at = now.timestamp()
             service.usage = 0
-            service.available = True
+            if not service.available:
+                service.available = True
+                service_password = db_session.query(model.ServicePassword) \
+                    .filter(model.ServicePassword.service_id == service_id).first()
+                shadowsocks_controller.add_port(service_password.port, service_password.password)
             if service_template.type == model.ServiceTemplate.MONTHLY:
                 auto_renew = request.json['auto_renew']
                 if auto_renew is None:
