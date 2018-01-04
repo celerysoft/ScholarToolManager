@@ -20,7 +20,14 @@ Session(app)
 
 
 def action_before_app_run():
-    shadowsocks_controller.recreate_shadowsocks_config_file(database.db_session, app.debug)
+    db_session = database.derive_db_session()
+    try:
+        shadowsocks_controller.recreate_shadowsocks_config_file(db_session, app.debug)
+    except BaseException:
+        db_session.rollback()
+        raise
+    finally:
+        db_session.close()
 
 
 def create_app(config='configs.DevelopmentConfig'):
