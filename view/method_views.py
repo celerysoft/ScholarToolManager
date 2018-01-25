@@ -1444,6 +1444,11 @@ class UsageAPI(BaseView):
         )
 
     def put(self):
+        user_id = derive_user_id_from_session()
+        db_session = derive_db_session()
+        if not permission.check_manage_permission(db_session, user_id):
+            raise exception.api.Forbidden("无权限")
+
         restart_shell_file = app.config['SS_LISTENER_RESTART_SHELL_FILE_PATH']
         status = os.system('. %s' % restart_shell_file)
 
@@ -1473,11 +1478,12 @@ class UsageAPI(BaseView):
             if service is None:
                 continue
 
-            service.usage += usage
-            service.total_usage += usage
-            if service.usage > service.package:
-                service.available = False
-                shadowsocks_controller.remove_port(port)
+            if service.available:
+                service.usage += usage
+                service.total_usage += usage
+                if service.usage > service.package:
+                    service.available = False
+                    shadowsocks_controller.remove_port(port)
 
         try:
             db_session.commit()
