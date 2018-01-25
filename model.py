@@ -193,9 +193,10 @@ class ServiceTemplate(Base):
     balance = Column(BIGINT)
     price = Column(Integer)
     initialization_fee = Column(Integer)
+    available = Column(Boolean)
 
     def __init__(self, type=None, title=None, subtitle=None, description=None, balance=None, price=None,
-                 initialization_fee=None):
+                 initialization_fee=None, available=True):
         self.type = type
         self.title = title
         self.subtitle = subtitle
@@ -203,6 +204,7 @@ class ServiceTemplate(Base):
         self.balance = balance
         self.price = price
         self.initialization_fee = initialization_fee
+        self.available = available
 
     def __repr__(self):
         return '<ServiceTemplate %s %s>' % (self.title, self.balance)

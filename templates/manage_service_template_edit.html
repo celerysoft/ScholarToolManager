@@ -18,13 +18,15 @@
             let vm_service_template = new Vue({
                 el: '#form',
                 data: {
+                    action: action,
                     type: '',
                     title: '',
                     subtitle: '',
                     description: '',
                     balance: '',
                     price: 0,
-                    initialization_fee: 0
+                    initialization_fee: 0,
+                    available: false,
                 },
                 methods: {
                     submit: function (event) {
@@ -67,6 +69,7 @@
                                 this.$data.balance,
                                 this.$data.price,
                                 this.$data.initialization_fee,
+                                this.$data.available,
                                 callback);
                         }
                     },
@@ -92,6 +95,7 @@
                     }
 
                     let template = data.template;
+                    console.log(template);
                     vm_service_template.$data.type = template.type;
                     vm_service_template.$data.title  = template.title;
                     vm_service_template.$data.subtitle = template.subtitle;
@@ -99,6 +103,7 @@
                     vm_service_template.$data.balance = template.balance;
                     vm_service_template.$data.price = template.price;
                     vm_service_template.$data.initialization_fee = template.initialization_fee;
+                    vm_service_template.$data.available = template.available;
                 });
             }
             else {
@@ -161,14 +166,20 @@
             <input v-model="initialization_fee" class="mdui-textfield-input" type="text" style="padding-right: 10px;"/>
         </div>
 
+        <label v-if="action === 'PATCH'" class="mdui-checkbox">
+            <input v-model="available" type="checkbox"/>
+            <i class="mdui-checkbox-icon"></i>
+            Available
+        </label>
+
         <div class="mdui-row mdui-center" style="width: 192px;">
             <button class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-theme-accent mdui-float-left"
-                    v-on:click="submit"
+                    @click="submit"
                     style="width: 80px;margin-top: 16px;margin-bottom: 16px;">
                 保存
             </button>
             <button class="mdui-btn mdui-btn-raised mdui-ripple mdui-float-right"
-                    v-on:click="cancel"
+                    @click="cancel"
                     style="width: 80px;margin-top: 16px;margin-bottom: 16px;">
                 取消
             </button>

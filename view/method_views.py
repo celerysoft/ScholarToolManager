@@ -990,32 +990,35 @@ class ServiceTemplateAPI(UserView):
         user_id = derive_user_id_from_session()
         db_session = derive_db_session()
         if not permission.check_manage_service_template_permission(db_session, user_id):
-            raise exception.api.Forbidden('ID为%s的用户无权创建套餐模版' % user_id)
+            raise exception.api.Forbidden('ID为%s的用户无权修改套餐模版' % user_id)
 
-        service_id = request.json['id']
+        service_id = request.json.get('id', None)
         if service_id is None:
             return self.api_document('Need id field.')
-        service_type = request.json['type']
+        service_type = request.json.get('type', None)
         if service_type is None:
             return self.api_document('Need type field.')
-        title = request.json['title']
+        title = request.json.get('title', None)
         if title is None:
             return self.api_document('Need title field.')
-        subtitle = request.json['subtitle']
+        subtitle = request.json.get('subtitle', None)
         if subtitle is None:
             return self.api_document('Need subtitle field.')
-        description = request.json['description']
+        description = request.json.get('description', None)
         if description is None:
             return self.api_document('Need description field.')
-        balance = request.json['balance']
+        balance = request.json.get('balance', None)
         if balance is None:
             return self.api_document('Need balance field.')
-        price = request.json['price']
+        price = request.json.get('price', None)
         if price is None:
             return self.api_document('Need price field.')
-        initialization_fee = request.json['initialization_fee']
+        initialization_fee = request.json.get('initialization_fee', None)
         if initialization_fee is None:
             return self.api_document('Need initialization_fee field.')
+        available = request.json.get('available', None)
+        if available is None:
+            return self.api_document('Need available field.')
 
         service_template = db_session.query(model.ServiceTemplate).filter(
             model.ServiceTemplate.id == service_id).first()
@@ -1030,6 +1033,7 @@ class ServiceTemplateAPI(UserView):
         service_template.balance = balance
         service_template.price = price
         service_template.initialization_fee = initialization_fee
+        service_template.available = available
 
         try:
             db_session.commit()
@@ -1195,6 +1199,8 @@ class ServiceAPI(UserView):
             return self.api_document('Need password field.')
         service_template = db_session.query(model.ServiceTemplate) \
             .filter(model.ServiceTemplate.id == service_template_id).first()
+        if not service_template.available:
+            return self.api_document('该套餐已下架，故无法办理', 403)
 
         # 扣费
         total_payment = service_template.initialization_fee + service_template.price
@@ -1339,6 +1345,9 @@ class ServiceAPI(UserView):
 
         # 续费
         if renew is not None and renew is True:
+            if not service_template.available:
+                return self.api_document('该套餐已下架，无法办理续费', 403)
+
             # 判断是否还可以续费
             if not service.alive:
                 return self.api_document('由于长期没有续费，该套餐已经被系统释放，无法进行续费操作，如有需要请新开学术套餐')

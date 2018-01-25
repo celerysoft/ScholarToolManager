@@ -292,9 +292,10 @@ class Api {
      * @param balance
      * @param price
      * @param initialization_fee
+     * @param available
      * @param callback
      */
-    static updateServiceTemplate(templateId, type, title, subtitle, description, balance, price, initialization_fee, callback) {
+    static updateServiceTemplate(templateId, type, title, subtitle, description, balance, price, initialization_fee, available, callback) {
         this._patchApi(this.SERVICE_TEMPLATE_URL, {
             id: templateId,
             type: type,
@@ -303,7 +304,8 @@ class Api {
             description: description,
             balance: balance,
             price: price,
-            initialization_fee: initialization_fee
+            initialization_fee: initialization_fee,
+            available: available
         }, callback);
     }
 

@@ -455,12 +455,14 @@ class CreateProductView(UserView):
 
         monthly_services = db_session.query(model.ServiceTemplate) \
             .filter(model.ServiceTemplate.type == model.ServiceTemplate.MONTHLY) \
+            .filter(model.ServiceTemplate.available == True) \
             .all()
         for s in monthly_services:
             s.descriptions = s.description.split('#')
 
         data_services = db_session.query(model.ServiceTemplate) \
             .filter(model.ServiceTemplate.type == model.ServiceTemplate.DATA) \
+            .filter(model.ServiceTemplate.available == True) \
             .all()
         for s in data_services:
             s.descriptions = s.description.split('#')

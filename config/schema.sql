@@ -165,13 +165,14 @@ CREATE TABLE service_password (
 
 CREATE TABLE service_template (
   `id`                 INT(16)      NOT NULL  AUTO_INCREMENT,
-  `type`               INT(4)       NOT NULL,
-  `title`              VARCHAR(64)  NOT NULL,
-  `subtitle`           VARCHAR(64)  NOT NULL,
-  `description`        VARCHAR(512) NOT NULL,
-  `balance`            BIGINT(16)      NOT NULL,
-  `price`              INT(16)      NOT NULL,
-  `initialization_fee` INT(16)      NOT NULL,
+  `type`               INT(4)       NOT NULL COMMENT '套餐类型，1-流量，0-包月',
+  `title`              VARCHAR(64)  NOT NULL COMMENT '套餐名',
+  `subtitle`           VARCHAR(64)  NOT NULL COMMENT '副标题',
+  `description`        VARCHAR(512) NOT NULL COMMENT '套餐描述',
+  `balance`            BIGINT(16)      NOT NULL COMMENT '流量',
+  `price`              INT(16)      NOT NULL COMMENT '价格',
+  `initialization_fee` INT(16)      NOT NULL COMMENT '初装费',
+  `available`     BOOL    NOT NULL,
   PRIMARY KEY (`id`)
 )
   ENGINE = innodb
