@@ -1614,6 +1614,9 @@ class ServicePasswordAPI(UserAPI):
 
         service_password.password = new_password
 
+        shadowsocks_controller.remove_port(service_password.port)
+        shadowsocks_controller.add_port(service_password.port, service_password.password)
+
         try:
             db_session.commit()
         except BaseException as e:
