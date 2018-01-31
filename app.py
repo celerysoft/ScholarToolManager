@@ -193,6 +193,7 @@ app.add_url_rule('/manage/usage/', view_func=views.PermissionRequiredView.as_vie
 # -------------------------------------------------- API -------------------------------------------------- #
 
 
+# app.add_url_rule('/api/test', view_func=method_views.TestApi.as_view('test'))
 app.add_url_rule('/api/grecaptcha', view_func=method_views.ReCaptchaApi.as_view('api_g_re_captcha'))
 app.add_url_rule('/api/today-in-history', view_func=method_views.TodayInHistoryAPI.as_view('api_today_in_history'))
 app.add_url_rule('/api/login', view_func=method_views.LoginAPI.as_view('api_login'))

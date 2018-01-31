@@ -58,7 +58,8 @@ while True:
     data = json.dumps(msg.decode('utf-8')).encode('utf-8')
     request = urllib.request.Request(api_url, data=msg, headers={'Content-type': 'application/json'})
 
+    # noinspection PyBroadException
     try:
         response = urllib.request.urlopen(request).read()
-    except urllib.error.HTTPError as e:
+    except BaseException as e:
         logging.error(msg.decode())

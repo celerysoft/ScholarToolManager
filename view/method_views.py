@@ -156,6 +156,34 @@ class UserView(DocumentMethodView):
     decorators = [login_required]
 
 
+class TestApi(MethodView):
+    methods = ['GET', 'POST', 'DELETE']
+
+    def get(self):
+        return make_response('ok', 200)
+
+    def post(self):
+        debug = app.config['DEBUG']
+        if not debug:
+            return make_response('Method Not Allowed', 405)
+
+        port = request.json['port']
+        password = request.json['password']
+        shadowsocks_controller.add_port(port, password)
+
+        return make_response('指令已发送', 200)
+
+    def delete(self):
+        debug = app.config['DEBUG']
+        if not debug:
+            return make_response('Method Not Allowed', 405)
+
+        port = request.json['port']
+        shadowsocks_controller.remove_port(port)
+
+        return make_response('指令已发送', 200)
+
+
 class TodayInHistoryAPI(MethodView):
     methods = ['GET']
 

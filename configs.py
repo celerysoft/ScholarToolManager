@@ -36,9 +36,8 @@ class Config(object):
     # 数据库的URI
     # SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://' \
     #                           + _db_user + ':' + _db_password + '@' + _db_host + ':' + _db_port + '/' + _db_name
-    # SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://' + _db_user + ':' + _db_password \
-    #                           + '@' + _db_host + ':' + _db_port + '/' + _db_name
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' % (_db_user, _db_password, _db_host, _db_port, _db_name)
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' \
+                              % (_db_user, _db_password, _db_host, _db_port, _db_name)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # static目录的路径，测试时为本地，上线时为cdn
     URL_OF_STATIC = ''
@@ -65,19 +64,22 @@ class Config(object):
     # SS服务监听器重启脚本地址
     SS_LISTENER_RESTART_SHELL_FILE_PATH = '/Users/admin/Developer/Script/restart_ss_listener.sh'
     # SS服务监听器日志文件
-    SS_LISTENER_LOG_FILE = '/Users/admin/Developer/Python/scholar-tool-manager/ss-listener.log'
+    SS_LISTENER_LOG_FILE = '/Users/admin/Developer/Python/scholar-tool-manager/local/ss-listener.log'
     # SS服务起始端口号
     SERVICE_MIN_PORT = 20001
     # SS服务配置文件路径
-    SHADOWSOCKS_CONFIG_FILE_PATH = '/Users/admin/Developer/Python/scholar-tool-manager/config/multiple_users_config.json'
+    SHADOWSOCKS_CONFIG_FILE_PATH = \
+        '/Users/admin/Developer/Python/scholar-tool-manager/config/multiple_users_config.json'
     # 主服务器地址，数据库，网页所在的服务器地址
     MAIN_SERVER_ADDRESS = 'http://127.0.0.1:20000'
     # SS服务unix domain socket的地址
-    SS_SERVER_UDS_ADDRESS = '/Users/admin/Developer/shadowsocks-manager.sock'
+    SS_SERVER_UDS_ADDRESS = '/Users/admin/Developer/Python/scholar-tool-manager/local/shadowsocks-manage.sock'
     # ss_controller的unix domain socket的地址
-    SS_CONTROLLER_UDS_CLIEND_ADDRESS = '/Users/admin/Developer/shadowsocks-controller-client.sock'
+    SS_CONTROLLER_UDS_CLIEND_ADDRESS = \
+        '/Users/admin/Developer/Python/scholar-tool-manager/local/shadowsocks-controller-client.sock'
     # ss_listener的unix domain socket的地址
-    SS_LISTENER_UDS_CLIEND_ADDRESS = '/Users/admin/Developer/shadowsocks-listener-client.sock'
+    SS_LISTENER_UDS_CLIEND_ADDRESS = \
+        '/Users/admin/Developer/Python/scholar-tool-manager/local/shadowsocks-listener-client.sock'
 
 
 class DevelopmentConfig(Config):
@@ -85,11 +87,8 @@ class DevelopmentConfig(Config):
     开发环境
     """
     _db_name = 'scholar_tool_manager_test'
-    # SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://' + Config._db_user + ':' + Config._db_password \
-    #                           + '@' + Config._db_host + ':' + Config._db_port + '/' + _db_name
-    # SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://' + Config._db_user + ':' + Config._db_password \
-    #                           + '@' + Config._db_host + ':' + Config._db_port + '/' + _db_name
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' % (Config._db_user, Config._db_password, Config._db_host, Config._db_port, _db_name)
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' \
+                              % (Config._db_user, Config._db_password, Config._db_host, Config._db_port, _db_name)
     DEBUG = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
 

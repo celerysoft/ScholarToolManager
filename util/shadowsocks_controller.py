@@ -39,6 +39,10 @@ SERVER_ADDRESS = configs.Config.SS_SERVER_UDS_ADDRESS
 
 
 def add_port(port, password):
+    print('===========================')
+    print('start adding port %s' % port)
+    print('===========================')
+
     data = 'add: {"server_port":%s, "password":"%s"}' % (port, password)
     data = bytes(data, encoding='utf-8')
 
@@ -54,9 +58,18 @@ def add_port(port, password):
             continue
 
     shadowsocks_config_manager.add_port(port, password)
+    restart_shadowsocks_listener()
+
+    print('============================')
+    print('finish adding port %s' % port)
+    print('============================')
 
 
 def remove_port(port):
+    print('=============================')
+    print('start removing port %s' % port)
+    print('=============================')
+
     data = 'remove: {"server_port":%s}' % port
     data = bytes(data, encoding='utf-8')
 
@@ -71,6 +84,11 @@ def remove_port(port):
             continue
 
     shadowsocks_config_manager.remove_port(port)
+    restart_shadowsocks_listener()
+
+    print('==============================')
+    print('finish removing port %s' % port)
+    print('==============================')
 
 
 def recreate_shadowsocks_config_file(db_session, debug=False):
@@ -79,3 +97,11 @@ def recreate_shadowsocks_config_file(db_session, debug=False):
 
 def restart_service(db_session):
     pass
+
+
+def restart_shadowsocks_listener():
+    restart_shell_file = configs.Config.SS_LISTENER_RESTART_SHELL_FILE_PATH
+    status = os.system('. %s' % restart_shell_file)
+    print('==============================')
+    print('restart shadowsocks listener: %s' % status)
+    print('==============================')
