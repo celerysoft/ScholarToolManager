@@ -215,20 +215,6 @@ class ServiceTemplate(Base):
     DATA = 1
 
 
-class ServiceTransferLog(Base):
-    __tablename__ = 'service_transfer_log'
-
-    id = Column(Integer, primary_key=True)
-    type = Column(String)
-    service_id = Column(Integer)
-    new_service_id = Column(Integer)
-
-    def __init__(self, type=None, service_id=None, new_service_id=None):
-        self.type = type
-        self.service_id = service_id
-        self.new_service_id = new_service_id
-
-
 class Service(Base):
     __tablename__ = 'service'
 
@@ -258,41 +244,6 @@ class Service(Base):
         self.expired_at = expired_at
         self.total_usage = total_usage
         self.auto_renew = auto_renew
-        self.available = available
-        self.alive = alive
-
-    def __repr__(self):
-        return '<NewService %s %s>' % (self.usage, self.package)
-
-
-class OldService(Base):
-    __tablename__ = 'service_old'
-
-    id = Column(Integer, primary_key=True)
-    usage = Column(BIGINT)
-    package = Column(BIGINT)
-    auto_renew = Column(Boolean)
-    reset_at = Column(Float)
-    last_reset_at = Column(Float)
-    created_at = Column(Float)
-    expired_at = Column(Float)
-    total_usage = Column(BIGINT)
-    template_id = Column(Integer)
-    available = Column(Boolean)
-    alive = Column(Boolean)
-
-    def __init__(self, usage=None, package=None, auto_renew=None, reset_at=None, last_reset_at=None, created_at=None,
-                 expired_at=None,
-                 total_usage=None, template_id=None, available=True, alive=True):
-        self.usage = usage
-        self.package = package
-        self.auto_renew = auto_renew
-        self.reset_at = reset_at
-        self.last_reset_at = last_reset_at
-        self.created_at = created_at if created_at else time.time()
-        self.expired_at = expired_at
-        self.total_usage = total_usage
-        self.template_id = template_id
         self.available = available
         self.alive = alive
 
