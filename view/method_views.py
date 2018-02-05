@@ -1243,7 +1243,7 @@ class ServiceAPI(UserView):
         # 创建服务
         service_type = service_template.type
         now = datetime.datetime.now()
-        created_at = now.timestamp()
+        created_at = now
         last_reset_at = None
         auto_renew = None
         if service_type == model.ServiceTemplate.MONTHLY:
@@ -1258,13 +1258,22 @@ class ServiceAPI(UserView):
                 expired_at = reset_at
         elif service_type == model.ServiceTemplate.DATA:
             reset_at = None
-            expired_at = created_at + 365 * 24 * 60 * 60
+            expired_at = datetime.datetime.fromtimestamp(created_at.timestamp() + 365 * 24 * 60 * 60)
         else:
             return self.api_document('Unknow template type.')
 
-        service = model.Service(0, service_template.balance, auto_renew, reset_at, last_reset_at, created_at,
-                                expired_at, 0,
-                                service_template_id)
+        service = model.Service(
+            template_id=service_template_id,
+            type=service_type,
+            usage=0,
+            package=service_template.balance,
+            reset_at=reset_at,
+            last_reset_at=last_reset_at,
+            created_at=created_at,
+            expired_at=expired_at,
+            total_usage=0,
+            auto_renew=auto_renew
+        )
         db_session.add(service)
 
         try:
@@ -1362,14 +1371,13 @@ class ServiceAPI(UserView):
 
         # 修改自动续费
         now = datetime.datetime.now()
-        if auto_renew is not None:
+        if auto_renew is not None and service_template.type == model.ServiceTemplate.MONTHLY:
             service.auto_renew = auto_renew
-            service.reset_at = date_util.derive_1st_of_next_month(now)
-            if service_template.type == model.ServiceTemplate.MONTHLY:
-                if auto_renew:
-                    service.expired_at = datetime.datetime(2099, 12, 31, 23, 59, 59).timestamp()
-                else:
-                    service.expired_at = service.reset_at
+            service.reset_at = date_util.derive_1st_datetime_of_next_month(now)
+            if auto_renew:
+                service.expired_at = datetime.datetime(2099, 12, 31, 23, 59, 59)
+            else:
+                service.expired_at = service.reset_at
 
         # 续费
         if renew is not None and renew is True:
@@ -1382,14 +1390,15 @@ class ServiceAPI(UserView):
 
             # 判断是否在可续费时间内
             if service_template.type == model.ServiceTemplate.MONTHLY:
-                if service.reset_at < now.timestamp() < (service.reset_at + 24 * 60 * 60):
+                if service.reset_at.timestamp() < now.timestamp() < (service.reset_at.timestamp() + 24 * 60 * 60):
                     pass
                 else:
                     return self.api_document('当前不是有效的续费时间，请在每月1号进行续费')
             elif service_template.type == model.ServiceTemplate.DATA:
-                if (service.package - service.usage <= service.package * 0.2 and now.timestamp() < service.expired_at) \
-                        or (service.expired_at < now.timestamp() < date_util.derive_1st_of_next_month(
-                            datetime.datetime.fromtimestamp(service.expired_at))):
+                if (service.package - service.usage <= service.package * 0.2
+                    and now.timestamp() < service.expired_at.timestamp()) \
+                        or (service.expired_at.timestamp() < now.timestamp() <
+                            date_util.derive_1st_of_next_month(service.expired_at)):
                     pass
                 else:
                     return self.api_document('当前不是有效的续费时间，或者剩余流量大于总流量的20%，无法续费')
@@ -1404,7 +1413,7 @@ class ServiceAPI(UserView):
                 user_scholar_balance.balance -= total_payment
 
             # 更新服务
-            service.last_reset_at = now.timestamp()
+            service.last_reset_at = now
             service.usage = 0
             if not service.available:
                 service.available = True
@@ -1416,13 +1425,13 @@ class ServiceAPI(UserView):
                 if auto_renew is None:
                     return self.api_document('Need auto_renew field.')
                 if auto_renew:
-                    service.reset_at = date_util.derive_1st_of_next_month(now)
-                    service.expired_at = datetime.datetime(2099, 12, 31, 23, 59, 59).timestamp()
+                    service.reset_at = date_util.derive_1st_datetime_of_next_month(now)
+                    service.expired_at = datetime.datetime(2099, 12, 31, 23, 59, 59)
                 else:
                     service.reset_at = None
                     service.expired_at = date_util.derive_1st_of_next_month(now)
             elif service_template.type == model.ServiceTemplate.DATA:
-                service.expired_at = now.timestamp() + 365 * 24 * 60 * 60
+                service.expired_at = datetime.datetime.fromtimestamp(now.timestamp() + 365 * 24 * 60 * 60)
 
         try:
             db_session.commit()

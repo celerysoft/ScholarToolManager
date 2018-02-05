@@ -232,7 +232,7 @@ class Service(Base):
     available = Column(Boolean)
     alive = Column(Boolean)
 
-    def __init__(self, template_id=None, type=None, usage=None, package=None, reset_at=None, last_reset_at=None,
+    def __init__(self, template_id=None, type=None, usage=0, package=None, reset_at=None, last_reset_at=None,
                  created_at=None, expired_at=None, total_usage=None, auto_renew=None, available=True, alive=True):
         self.template_id = template_id
         self.type = type
@@ -249,6 +249,11 @@ class Service(Base):
 
     def __repr__(self):
         return '<Service %s %s>' % (self.usage, self.package)
+
+    # 包月套餐
+    MONTHLY = 0
+    # 流量套餐
+    DATA = 1
 
 
 class ServicePassword(Base):

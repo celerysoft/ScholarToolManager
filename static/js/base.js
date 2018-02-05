@@ -318,11 +318,11 @@ function dateStringToDateString(date) {
 
 function dateToDateString(date) {
     let
-        y = date.getFullYear(),
-        m = date.getMonth() + 1,
-        d = date.getDate(),
-        hh = date.getHours(),
-        mm = date.getMinutes();
+        y = date.getUTCFullYear(),
+        m = date.getUTCMonth() + 1,
+        d = date.getUTCDate(),
+        hh = date.getUTCHours(),
+        mm = date.getUTCMinutes();
     return y + '年' + m + '月' + d + '日 ' + (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm;
 }
 
