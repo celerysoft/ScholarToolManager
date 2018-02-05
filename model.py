@@ -2,7 +2,7 @@
 # -*-coding:utf-8 -*-
 import time
 
-from sqlalchemy import Table, Column, Integer, String, Date, Float, Boolean, LargeBinary, DATETIME, BIGINT
+from sqlalchemy import Table, Column, Integer, String, Date, Float, Boolean, LargeBinary, DATETIME, BIGINT, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -215,8 +215,58 @@ class ServiceTemplate(Base):
     DATA = 1
 
 
+class ServiceTransferLog(Base):
+    __tablename__ = 'service_transfer_log'
+
+    id = Column(Integer, primary_key=True)
+    type = Column(String)
+    service_id = Column(Integer)
+    new_service_id = Column(Integer)
+
+    def __init__(self, type=None, service_id=None, new_service_id=None):
+        self.type = type
+        self.service_id = service_id
+        self.new_service_id = new_service_id
+
+
 class Service(Base):
     __tablename__ = 'service'
+
+    id = Column(Integer, primary_key=True)
+    template_id = Column(Integer)
+    type = Column(Integer)
+    usage = Column(BIGINT)
+    package = Column(BIGINT)
+    reset_at = Column(DateTime)
+    last_reset_at = Column(DateTime)
+    created_at = Column(DateTime)
+    expired_at = Column(DateTime)
+    total_usage = Column(BIGINT)
+    auto_renew = Column(Boolean)
+    available = Column(Boolean)
+    alive = Column(Boolean)
+
+    def __init__(self, template_id=None, type=None, usage=None, package=None, reset_at=None, last_reset_at=None,
+                 created_at=None, expired_at=None, total_usage=None, auto_renew=None, available=True, alive=True):
+        self.template_id = template_id
+        self.type = type
+        self.usage = usage
+        self.package = package
+        self.reset_at = reset_at
+        self.last_reset_at = last_reset_at
+        self.created_at = created_at if created_at else time.time()
+        self.expired_at = expired_at
+        self.total_usage = total_usage
+        self.auto_renew = auto_renew
+        self.available = available
+        self.alive = alive
+
+    def __repr__(self):
+        return '<NewService %s %s>' % (self.usage, self.package)
+
+
+class OldService(Base):
+    __tablename__ = 'service_old'
 
     id = Column(Integer, primary_key=True)
     usage = Column(BIGINT)

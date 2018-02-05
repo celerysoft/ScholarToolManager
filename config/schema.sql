@@ -130,6 +130,7 @@ CREATE TABLE user_service (
   `id`         INT(16) NOT NULL  AUTO_INCREMENT,
   `user_id`    INT(16) NOT NULL,
   `service_id` INT(16) NOT NULL,
+  `service_type` INT(11)   NOT NULL COMMENT '0 - monthly, 1 - data',
   PRIMARY KEY (`id`)
 )
   ENGINE = innodb
@@ -137,17 +138,18 @@ CREATE TABLE user_service (
 
 CREATE TABLE service (
   `id`            INT(16) NOT NULL  AUTO_INCREMENT,
-  `usage`         BIGINT(16) NOT NULL,
-  `package`       BIGINT(16) NOT NULL,
-  `auto_renew`    BOOL,
-  `reset_at`      REAL,
-  `last_reset_at` REAL,
-  `created_at`    REAL    NOT NULL,
-  `expired_at`    REAL    NOT NULL,
-  `total_usage`   BIGINT(16) NOT NULL,
-  `template_id`   INT(16) NOT NULL,
-  `available`     BOOL    NOT NULL,
-  `alive`         BOOL    NOT NULL,
+  `template_id`   INT(16) NOT NULL COMMENT '套餐模版id',
+  `type`          INT(11) NOT NULL COMMENT '0 - 包月套餐，1 - 流量套餐',
+  `usage`         BIGINT(16) NOT NULL COMMENT '已用流量',
+  `package`       BIGINT(16) NOT NULL COMMENT '总流量',
+  `reset_at`      datetime COMMENT '重置流量时间点，包月套餐专用字段',
+  `last_reset_at` datetime COMMENT '上次重置流量的时间点',
+  `created_at`    datetime    NOT NULL COMMENT '创建于',
+  `expired_at`    datetime    NOT NULL COMMENT '过期于',
+  `total_usage`   BIGINT(16) NOT NULL COMMENT '已使用流量合计',
+  `auto_renew`    BOOL COMMENT '自动续费，包月套餐专用字段',
+  `available`     BOOL    NOT NULL COMMENT '是否有效',
+  `alive`         BOOL    NOT NULL COMMENT '是否存在，不存在即被释放，无法续费',
   PRIMARY KEY (`id`)
 )
   ENGINE = innodb
@@ -156,8 +158,9 @@ CREATE TABLE service (
 CREATE TABLE service_password (
   `id`         INT(16)     NOT NULL  AUTO_INCREMENT,
   `service_id` INT(16)     NOT NULL,
-  `port`       INT(6)      NOT NULL,
-  `password`   VARCHAR(64) NOT NULL,
+  `service_type` INT(11)   NOT NULL COMMENT '0 - monthly, 1 - data',
+  `port`       INT(6)      NOT NULL COMMENT '端口',
+  `password`   VARCHAR(64) NOT NULL COMMENT '密码',
   PRIMARY KEY (`id`)
 )
   ENGINE = innodb
@@ -181,7 +184,7 @@ CREATE TABLE service_template (
 CREATE TABLE user_scholar_balance (
   `id`      INT(16) NOT NULL  AUTO_INCREMENT,
   `user_id` INT(16) NOT NULL,
-  `balance` INT(16) NOT NULL,
+  `balance` INT(16) NOT NULL COMMENT '学术积分',
   UNIQUE KEY `idx_user_id` (`user_id`),
   PRIMARY KEY (`id`)
 )

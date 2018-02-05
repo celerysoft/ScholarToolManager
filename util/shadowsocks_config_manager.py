@@ -61,6 +61,22 @@ def recreate_shadowsocks_config_file(db_session, method='aes-256-cfb', timeout=3
         .filter(model.Service.available.is_(True)) \
         .filter(model.ServicePassword.service_id == model.Service.id) \
         .order_by(model.ServicePassword.port).all()
+    # service_passwords = db_session.query(model.ServicePassword) \
+    #     .filter(model.DataService.alive.is_(True)) \
+    #     .filter(model.DataService.available.is_(True)) \
+    #     .filter(model.ServicePassword.service_type == 1) \
+    #     .filter(model.ServicePassword.service_id == model.DataService.id) \
+    #     .order_by(model.ServicePassword.port).all()
+    #
+    # monthly_service_password = db_session.query(model.ServicePassword) \
+    #     .filter(model.MonthlyService.alive.is_(True)) \
+    #     .filter(model.MonthlyService.available.is_(True)) \
+    #     .filter(model.ServicePassword.service_type == 0) \
+    #     .filter(model.ServicePassword.service_id == model.MonthlyService.id) \
+    #     .order_by(model.ServicePassword.port).all()
+    #
+    # if len(monthly_service_password) > 0:
+    #     service_passwords.extend(monthly_service_password)
 
     lines = []
     lines.append('{%s' % os.linesep)

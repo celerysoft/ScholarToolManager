@@ -306,15 +306,24 @@ function toSmartDate(timestamp) {
     return result;
 }
 
-function timestampToDate(timestamp) {
+function timestampToDateString(timestamp) {
     let date = new Date(timestamp);
+    return dateToDateString(date);
+}
+
+function dateStringToDateString(date) {
+    let d = new Date(date);
+    return dateToDateString(d);
+}
+
+function dateToDateString(date) {
     let
         y = date.getFullYear(),
         m = date.getMonth() + 1,
         d = date.getDate(),
         hh = date.getHours(),
         mm = date.getMinutes();
-    return y + '年' + m + '月' + d + '日 ' + hh + ':' + (mm < 10 ? '0' : '') + mm;
+    return y + '年' + m + '月' + d + '日 ' + (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm;
 }
 
 function encodeHtml(str) {

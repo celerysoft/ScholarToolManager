@@ -116,7 +116,7 @@
                     let service = data.service;
 
                     vm_scholar_detail.$data.title = service.title;
-                    vm_scholar_detail.$data.renewAt = timestampToDate(service.renew_at * 1000);
+                    vm_scholar_detail.$data.renewAt = dateStringToDateString(service.renew_at);
                     vm_scholar_detail.$data.usage = (service.usage / 1024 / 1024).toFixed(2);
                     vm_scholar_detail.$data.balance = ((service.package - service.usage) / 1024 / 1024).toFixed(2);
                     vm_scholar_detail.$data.port = service.port;
@@ -127,7 +127,6 @@
                         vm_scholar_detail.$data.autoRenew = autoRenew;
                         vm_scholar_detail.$data.autoRenewStr = autoRenew ? "是" : "否";
                     }
-                    console.log(vm_scholar_detail.$data.autoRenewStr);
                 });
             }
 
