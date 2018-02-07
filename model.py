@@ -301,3 +301,23 @@ class UserScholarBalance(Base):
 
     def __repr__(self):
         return '<UserScholarBalance %s %s>' % (self.user_id, self.balance)
+
+
+class UserScholarBalanceLog(Base):
+    __tablename__ = 'user_scholar_balance_log'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer)
+    amount = Column(Integer)
+    balance = Column(Integer)
+    message = Column(String)
+
+    def __init__(self, user_id=None, amount=None, balance=None, message=None):
+        self.user_id = user_id
+        self.amount = amount
+        self.balance = balance
+        self.message = message
+
+    def __repr__(self):
+        return '<UserScholarBalanceLog, id: %s,  amount: %s, balance: %s, message: %s>' \
+               % (self.user_id, self.amount, self.balance, self.message)

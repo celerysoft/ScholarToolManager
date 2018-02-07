@@ -127,40 +127,53 @@ CREATE TABLE event (
   DEFAULT CHARSET = utf8;
 
 CREATE TABLE user_service (
-  `id`         INT(16) NOT NULL  AUTO_INCREMENT,
-  `user_id`    INT(16) NOT NULL,
-  `service_id` INT(16) NOT NULL,
-  `service_type` INT(11)   NOT NULL COMMENT '0 - monthly, 1 - data',
+  `id`           INT(16) NOT NULL  AUTO_INCREMENT,
+  `user_id`      INT(16) NOT NULL,
+  `service_id`   INT(16) NOT NULL,
+  `service_type` INT(11) NOT NULL
+  COMMENT '0 - monthly, 1 - data',
   PRIMARY KEY (`id`)
 )
   ENGINE = innodb
   DEFAULT CHARSET = utf8;
 
 CREATE TABLE service (
-  `id`            INT(16) NOT NULL  AUTO_INCREMENT,
-  `template_id`   INT(16) NOT NULL COMMENT '套餐模版id',
-  `type`          INT(11) NOT NULL COMMENT '0 - 包月套餐，1 - 流量套餐',
-  `usage`         BIGINT(16) NOT NULL COMMENT '已用流量',
-  `package`       BIGINT(16) NOT NULL COMMENT '总流量',
-  `reset_at`      datetime COMMENT '重置流量时间点，包月套餐专用字段',
-  `last_reset_at` datetime COMMENT '上次重置流量的时间点',
-  `created_at`    datetime    NOT NULL COMMENT '创建于',
-  `expired_at`    datetime    NOT NULL COMMENT '过期于',
-  `total_usage`   BIGINT(16) NOT NULL COMMENT '已使用流量合计',
+  `id`            INT(16)    NOT NULL  AUTO_INCREMENT,
+  `template_id`   INT(16)    NOT NULL
+  COMMENT '套餐模版id',
+  `type`          INT(11)    NOT NULL
+  COMMENT '0 - 包月套餐，1 - 流量套餐',
+  `usage`         BIGINT(16) NOT NULL
+  COMMENT '已用流量',
+  `package`       BIGINT(16) NOT NULL
+  COMMENT '总流量',
+  `reset_at`      DATETIME COMMENT '重置流量时间点，包月套餐专用字段',
+  `last_reset_at` DATETIME COMMENT '上次重置流量的时间点',
+  `created_at`    DATETIME   NOT NULL
+  COMMENT '创建于',
+  `expired_at`    DATETIME   NOT NULL
+  COMMENT '过期于',
+  `total_usage`   BIGINT(16) NOT NULL
+  COMMENT '已使用流量合计',
   `auto_renew`    BOOL COMMENT '自动续费，包月套餐专用字段',
-  `available`     BOOL    NOT NULL COMMENT '是否有效',
-  `alive`         BOOL    NOT NULL COMMENT '是否存在，不存在即被释放，无法续费',
+  `available`     BOOL       NOT NULL
+  COMMENT '是否有效',
+  `alive`         BOOL       NOT NULL
+  COMMENT '是否存在，不存在即被释放，无法续费',
   PRIMARY KEY (`id`)
 )
   ENGINE = innodb
   DEFAULT CHARSET = utf8;
 
 CREATE TABLE service_password (
-  `id`         INT(16)     NOT NULL  AUTO_INCREMENT,
-  `service_id` INT(16)     NOT NULL,
-  `service_type` INT(11)   NOT NULL COMMENT '0 - monthly, 1 - data',
-  `port`       INT(6)      NOT NULL COMMENT '端口',
-  `password`   VARCHAR(64) NOT NULL COMMENT '密码',
+  `id`           INT(16)     NOT NULL  AUTO_INCREMENT,
+  `service_id`   INT(16)     NOT NULL,
+  `service_type` INT(11)     NOT NULL
+  COMMENT '0 - monthly, 1 - data',
+  `port`         INT(6)      NOT NULL
+  COMMENT '端口',
+  `password`     VARCHAR(64) NOT NULL
+  COMMENT '密码',
   PRIMARY KEY (`id`)
 )
   ENGINE = innodb
@@ -168,14 +181,21 @@ CREATE TABLE service_password (
 
 CREATE TABLE service_template (
   `id`                 INT(16)      NOT NULL  AUTO_INCREMENT,
-  `type`               INT(4)       NOT NULL COMMENT '套餐类型，1-流量，0-包月',
-  `title`              VARCHAR(64)  NOT NULL COMMENT '套餐名',
-  `subtitle`           VARCHAR(64)  NOT NULL COMMENT '副标题',
-  `description`        VARCHAR(512) NOT NULL COMMENT '套餐描述',
-  `balance`            BIGINT(16)      NOT NULL COMMENT '流量',
-  `price`              INT(16)      NOT NULL COMMENT '价格',
-  `initialization_fee` INT(16)      NOT NULL COMMENT '初装费',
-  `available`     BOOL    NOT NULL,
+  `type`               INT(4)       NOT NULL
+  COMMENT '套餐类型，1-流量，0-包月',
+  `title`              VARCHAR(64)  NOT NULL
+  COMMENT '套餐名',
+  `subtitle`           VARCHAR(64)  NOT NULL
+  COMMENT '副标题',
+  `description`        VARCHAR(512) NOT NULL
+  COMMENT '套餐描述',
+  `balance`            BIGINT(16)   NOT NULL
+  COMMENT '流量',
+  `price`              INT(16)      NOT NULL
+  COMMENT '价格',
+  `initialization_fee` INT(16)      NOT NULL
+  COMMENT '初装费',
+  `available`          BOOL         NOT NULL,
   PRIMARY KEY (`id`)
 )
   ENGINE = innodb
@@ -184,41 +204,57 @@ CREATE TABLE service_template (
 CREATE TABLE user_scholar_balance (
   `id`      INT(16) NOT NULL  AUTO_INCREMENT,
   `user_id` INT(16) NOT NULL,
-  `balance` INT(16) NOT NULL COMMENT '学术积分',
+  `balance` INT(16) NOT NULL
+  COMMENT '学术积分',
   UNIQUE KEY `idx_user_id` (`user_id`),
   PRIMARY KEY (`id`)
 )
   ENGINE = innodb
   DEFAULT CHARSET = utf8;
 
-DROP DATABASE IF EXISTS scholar_tool_manager_test;
-CREATE DATABASE scholar_tool_manager_test;
-USE scholar_tool_manager_test;
-GRANT SELECT, INSERT, UPDATE, DELETE ON scholar_tool_manager_test.* TO 'www-data'@'localhost';
+CREATE TABLE `user_scholar_balance_log` (
+  `id`      INT(11) NOT NULL AUTO_INCREMENT,
+  `user_id` INT(11) NOT NULL,
+  `amount`  INT(11) NOT NULL
+  COMMENT '金额变动数值，正数为增加余额，负数为减少余额',
+  `balance` INT(11) NOT NULL
+  COMMENT '金额变动后的账户余额',
+  `message` TEXT DEFAULT NULL
+  COMMENT '备注',
+  PRIMARY KEY (`id`)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8
+  COMMENT ='用户学术积分账户变更日志';
 
-CREATE TABLE user
-  LIKE scholar_tool_manager.user;
-CREATE TABLE role
-  LIKE scholar_tool_manager.role;
-CREATE TABLE user_role
-  LIKE scholar_tool_manager.user_role;
-CREATE TABLE permission
-  LIKE scholar_tool_manager.permission;
-CREATE TABLE role_permission
-  LIKE scholar_tool_manager.role_permission;
-CREATE TABLE invitation_code
-  LIKE scholar_tool_manager.invitation_code;
-CREATE TABLE sessions
-  LIKE scholar_tool_manager.sessions;
-CREATE TABLE event
-  LIKE scholar_tool_manager.event;
-CREATE TABLE user_service
-  LIKE scholar_tool_manager.user_service;
-CREATE TABLE service
-  LIKE scholar_tool_manager.service;
-CREATE TABLE service_password
-  LIKE scholar_tool_manager.service_password;
-CREATE TABLE service_template
-  LIKE scholar_tool_manager.service_template;
-CREATE TABLE user_scholar_balance
-  LIKE scholar_tool_manager.user_scholar_balance;
+-- DROP DATABASE IF EXISTS scholar_tool_manager_test;
+-- CREATE DATABASE scholar_tool_manager_test;
+-- USE scholar_tool_manager_test;
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON scholar_tool_manager_test.* TO 'www-data'@'localhost';
+--
+-- CREATE TABLE user
+--   LIKE scholar_tool_manager.user;
+-- CREATE TABLE role
+--   LIKE scholar_tool_manager.role;
+-- CREATE TABLE user_role
+--   LIKE scholar_tool_manager.user_role;
+-- CREATE TABLE permission
+--   LIKE scholar_tool_manager.permission;
+-- CREATE TABLE role_permission
+--   LIKE scholar_tool_manager.role_permission;
+-- CREATE TABLE invitation_code
+--   LIKE scholar_tool_manager.invitation_code;
+-- CREATE TABLE sessions
+--   LIKE scholar_tool_manager.sessions;
+-- CREATE TABLE event
+--   LIKE scholar_tool_manager.event;
+-- CREATE TABLE user_service
+--   LIKE scholar_tool_manager.user_service;
+-- CREATE TABLE service
+--   LIKE scholar_tool_manager.service;
+-- CREATE TABLE service_password
+--   LIKE scholar_tool_manager.service_password;
+-- CREATE TABLE service_template
+--   LIKE scholar_tool_manager.service_template;
+-- CREATE TABLE user_scholar_balance
+--   LIKE scholar_tool_manager.user_scholar_balance;

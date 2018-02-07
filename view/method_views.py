@@ -1599,6 +1599,14 @@ class ScholarBalanceAPI(UserAPI):
 
         user_scholar_balance.balance += amount
 
+        user_scholar_balance_log = model.UserScholarBalanceLog(
+            user_id=query_user_id,
+            amount=amount,
+            balance=user_scholar_balance.balance,
+            message='系统发放'
+        )
+        db_session.add(user_scholar_balance_log)
+
         try:
             db_session.commit()
         except BaseException as e:

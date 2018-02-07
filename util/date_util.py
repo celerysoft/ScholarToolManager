@@ -1,7 +1,7 @@
 import datetime
 
 
-def derive_1st_of_next_month(dt: datetime.datetime) -> float:
+def derive_1st_of_next_month(dt: datetime.datetime = None) -> float:
     """
     derive 1st day's timestamp of next month.
 
@@ -10,6 +10,8 @@ def derive_1st_of_next_month(dt: datetime.datetime) -> float:
     :return: 1st day's timestamp of next month
     :rtype: float
     """
+    if dt is None:
+        dt = datetime.datetime.now()
     if dt.month == 12:
         first_day = datetime.datetime(dt.year + 1, 1, 1).timestamp()
     else:
@@ -17,7 +19,7 @@ def derive_1st_of_next_month(dt: datetime.datetime) -> float:
     return first_day
 
 
-def derive_1st_datetime_of_next_month(dt: datetime.datetime) -> datetime.datetime:
+def derive_1st_datetime_of_next_month(dt: datetime.datetime = None) -> datetime.datetime:
     """
     derive 1st day's datetime object of next month.
 
@@ -26,6 +28,8 @@ def derive_1st_datetime_of_next_month(dt: datetime.datetime) -> datetime.datetim
     :return: 1st day's datetime object of next month
     :rtype: datetime.datetime
     """
+    if dt is None:
+        dt = datetime.datetime.now()
     if dt.month == 12:
         first_day = datetime.datetime(dt.year + 1, 1, 1)
     else:
