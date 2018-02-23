@@ -1,11 +1,11 @@
 # -*-coding:utf-8 -*-
 import sys
 import os
+sys.path.append(os.path.abspath('..'))
+
 from datetime import datetime
 
-from util import date_util
-
-sys.path.append(os.path.abspath('..'))
+from util import date_util, shadowsocks_controller
 
 from contextlib import contextmanager
 
@@ -54,6 +54,9 @@ def auto_renew_monthly_service(session):
         # 扣费
         service_template = session.query(model.ServiceTemplate) \
             .filter(model.ServiceTemplate.id == service.template_id).first()
+        if not service_template.available:
+            print('该套餐已下架')
+            continue
 
         user_scholar_balance = session.query(model.UserScholarBalance) \
             .filter(model.UserService.service_id == service.id) \
@@ -81,10 +84,17 @@ def auto_renew_monthly_service(session):
 
         session.commit()
 
+        service_password = session.query(model.ServicePassword) \
+            .filter(model.ServicePassword.service_id == service.id).first()
+        if service_password is not None:
+            shadowsocks_controller.add_port(service_password.port, service_password.password, False)
+
+    if services is not None and len(services) > 0:
+        shadowsocks_controller.restart_shadowsocks_listener()
+
 
 if __name__ == '__main__':
     init_database()
 
     with session_scope() as session:
-        pass
         auto_renew_monthly_service(session)

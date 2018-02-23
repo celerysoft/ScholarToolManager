@@ -1240,6 +1240,15 @@ class ServiceAPI(UserView):
         else:
             user_scholar_balance.balance -= total_payment
 
+            user_scholar_balance_log = model.UserScholarBalanceLog(
+                user_id=user_scholar_balance.user_id,
+                amount=(-total_payment),
+                balance=user_scholar_balance.balance,
+                message='新购套餐：%s' % service_template.title
+            )
+            db_session.add(user_scholar_balance_log)
+
+
         # 创建服务
         service_type = service_template.type
         now = datetime.datetime.now()
@@ -1402,6 +1411,7 @@ class ServiceAPI(UserView):
                     pass
                 else:
                     return self.api_document('当前不是有效的续费时间，或者剩余流量大于总流量的20%，无法续费')
+
             # 扣费
             total_payment = service_template.price
             user_scholar_balance = db_session.query(model.UserScholarBalance) \
@@ -1411,6 +1421,14 @@ class ServiceAPI(UserView):
                 return self.api_document('余额不足', 403)
             else:
                 user_scholar_balance.balance -= total_payment
+
+                user_scholar_balance_log = model.UserScholarBalanceLog(
+                    user_id=user_scholar_balance.user_id,
+                    amount=(-total_payment),
+                    balance=user_scholar_balance.balance,
+                    message='包月套餐自动续费，套餐id: %s，套餐名称：%s' % (service.id, service_template.title)
+                )
+                db_session.add(user_scholar_balance_log)
 
             # 更新服务
             service.last_reset_at = now
@@ -1530,6 +1548,9 @@ class UsageAPI(BaseView):
                 if service.usage > service.package:
                     service.available = False
                     shadowsocks_controller.remove_port(port)
+                if service.type == model.Service.DATA:
+                    if service.expired_at < datetime.datetime.now():
+                        service.available = False
 
         try:
             db_session.commit()
@@ -1659,7 +1680,7 @@ class ServicePasswordAPI(UserAPI):
 
         service_password.password = new_password
 
-        shadowsocks_controller.remove_port(service_password.port)
+        shadowsocks_controller.remove_port(service_password.port, False)
         shadowsocks_controller.add_port(service_password.port, service_password.password)
 
         try:
