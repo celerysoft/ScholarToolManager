@@ -2,11 +2,12 @@
 import sys
 import os
 
-sys.path.append(os.path.abspath('..'))
+sys.path.append(os.path.abspath(os.path.join(__file__, "../..")))
+print(os.path.abspath(os.path.join(__file__, "../..")))
 
 from datetime import datetime
 
-from util import date_util, shadowsocks_controller
+from util import shadowsocks_controller
 
 from contextlib import contextmanager
 
