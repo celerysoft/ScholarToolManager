@@ -3,7 +3,6 @@ import sys
 import os
 
 sys.path.append(os.path.abspath(os.path.join(__file__, "../..")))
-print(os.path.abspath(os.path.join(__file__, "../..")))
 
 from datetime import datetime
 
@@ -48,9 +47,10 @@ def init_database():
 
 
 def auto_renew_monthly_service(session):
-    services = session.query(model.Service)\
-        .filter(model.Service.type == model.Service.MONTHLY)\
-        .filter(model.Service.auto_renew == True)\
+    services = session.query(model.Service) \
+        .filter(model.Service.type == model.Service.MONTHLY) \
+        .filter(model.Service.auto_renew == True) \
+        .filter(model.Service.reset_at < datetime.now()) \
         .filter(model.Service.alive == True).all()
     for service in services:
         # 扣费
