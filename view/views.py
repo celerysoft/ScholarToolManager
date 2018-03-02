@@ -438,8 +438,7 @@ class ProductDetailView(UserView):
             return redirect(url_for('product'))
 
         return render_template(self.template,
-                               title=self.title,
-                               service_id=service_id)
+                               title=self.title)
 
 
 class CreateProductView(UserView):

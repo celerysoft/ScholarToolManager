@@ -2,7 +2,7 @@
 # -*-coding:utf-8 -*-
 import logging
 
-from flask import Flask, redirect, url_for, session, g
+from flask import Flask, redirect, url_for, session
 from flask.json import jsonify
 from flask_session import Session
 
@@ -83,7 +83,7 @@ def handle_unauthorized(error):
 
 
 @app.errorhandler(exception.http.Forbidden)
-def handle_unauthorized(error):
+def handle_forbidden(error):
     return redirect(url_for('login'))
 
 
@@ -98,14 +98,14 @@ def handle_api_unauthorized(error):
 
 
 @app.errorhandler(exception.api.Forbidden)
-def handle_api_unauthorized(error):
+def handle_api_forbidden(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
     return response
 
 
 @app.errorhandler(exception.api.InvalidRequest)
-def handle_api_unauthorized(error):
+def handle_api_invalid_request(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
     return response

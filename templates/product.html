@@ -37,6 +37,9 @@
 
                             vm_my_product.$data.products = vm_my_product.$data.products ? vm_my_product.$data.products.concat(data.service) : data.service;
                         });
+                    },
+                    showProductDetail: function (url) {
+                        location.assign(url);
                     }
                 }
             });
@@ -55,10 +58,11 @@
 {% endblock %}
 
 {% block content %}
+    {% raw %}
     <div id="vm_my_product">
         <div v-if="!products"></div>
         <div v-else-if="products.length > 0" class="mdui-table-fluid" style="margin: 16px 0;">
-            <table class="mdui-table">
+            <table class="mdui-table mdui-table-hoverable">
                 <thead>
                 <tr>
                     <th>学术名</th>
@@ -68,11 +72,11 @@
                 </tr>
                 </thead>
                 <tbody class="mdui-typo">
-                <tr v-for="product in products">
-                    <td><a :href="product.detail_url">{{product.title}}</a></td>
-                    <td>{{product.port}}</td>
-                    <td>{{product.balance}} M</td>
-                    <td>{{product.status_str}}</td>
+                <tr v-for="product in products" @click="showProductDetail(product.detail_url)" class="clickable">
+                    <td>{{ product.title }}</td>
+                    <td>{{ product.port }}</td>
+                    <td>{{ product.balance }} M</td>
+                    <td>{{ product.status_str }}</td>
                 </tr>
                 </tbody>
             </table>
@@ -85,6 +89,7 @@
             暂无学术，去<a href="/product/create/">订阅</a>
         </div>
     </div>
+    {% endraw %}
 
     {% include '__scroll_to_top_button_base__.html' %}
 {% endblock %}

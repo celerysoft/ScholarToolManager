@@ -4,8 +4,9 @@
     <script>
         $(function () {
             const DEFAULT_PASSWORD_TEXT = '点击查看';
-            const SERVICE_ID = '{{ service_id }}';
             let password = '';
+            const start = '/product/detail/'.length;
+            const SERVICE_ID = location.pathname.substring(start);
 
             let vm_scholar_detail = new Vue({
                 el: '#scholar-detail',
@@ -27,6 +28,9 @@
                         } else {
                             vm_scholar_detail.$data.password = DEFAULT_PASSWORD_TEXT;
                         }
+                    },
+                    turnToRenewPage: function () {
+                        location.assign('/product/renew/pay/' + SERVICE_ID);
                     }
                 }
             });
@@ -144,14 +148,18 @@
 {% endblock %}
 
 {% block content %}
+    {% raw %}
     <div id="scholar-detail">
         <div class="mdui-row mdui-valign">
             <div class="mdui-col-xs-6">
                 <h2 id="test">{{title}}</h2>
                 <p>下次付款日期：{{renewAt}}</p>
             </div>
-            <div class="mdui-col-xs-3 mdui-text-center mdui-color-theme" style="padding: 16px 16px;">已用流量：{{usage}} M</div>
-            <div class="mdui-col-xs-3 mdui-text-center mdui-color-theme-accent" style="padding: 16px 16px;">可用流量：{{balance}} M</div>
+            <div class="mdui-col-xs-3 mdui-text-center mdui-color-theme" style="padding: 16px 16px;">已用流量：{{usage}} M
+            </div>
+            <div class="mdui-col-xs-3 mdui-text-center mdui-color-theme-accent" style="padding: 16px 16px;">
+                可用流量：{{balance}} M
+            </div>
         </div>
 
         <div class="mdui-row">
@@ -172,12 +180,16 @@
                         </div>
                         <div class="mdui-clearfix">
                             <div class="mdui-float-left">连接密码</div>
-                            <div @click="togglePassword" class="mdui-float-right mdui-text-color-theme-accent">{{password}}</div>
+                            <div @click="togglePassword" class="mdui-float-right mdui-text-color-theme-accent">
+                                {{password}}
+                            </div>
                         </div>
                     </div>
 
                     <div class="mdui-card-actions">
-                        <button id="btn-open-modify-password-dialog" class="mdui-btn mdui-text-color-theme-accent mdui-ripple">修改连接密码</button>
+                        <button id="btn-open-modify-password-dialog"
+                                class="mdui-btn mdui-text-color-theme-accent mdui-ripple">修改连接密码
+                        </button>
                     </div>
                 </div>
             </div>
@@ -204,8 +216,11 @@
                     </div>
 
                     <div class="mdui-card-actions">
-                        <a href="/product/renew/pay/{{ service_id }}"><button class="mdui-btn mdui-text-color-theme-accent mdui-ripple">续费</button></a>
-                        <button v-if="autoRenewStr" class="mdui-btn mdui-text-color-theme-accent mdui-ripple" mdui-dialog="{target: '#dialog-auto-renew'}">自动续费</button>
+                        <button @click="turnToRenewPage" class="mdui-btn mdui-text-color-theme-accent mdui-ripple">续费
+                        </button>
+                        <button v-if="autoRenewStr" class="mdui-btn mdui-text-color-theme-accent mdui-ripple"
+                                mdui-dialog="{target: '#dialog-auto-renew'}">自动续费
+                        </button>
                     </div>
                 </div>
             </div>
@@ -263,6 +278,7 @@
             </div>
         </div>
     </div>
+    {% endraw %}
 
     <!-- 修改学术连接密码对话框 -->
     <div id="dialog-modify-password" class="mdui-dialog">
@@ -279,7 +295,7 @@
         </div>
         <div class="mdui-dialog-actions">
             <button class="mdui-btn mdui-ripple" mdui-dialog-cancel>取消</button>
-            <button id="btn-recharge" class="mdui-btn mdui-ripple" >修改密码</button>
+            <button id="btn-recharge" class="mdui-btn mdui-ripple">修改密码</button>
         </div>
     </div>
 

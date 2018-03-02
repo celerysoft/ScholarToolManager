@@ -35,17 +35,17 @@
 {% endblock %}
 
 {% block content %}
+    {% raw %}
     <div class="mdui-typo">
         <h1 class="mdui-text-center">欢迎来到 Celery Soft 学术</h1>
 
         <div id="today_in_history_container">
             <div>
-                <p>今天是<b v-text="date"></b>，来看看历史上的今天发生了什么：</p>
-                <!--<p v-text="results"></p>-->
-                <ul id="example-0">
+                <p>今天是<b>{{ date }}</b>，来看看历史上的今天发生了什么：</p>
+                <ul>
                     <li v-for="result in results">
                         <p>
-                            <b v-text="result.year"></b>年，<span v-text.trim="result.title"></span>
+                            <b>{{ result.year }}</b>年，<span v-text.trim="result.title"></span>
                         </p>
                     </li>
                 </ul>
@@ -58,6 +58,7 @@
             <p><label>Celery Soft的博客：<a href="http://www.celerysoft.com/blog/">www.celerysoft.com/blog/</a></label></p>
         </div>
     </div>
+    {% endraw %}
 
     {% include '__scroll_to_top_button_base__.html' %}
 {% endblock %}
