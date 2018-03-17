@@ -160,7 +160,7 @@ class TestApi(MethodView):
     methods = ['GET', 'POST', 'DELETE']
 
     def get(self):
-        return make_response('ok', 200)
+        return make_response('指令已发送', 200)
 
     def post(self):
         debug = app.config['DEBUG']
@@ -1248,7 +1248,6 @@ class ServiceAPI(UserView):
             )
             db_session.add(user_scholar_balance_log)
 
-
         # 创建服务
         service_type = service_template.type
         now = datetime.datetime.now()
@@ -1260,9 +1259,9 @@ class ServiceAPI(UserView):
                 auto_renew = request.json['auto_renew']
             except KeyError:
                 return self.api_document('Need auto_renew field.')
-            reset_at = date_util.derive_1st_of_next_month(now)
+            reset_at = date_util.derive_1st_datetime_of_next_month(now)
             if auto_renew:
-                expired_at = datetime.datetime(2099, 12, 31, 23, 59, 59).timestamp()
+                expired_at = datetime.datetime(2099, 12, 31, 23, 59, 59)
             else:
                 expired_at = reset_at
         elif service_type == model.ServiceTemplate.DATA:
