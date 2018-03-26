@@ -50,7 +50,7 @@ while True:
     # when data is transferred on Shadowsocks, you'll receive stat info every 10 seconds
     msg = cli.recv(1506)
     now = datetime.datetime.now()
-    print('TIME[%s] || MESSAGE[%s]' % (now, msg))
+    # print('TIME[%s] || MESSAGE[%s]' % (now, msg))
     logging.info(msg.decode())
 
     api_url = configs.Config.MAIN_SERVER_ADDRESS + '/api/usage'

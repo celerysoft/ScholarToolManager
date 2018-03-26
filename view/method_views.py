@@ -14,6 +14,7 @@ import re
 
 import os
 import sqlalchemy
+from celery import Celery
 from flask import make_response, jsonify, json, request, session, abort, g
 from flask.views import MethodView
 
@@ -25,11 +26,16 @@ import permission
 from util import date_util, shadowsocks_controller
 
 app = None
+celery_app = Celery('app',
+                    broker=configs.Config.CELERY_BROKER_URL,
+                    backend=configs.Config.CELERY_RESULT_BACKEND)
 
 
 def init_app(app_instance):
     global app
     app = app_instance
+    # global celery_app
+    # celery_app = make_celery(app)
 
 
 _RE_EMAIL = re.compile(r'^[a-z0-9\.\-\_]+\@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$')
@@ -123,6 +129,22 @@ def derive_page_parameter(query):
     return page, page_size, offset, max_page
 
 
+@celery_app.task
+def add_port(port, password, auto_restart_listener=True):
+    shadowsocks_controller.add_port(port, password, auto_restart_listener)
+
+
+@celery_app.task
+def remove_port(port, auto_restart_listener=True):
+    shadowsocks_controller.remove_port(port, auto_restart_listener)
+
+
+@celery_app.task
+def modify_port_password(port, password, auto_restart_listener=True):
+    shadowsocks_controller.remove_port(port, False)
+    shadowsocks_controller.add_port(port, password, auto_restart_listener)
+
+
 # -------------------------------------------------- decorators -------------------------------------------------- #
 # -------------------------------------------------- decorators -------------------------------------------------- #
 # -------------------------------------------------- decorators -------------------------------------------------- #
@@ -169,7 +191,7 @@ class TestApi(MethodView):
 
         port = request.json['port']
         password = request.json['password']
-        shadowsocks_controller.add_port(port, password)
+        add_port.delay(port, password)
 
         return make_response('指令已发送', 200)
 
@@ -179,7 +201,7 @@ class TestApi(MethodView):
             return make_response('Method Not Allowed', 405)
 
         port = request.json['port']
-        shadowsocks_controller.remove_port(port)
+        remove_port.delay(port)
 
         return make_response('指令已发送', 200)
 
@@ -1316,7 +1338,7 @@ class ServiceAPI(UserView):
         finally:
             db_session.close()
 
-        shadowsocks_controller.add_port(service_port, password)
+        add_port.delay(service_port, password)
 
         return make_response(
             jsonify({
@@ -1436,7 +1458,7 @@ class ServiceAPI(UserView):
                 service.available = True
                 service_password = db_session.query(model.ServicePassword) \
                     .filter(model.ServicePassword.service_id == service_id).first()
-                shadowsocks_controller.add_port(service_password.port, service_password.password)
+                add_port.delay(service_password.port, service_password.password)
             if service_template.type == model.ServiceTemplate.MONTHLY:
                 auto_renew = request.json['auto_renew']
                 if auto_renew is None:
@@ -1546,7 +1568,7 @@ class UsageAPI(BaseView):
                 service.total_usage += usage
                 if service.usage > service.package:
                     service.available = False
-                    shadowsocks_controller.remove_port(port)
+                    remove_port.delay(port)
                 if service.type == model.Service.DATA:
                     if service.expired_at < datetime.datetime.now():
                         service.available = False
@@ -1679,8 +1701,9 @@ class ServicePasswordAPI(UserAPI):
 
         service_password.password = new_password
 
-        shadowsocks_controller.remove_port(service_password.port, False)
-        shadowsocks_controller.add_port(service_password.port, service_password.password)
+        service = db_session.query(model.Service).filter(model.Service.id == service_id).first()
+        if service.available:
+            modify_port_password.delay(service_password.port, new_password)
 
         try:
             db_session.commit()

@@ -31,7 +31,15 @@
                             for (let i = 0; i < length; i++) {
                                 let service = data.service[i];
                                 service.balance = ((service.package - service.usage) / 1024 / 1024).toFixed(2);
-                                service.status_str = service.alive ? '有效' : '失效';
+                                if (service.alive) {
+                                    if(service.available) {
+                                        service.status_str = '有效';
+                                    } else {
+                                        service.status_str = '待续费';
+                                    }
+                                } else {
+                                    service.status_str = '失效'
+                                }
                                 service.detail_url = '/product/detail/' + service.id;
                             }
 

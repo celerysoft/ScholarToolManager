@@ -81,6 +81,10 @@ class Config(object):
     SS_LISTENER_UDS_CLIEND_ADDRESS = \
         '/Users/admin/Developer/Python/scholar-tool-manager/local/shadowsocks-listener-client.sock'
 
+    # Celery stuffs
+    CELERY_BROKER_URL = 'redis://localhost:6379/10'
+    CELERY_RESULT_BACKEND = 'redis://localhost:6379/10'
+
 
 class DevelopmentConfig(Config):
     """

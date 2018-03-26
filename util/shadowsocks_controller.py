@@ -1,8 +1,6 @@
-import json
 import socket
+
 import os
-import subprocess
-import urllib.request, urllib.parse
 
 import configs
 from util import shadowsocks_config_manager
