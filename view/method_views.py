@@ -410,13 +410,10 @@ class RegisterAPI(BaseView):
         }), 200)
 
 
-class UserAPI(UserView):
-    methods = ['GET', 'POST', 'PATCH']
+class UserRoleAPI(UserView):
+    methods = ['GET', 'PATCH']
 
     def get(self):
-        return self.api_document()
-
-    def post(self):
         return self.api_document()
 
     def patch(self):
@@ -457,7 +454,69 @@ class UserAPI(UserView):
         }), 201)
 
 
-class InvitationCodeAPI(UserAPI):
+class UserAPI(UserView):
+    methods = ['GET', 'POST', 'PATCH']
+
+    def get(self):
+        return self.api_document()
+
+    def post(self):
+        return self.api_document()
+
+    def patch(self):
+        # TODO OAUTH
+        permission.check_user_permission()
+        user_id = derive_user_id_from_session()
+
+        db_session = derive_db_session()
+
+        user = db_session.query(model.User).filter(model.User.id == user_id).first()
+        if user is None:
+            return self.api_document('用户不存在', 404)
+
+        # 处理修改密码逻辑
+        keys = request.json.keys()
+        if 'password' in keys:
+            if 'old_password' in keys:
+                old_password = request.json.pop('old_password')
+            else:
+                return self.api_document('请输入旧密码', 400)
+            password = request.json.pop('password')
+            sha1 = hashlib.sha1()
+            sha1.update(derive_sha1_password_salt().encode('utf-8'))
+            sha1.update(b':')
+            sha1.update(old_password.encode('utf-8'))
+            if user.password != sha1.hexdigest():
+                return self.api_document('密码错误，请重试', 400)
+            else:
+                sha1 = hashlib.sha1()
+                sha1.update(derive_sha1_password_salt().encode('utf-8'))
+                sha1.update(b':')
+                sha1.update(password.encode('utf-8'))
+                user.password = sha1.hexdigest()
+
+        # 更新用户信息
+        if len(request.json.keys()) > 0:
+            db_session.query(model.User).filter(model.User.id == user_id).update(request.json)
+
+        try:
+            db_session.commit()
+        except BaseException as e:
+            log_exception(e)
+            return self.api_document('服务器内部错误，请刷新重试', 500)
+        except sqlalchemy.exc.DataError as e:
+            db_session.rollback()
+            return abort(make_response(str(e), 500))
+        finally:
+            db_session.close()
+
+        return make_response(jsonify({
+            'message': '修改用户角色成功',
+            'documentation_url': self._API_DOCUMENTATION_URL
+        }), 201)
+
+
+class InvitationCodeAPI(UserView):
     methods = ['GET', 'POST', 'DELETE']
 
     @classmethod
@@ -512,7 +571,7 @@ class InvitationCodeAPI(UserAPI):
         return self.api_document()
 
 
-class PermissionAPI(UserAPI):
+class PermissionAPI(UserView):
     methods = ['GET']
 
     def get(self):
@@ -1592,7 +1651,7 @@ class UsageAPI(BaseView):
         )
 
 
-class ScholarBalanceAPI(UserAPI):
+class ScholarBalanceAPI(UserView):
     methods = ['GET', 'PATCH']
 
     def get(self):
@@ -1668,7 +1727,7 @@ class ScholarBalanceAPI(UserAPI):
         )
 
 
-class ServicePasswordAPI(UserAPI):
+class ServicePasswordAPI(UserView):
     methods = ['PATCH']
 
     def patch(self):

@@ -83,12 +83,22 @@ class Api {
 
     /**
      *
+     * @param userInfo
+     * @param callback
+     */
+    static updateUser(userInfo, callback) {
+        console.log(userInfo);
+        this._patchApi(this.USER_URL, userInfo, callback);
+    }
+
+    /**
+     *
      * @param userId
      * @param roleId
      * @param callback
      */
     static updateUserRole(userId, roleId, callback) {
-        this._patchApi(this.USER_URL, {user_id: userId, role_id: roleId}, callback);
+        this._patchApi(this.USER_ROLE_URL, {user_id: userId, role_id: roleId}, callback);
     }
 
     /**
@@ -434,6 +444,7 @@ Api.TODAY_IN_HISTORY_URL = BASE_URL + 'today-in-history';
 Api.LOGIN_URL = BASE_URL + 'login';
 Api.REGISTER_URL = BASE_URL + 'register';
 Api.USER_URL = BASE_URL + 'user';
+Api.USER_ROLE_URL = BASE_URL + 'user/role';
 Api.INVITATION_URL = BASE_URL + 'invitation';
 Api.PERMISSION_URL = BASE_URL + 'permission';
 Api.EVENT_URL = BASE_URL + 'event';

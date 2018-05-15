@@ -29,8 +29,8 @@
                     }
                     location.reload();
                 });
-            });
 
+            });
             fileInput.on('change', function () {
                 avatarPreview.attr('src', '');
 
@@ -64,6 +64,38 @@
 
                 fileReader.readAsDataURL(file);
             });
+
+            let vmModifyPassword = new Vue({
+                el: '#vm-modify-password',
+                data: {
+                    oldPassword: null,
+                    newPassword: null,
+                    confirmPassword: null,
+                },
+                methods: {
+                    submit: function () {
+                        if (this.$data.newPassword !== this.$data.confirmPassword) {
+                            return mdui.snackbar({
+                                message: '两次输入的新密码不一致',
+                            });
+                        }
+
+                        let userInfo = {
+                            old_password: CryptoJS.SHA1(this.$data.oldPassword.trim()).toString(),
+                            password: CryptoJS.SHA1(this.$data.newPassword.trim()).toString(),
+                        };
+                        Api.updateUser(userInfo, function (error, data, jqXHR) {
+                            if (error) {
+                                return mdui.alert(error.message);
+                            }
+
+                            return mdui.snackbar({
+                                message: '修改账号登录密码成功',
+                            })
+                        })
+                    },
+                }
+            })
         });
     </script>
 {% endblock %}
@@ -123,6 +155,24 @@
             {% endif %}
         </div>
 
+        <div id="vm-modify-password" style="margin: 8px 0;">
+            <p>修改登录密码</p>
+            <div class="mdui-divider"></div>
+            <div class="mdui-textfield mdui-textfield-floating-label">
+                <label class="mdui-textfield-label">旧密码</label>
+                <input class="mdui-textfield-input" type="password" v-model="oldPassword"/>
+            </div>
+            <div class="mdui-textfield mdui-textfield-floating-label">
+                <label class="mdui-textfield-label">新密码</label>
+                <input class="mdui-textfield-input" type="password" v-model="newPassword"/>
+            </div>
+            <div class="mdui-textfield mdui-textfield-floating-label">
+                <label class="mdui-textfield-label">确认新密码</label>
+                <input class="mdui-textfield-input" type="password" v-model="confirmPassword"/>
+            </div>
+            <button class="mdui-btn mdui-center" @click="submit">确认修改</button>
+        </div>
+
         <!-- 修改头像对话框 -->
         <div id="dialog-modify-avatar" class="mdui-dialog">
             <div class="mdui-dialog-title">上传头像</div>
@@ -144,6 +194,33 @@
                 <button id="btn-upload" class="mdui-btn mdui-ripple" disabled>确定上传</button>
             </div>
         </div>
+
+        <!-- 修改密码对话框 -->
+        {% raw %}
+        <div id="dialog-modify-password" class="mdui-dialog">
+            <div class="mdui-dialog-title">修改登录密码</div>
+            <div class="mdui-dialog-content" style="padding: 0 24px">
+                <div class="mdui-textfield">
+                    <label class="mdui-textfield-label">旧密码</label>
+                    <input id="input-new-password" class="mdui-textfield-input" type="password"/>
+                </div>
+                <div class="mdui-textfield">
+                    <label class="mdui-textfield-label">新密码</label>
+                    <input id="input-new-password" class="mdui-textfield-input" type="password"/>
+                </div>
+                <div class="mdui-textfield">
+                    <label class="mdui-textfield-label">确认新密码</label>
+                    <input id="input-confirm-new-password" class="mdui-textfield-input" type="password"/>
+                </div>
+            </div>
+            <div class="mdui-dialog-actions">
+                <button class="mdui-btn mdui-ripple" mdui-dialog-cancel>取消</button>
+                <button id="btn-recharge" class="mdui-btn mdui-ripple">修改密码</button>
+            </div>
+        </div>
+        {% endraw %}
     </div>
+
+
 
 {% endblock %}

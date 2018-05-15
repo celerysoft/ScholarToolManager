@@ -199,6 +199,7 @@ app.add_url_rule('/api/today-in-history', view_func=method_views.TodayInHistoryA
 app.add_url_rule('/api/login', view_func=method_views.LoginAPI.as_view('api_login'))
 app.add_url_rule('/api/register', view_func=method_views.RegisterAPI.as_view('api_register'))
 app.add_url_rule('/api/user', view_func=method_views.UserAPI.as_view('api_user'))
+app.add_url_rule('/api/user/role', view_func=method_views.UserRoleAPI.as_view('api_user_role'))
 app.add_url_rule('/api/invitation', view_func=method_views.InvitationCodeAPI.as_view('api_invitation'))
 app.add_url_rule('/api/permission', view_func=method_views.PermissionAPI.as_view('api_permission'))
 app.add_url_rule('/api/event', view_func=method_views.EventAPI.as_view('api_event'))

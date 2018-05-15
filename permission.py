@@ -9,11 +9,19 @@ import exception.api
 
 
 def check_user_api_permission():
+    """
+    查询用户是否已经登录
+    :return:
+    """
     if 'user' not in session.keys():
         raise exception.api.Unauthorized('该接口只允许已登录用户调用')
 
 
 def check_user_permission():
+    """
+    查询用户是否已经登录
+    :return:
+    """
     if 'user' not in session.keys():
         raise exception.http.Unauthorized('请先登录')
 
