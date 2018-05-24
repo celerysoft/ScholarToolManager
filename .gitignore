@@ -159,3 +159,4 @@ config/multiple_users_config.json
 **/multiple_users_config.json
 multiple_users_config.json
 /local
+configs.py
