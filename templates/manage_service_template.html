@@ -58,7 +58,11 @@
         })
     </script>
 
+    {% if debug %}
     <script src="{{ static_route }}/static/js/pagination.js"></script>
+    {% else %}
+    <script src="{{ static_route }}{{ '/static/js/pagination.js' | hash }}"></script>
+    {% endif %}
 {% endblock %}
 
 {% block content %}

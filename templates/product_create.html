@@ -1,7 +1,11 @@
 {% extends '__base__.html' %}
 
 {% block script %}
+    {% if debug %}
     <script src="{{ static_route }}/static/js/scroll_to_top.js"></script>
+    {% else %}
+    <script src="{{ static_route }}{{ '/static/js/scroll_to_top.js' | hash }}"></script>
+    {% endif %}
 {% endblock %}
 
 {% block content %}

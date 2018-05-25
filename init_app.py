@@ -17,6 +17,7 @@ import time
 from flask_sqlalchemy import SQLAlchemy
 
 import database
+from util.static_file_hash_util import derive_hash_filename
 from view import method_views, views
 
 
@@ -33,6 +34,7 @@ def init_jinja2():
     jinja2.filters.FILTERS['datetime'] = datetime_filter2
     jinja2.filters.FILTERS['boolean_to_yes'] = boolean_to_yes_or_no
     jinja2.filters.FILTERS['service_type'] = service_type_to_str
+    jinja2.filters.FILTERS['hash'] = derive_hash_filename
 
 
 def init_method_views(app):

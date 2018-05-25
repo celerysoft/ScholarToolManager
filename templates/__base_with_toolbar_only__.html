@@ -12,10 +12,10 @@
         <link rel="stylesheet" href="{{ static_route }}/static/css/base.css">
         <link rel="stylesheet" href="{{ static_route }}/static/css/pygments-friendly.css">
     {% else %}
-        <link rel="stylesheet" href="{{ static_route }}/static/css/mdui.min.css">
-        <link rel="stylesheet" href="{{ static_route }}/static/css/font-awesome.min.css">
-        <link rel="stylesheet" href="{{ static_route }}/static/css/base.css">
-        <link rel="stylesheet" href="{{ static_route }}/static/css/pygments-friendly.css">
+        <link rel="stylesheet" href="{{ static_route }}{{ '/static/css/mdui.min.css' | hash }}">
+        <link rel="stylesheet" href="{{ static_route }}{{ '/static/css/font-awesome.min.css' | hash }}">
+        <link rel="stylesheet" href="{{ static_route }}{{ '/static/css/base.css' | hash }}">
+        <link rel="stylesheet" href="{{ static_route }}{{ '/static/css/pygments-friendly.css' | hash }}">
     {% endif %}
 
     {% if debug %}
@@ -28,14 +28,14 @@
         <script src="{{ static_route }}/static/js/config-debug.js"></script>
         <script src="{{ static_route }}/static/js/api.js"></script>
     {% else %}
-        <script src="{{ static_route }}/static/js/jquery-3.2.1.min.js"></script>
-        <script src="{{ static_route }}/static/js/vue.min.js"></script>
-        <script src="{{ static_route }}/static/js/mdui.min.js"></script>
-        <script src="{{ static_route }}/static/js/base.js"></script>
-        <script src="{{ static_route }}/static/js/ajax.js"></script>
-        <script src="{{ static_route }}/static/js/sha1.min.js"></script>
-        <script src="{{ static_route }}/static/js/config-debug.js"></script>
-        <script src="{{ static_route }}/static/js/api.js"></script>
+        <script src="{{ static_route }}{{ '/static/js/jquery-3.2.1.min.js' | hash }}"></script>
+        <script src="{{ static_route }}{{ '/static/js/vue.min.js' | hash }}"></script>
+        <script src="{{ static_route }}{{ '/static/js/mdui.min.js' | hash }}"></script>
+        <script src="{{ static_route }}{{ '/static/js/base.js' | hash }}"></script>
+        <script src="{{ static_route }}{{ '/static/js/ajax.js' | hash }}"></script>
+        <script src="{{ static_route }}{{ '/static/js/sha1.min.js' | hash }}"></script>
+        <script src="{{ static_route }}{{ '/static/js/config-debug.js' | hash }}"></script>
+        <script src="{{ static_route }}{{ '/static/js/api.js' | hash }}"></script>
     {% endif %}
 
     {% block beforehead %}<!-- before head  -->{% endblock %}

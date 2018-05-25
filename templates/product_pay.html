@@ -10,13 +10,13 @@
                 TEMPLATE_ID = '{{ service.id }}',
                 TEMPLATE_TYPE = {{ service.type }}
 
-            $('#btn-cancel').click(() => {
-                if (ACTION === 'create') {
-                    return location.assign('/product/create/')
-                } else if (ACTION === 'renew') {
-                    return location.assign('/product/')
-                }
-            });
+                    $('#btn-cancel').click(() => {
+                        if (ACTION === 'create') {
+                            return location.assign('/product/create/')
+                        } else if (ACTION === 'renew') {
+                            return location.assign('/product/')
+                        }
+                    });
             $('#label-customer-service').click(() => {
                 return mdui.snackbar({message: '客服？不存在的！'});
             });
@@ -87,7 +87,11 @@
         });
     </script>
 
+    {% if debug %}
     <script src="{{ static_route }}/static/js/scroll_to_top.js"></script>
+    {% else %}
+    <script src="{{ static_route }}{{ '/static/js/scroll_to_top.js' | hash }}"></script>
+    {% endif %}
 {% endblock %}
 
 {% block content %}
