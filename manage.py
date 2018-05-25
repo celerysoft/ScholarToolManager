@@ -6,7 +6,7 @@ from app import create_app
 # 通过配置创建 app
 from util import static_file_hash_util
 
-DEBUG = os.environ.get('FLASK_DEBUG', 1)
+DEBUG = os.environ.get('FLASK_DEBUG', 0)
 app = None
 if DEBUG == 0:
     app = create_app('configs.ProductionConfig')

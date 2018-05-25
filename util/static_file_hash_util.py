@@ -100,12 +100,11 @@ class Command(object):
     SLASH_SUBSTITUTE_BY = '####'
     exclude_files = [
         r'/static/js/jquery-3.2.1.min.map',
-        r'/static/js/jquery-3.2.1.min.js',
-        r'/static/js/mdui.min.js',
-        r'/static/js/vue.min.js',
+        r'/static/js/jquery-3.2.1.js',
+        r'/static/js/mdui.js',
+        r'/static/js/vue.js',
         r'/static/css/font-awesome.min.css',
         r'/static/css/mdui.min.css',
-        r'/static/css/convert_html_to_pdf.css',
         r'.DS_Store'
     ]
     exclude_paths = [
