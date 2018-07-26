@@ -103,8 +103,8 @@ class Command(object):
         r'/static/js/jquery-3.2.1.js',
         r'/static/js/mdui.js',
         r'/static/js/vue.js',
-        r'/static/css/font-awesome.min.css',
-        r'/static/css/mdui.min.css',
+        r'/static/css/font-awesome.css',
+        r'/static/css/mdui.css',
         r'.DS_Store'
     ]
     exclude_paths = [
