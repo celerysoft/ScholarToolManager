@@ -161,3 +161,4 @@ multiple_users_config.json
 /local
 configs.py
 .qiniu_pythonsdk_hostscache.json
+mysqlbackup.sh

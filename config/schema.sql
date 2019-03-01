@@ -1,8 +1,12 @@
 DROP DATABASE IF EXISTS scholar_tool_manager;
 CREATE DATABASE scholar_tool_manager;
 USE scholar_tool_manager;
+
 GRANT SELECT, INSERT, UPDATE, DELETE ON scholar_tool_manager.* TO 'www-data'@'localhost'
 IDENTIFIED BY 'www->R&daD6xZM6283n3-data';
+
+GRANT SELECT, SHOW VIEW, LOCK TABLES, TRIGGER on scholar_tool_manager.* TO 'dumper'@'localhost'
+IDENTIFIED BY 'dumper->a7&alnMn-bb';
 
 CREATE TABLE user (
   `id`            INT(16)      NOT NULL AUTO_INCREMENT,

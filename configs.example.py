@@ -62,6 +62,10 @@ class Config(object):
     URL_OF_AVATAR_IMAGE = 'static/image/avatar/'
     # 上传头像到七牛时图片的外链默认域名
     URL_OF_QINIU_AVATAR = 'http://oz3d04vwf.bkt.clouddn.com/'
+    # 数据库备份文件上传到七牛时的空间名
+    QINIU_BUCKET_NAME_FOR_BACKUP_DATABASE = 'database'
+    # 数据库备份文件本地存放目录
+    DATABASE_BACKUP_FILE_DIRECTORY = '/Users/admin/Documents/'
     # 新注册用户默认学术积分
     NEW_USER_SCHOLAR_BALANCE = 5120
     # reCAPTCHA secret key
