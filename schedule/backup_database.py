@@ -44,7 +44,7 @@ class BackupTool(object):
         key = self.__KEY % _30days_ago.strftime(self.__DATETIME_FORMAT)
         bucket = BucketManager(self.__qiniu_instance)
 
-        ret, info = bucket.stat(configs.Config.QINIU_BUCKET_NAME, key)
+        ret, info = bucket.stat(configs.Config.QINIU_BUCKET_NAME_FOR_BACKUP_DATABASE, key)
         if ret is None or 'hash' not in ret:
             print('30天前的备份不存在，不需要删除')
         else:
