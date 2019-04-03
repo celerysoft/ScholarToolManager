@@ -1,4 +1,6 @@
 import os
+import re
+
 import configs
 import model
 
@@ -38,8 +40,18 @@ def remove_port(port):
     with open(__SHADOWSOCKS_CONFIG_FILE_PATH, 'r') as f:
         lines = f.readlines()
 
-    for line in lines:
-        if line.find('"%s": ' % port) > 0:
+    for index, line in enumerate(lines):
+        m = re.match(r'^\s*"%s": ".*",.*$' % port, line)
+        if m is not None:
+            lines.remove(line)
+
+        m = re.match(r'^\s*"%s": ".*".*$' % port, line)
+        if m is not None:
+            former_line = lines[index - 1]
+            last_index = former_line.rindex(',')
+            former_line = former_line[:last_index] + former_line[last_index + 1:]
+            lines[index - 1] = former_line
+
             lines.remove(line)
 
     with open(__SHADOWSOCKS_CONFIG_FILE_PATH, 'w') as f:
