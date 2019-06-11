@@ -1,5 +1,5 @@
 DROP DATABASE IF EXISTS scholar_tool_manager;
-CREATE DATABASE scholar_tool_manager;
+CREATE DATABASE scholar_tool_manager DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
 USE scholar_tool_manager;
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON scholar_tool_manager.* TO 'www-data'@'localhost'
