@@ -58,11 +58,14 @@ def remove_port(port):
         f.writelines(lines)
 
 
-def recreate_shadowsocks_config_file(db_session, method='aes-256-cfb', timeout=300, debug=False):
+def recreate_shadowsocks_config_file(db_session, method='chacha20-ietf-poly1305', plugin='obfs-server',
+                                     plugin_opts='obfs=tls', timeout=300, debug=False):
     """
 
     :param db_session: SQLAlchemy
     :param method: Encryption method
+    :param plugin:
+    :param plugin_opts:
     :param timeout: in seconds
     :param debug:
     :return:
@@ -127,6 +130,8 @@ def recreate_shadowsocks_config_file(db_session, method='aes-256-cfb', timeout=3
     lines.append('%s},%s' % (__CONFIG_FILE_INDENT, os.linesep))
     lines.append('%s"timeout": %s,%s' % (__CONFIG_FILE_INDENT, timeout, os.linesep))
     lines.append('%s"method": "%s",%s' % (__CONFIG_FILE_INDENT, method, os.linesep))
+    lines.append('%s"plugin": "%s",%s' % (__CONFIG_FILE_INDENT, plugin, os.linesep))
+    lines.append('%s"plugin_opts": "%s",%s' % (__CONFIG_FILE_INDENT, plugin_opts, os.linesep))
     lines.append('%s"fast_open": false,%s' % (__CONFIG_FILE_INDENT, os.linesep))
     lines.append('%s"workers": 1%s' % (__CONFIG_FILE_INDENT, os.linesep))
     lines.append('}')

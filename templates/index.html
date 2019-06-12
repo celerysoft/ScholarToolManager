@@ -19,7 +19,8 @@
             Api.getTodayInHistory(function (error, data, jqXHR) {
                 if (error) {
                     $('#loading').hide();
-                    return mdui.alert(error.message);
+                    // mdui.alert(error.message);
+                    return;
                 }
                 initVM(data)
             });

@@ -180,13 +180,21 @@
                         </div>
                         <div class="mdui-clearfix">
                             <div class="mdui-float-left">加密方式</div>
-                            <div class="mdui-float-right">aes-256-cfb</div>
+                            <div class="mdui-float-right">chacha20-ietf-poly1305</div>
                         </div>
                         <div class="mdui-clearfix">
                             <div class="mdui-float-left">连接密码</div>
                             <div @click="togglePassword" class="mdui-float-right mdui-text-color-theme-accent">
                                 {{password}}
                             </div>
+                        </div>
+                         <div class="mdui-clearfix">
+                            <div class="mdui-float-left">插件</div>
+                            <div class="mdui-float-right">simple obfs</div>
+                        </div>
+                         <div class="mdui-clearfix">
+                            <div class="mdui-float-left">插件参数</div>
+                            <div class="mdui-float-right">obfs=tls;obfs-host=bing.com</div>
                         </div>
                     </div>
 
