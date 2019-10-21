@@ -191,7 +191,11 @@ class TestApi(MethodView):
 
         port = request.json['port']
         password = request.json['password']
-        add_port.delay(port, password)
+        add_port.delay(
+            port=port,
+            password=password,
+            auto_restart_listener=True
+        )
 
         return make_response('指令已发送', 200)
 
@@ -201,7 +205,7 @@ class TestApi(MethodView):
             return make_response('Method Not Allowed', 405)
 
         port = request.json['port']
-        remove_port.delay(port)
+        remove_port.delay(port=port)
 
         return make_response('指令已发送', 200)
 
@@ -1397,7 +1401,11 @@ class ServiceAPI(UserView):
         finally:
             db_session.close()
 
-        add_port.delay(service_port, password)
+        add_port.delay(
+            port=service_port,
+            password=password,
+            auto_restart_listener=True
+        )
 
         return make_response(
             jsonify({
@@ -1517,7 +1525,11 @@ class ServiceAPI(UserView):
                 service.available = True
                 service_password = db_session.query(model.ServicePassword) \
                     .filter(model.ServicePassword.service_id == service_id).first()
-                add_port.delay(service_password.port, service_password.password)
+                add_port.delay(
+                    port=service_password.port,
+                    password=service_password.password,
+                    auto_restart_listener=True
+                )
             if service_template.type == model.ServiceTemplate.MONTHLY:
                 auto_renew = request.json['auto_renew']
                 if auto_renew is None:
@@ -1607,7 +1619,7 @@ class UsageAPI(BaseView):
         # TODO 加强安全性
 
         data = request.data.decode('utf-8')
-        data = data[6:]
+        # data = data[6:]
 
         # print(data)
 
@@ -1623,11 +1635,21 @@ class UsageAPI(BaseView):
                 continue
 
             if service.available:
-                service.usage += usage
-                service.total_usage += usage
+                if configs.Config.SS_CLIENT == 'shadowsocks':
+                    service.usage += usage
+                    service.total_usage += usage
+                elif configs.Config.SS_CLIENT == 'shadowsocks-libev':
+                    old_usage = service.usage
+                    service.usage = usage
+                    service.total_usage += usage - old_usage
+                else:
+                    raise exception.api.InternalServerError(
+                        '尚未为{}进行流量统计接口的适配'.format(configs.Config.SS_CLIENT)
+                    )
+
                 if service.usage > service.package:
                     service.available = False
-                    remove_port.delay(port)
+                    remove_port.delay(port=port)
                 if service.type == model.Service.DATA:
                     if service.expired_at < datetime.datetime.now():
                         service.available = False
@@ -1762,7 +1784,11 @@ class ServicePasswordAPI(UserView):
 
         service = db_session.query(model.Service).filter(model.Service.id == service_id).first()
         if service.available:
-            modify_port_password.delay(service_password.port, new_password)
+            modify_port_password.delay(
+                port=service_password.port,
+                password=new_password,
+                auto_restart_listener=True
+            )
 
         try:
             db_session.commit()

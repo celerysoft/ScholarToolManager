@@ -27,3 +27,8 @@ class Unauthorized(BaseApiException):
 class Forbidden(BaseApiException):
     def __init__(self, message, payload=None):
         BaseApiException.__init__(self, message, status_code=403, payload=payload)
+
+
+class InternalServerError(BaseApiException):
+    def __init__(self, message, payload=None):
+        BaseApiException.__init__(self, message, status_code=500, payload=payload)

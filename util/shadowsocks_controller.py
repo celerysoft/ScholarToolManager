@@ -41,7 +41,7 @@ def add_port(port, password, auto_restart_listener=True):
     print('start adding port %s' % port)
     print('===========================')
 
-    data = 'add: {"server_port":%s, "password":"%s"}' % (port, password)
+    data = 'add: {"server_port": %s, "password":"%s"}' % (port, password)
     data = bytes(data, encoding='utf-8')
 
     transferring = True
@@ -70,7 +70,7 @@ def remove_port(port, auto_restart_listener=True):
     print('start removing port %s' % port)
     print('=============================')
 
-    data = 'remove: {"server_port":%s}' % port
+    data = 'remove: {"server_port": %s}' % port
     data = bytes(data, encoding='utf-8')
 
     response = None
