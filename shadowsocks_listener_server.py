@@ -1,8 +1,5 @@
 #!/usr/bin/python3
 # -*-coding:utf-8 -*-
-
-import datetime
-import json
 import logging
 import socket
 import time
@@ -12,9 +9,6 @@ import urllib.request
 
 import configs
 
-if __name__ == '__main__':
-    print('__main__')
-
 LOG_FILE = configs.Config.SS_LISTENER_LOG_FILE
 logging.basicConfig(filename=LOG_FILE,
                     level=logging.DEBUG,
@@ -22,14 +16,27 @@ logging.basicConfig(filename=LOG_FILE,
 
 # address of the client
 CLIENT_ADDRESS = configs.Config.SS_LISTENER_UDS_CLIEND_ADDRESS
-try:
-    os.unlink(CLIENT_ADDRESS)
-except OSError:
-    if os.path.exists(CLIENT_ADDRESS):
-        raise RuntimeError('wtf')
 
-cli = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-cli.bind(CLIENT_ADDRESS)
+# client instance
+client = None
+
+
+def connect():
+    try:
+        os.unlink(CLIENT_ADDRESS)
+    except OSError:
+        if os.path.exists(CLIENT_ADDRESS):
+            raise RuntimeError('wtf')
+
+    global client
+
+    client = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+    client.bind(CLIENT_ADDRESS)
+    client.settimeout(10)
+
+
+connect()
+
 
 SERVER_ADDRESS = configs.Config.SS_SERVER_UDS_ADDRESS
 
@@ -47,22 +54,30 @@ SERVER_ADDRESS = configs.Config.SS_SERVER_UDS_ADDRESS
 
 SS_CLIENT = configs.Config.SS_CLIENT
 
+if SS_CLIENT == 'shadowsocks':
+    client.sendto(b'ping', SERVER_ADDRESS)
+    print(client.recv(1024))  # You'll receive 'pong'
+
 while True:
     msg = None
-    if SS_CLIENT == 'shadowsocks':
-        # when data is transferred on Shadowsocks, you'll receive stat info every 10 seconds
-        msg = cli.recv(1024)
-        now = datetime.datetime.now()
-        # print('TIME[%s] || MESSAGE[%s]' % (now, msg))
-        logging.info(msg.decode())
-    elif SS_CLIENT == 'shadowsocks-libev':
-        time.sleep(10)
-        cli.sendto(b'ping', SERVER_ADDRESS)
-        msg = cli.recv(1024)
-    else:
-        raise RuntimeError(
-            '尚未为{}进行流量监听的适配'.format(configs.Config.SS_CLIENT)
-        )
+    try:
+        if SS_CLIENT == 'shadowsocks':
+            # when data is transferred on Shadowsocks, you'll receive stat info every 10 seconds
+            msg = client.recv(1024)
+            # now = datetime.datetime.now()
+            # print('TIME[%s] || MESSAGE[%s]' % (now, msg))
+            logging.info(msg.decode())
+        elif SS_CLIENT == 'shadowsocks-libev':
+            time.sleep(10)
+            client.sendto(b'ping', SERVER_ADDRESS)
+            msg = client.recv(1024)
+            logging.info(msg.decode())
+        else:
+            raise RuntimeError(
+                '尚未为{}进行流量监听的适配'.format(configs.Config.SS_CLIENT)
+            )
+    except socket.timeout:
+        connect()
 
     if msg is None:
         continue
