@@ -24,7 +24,7 @@ def connect():
 
     client = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
     client.bind(CLIENT_ADDRESS)
-    client.settimeout(10)
+    client.settimeout(3)
 
 
 # address of the server
@@ -54,10 +54,12 @@ def add_port(port, password, auto_restart_listener=True):
 
     transferring = True
     response = None
+    global client
     while transferring:
         try:
             client.sendto(data, SERVER_ADDRESS)
             response = client.recv(1024)
+            print(response)
             if response == b'ok':
                 transferring = False
             else:
@@ -85,10 +87,12 @@ def remove_port(port, auto_restart_listener=True):
 
     response = None
     transferring = True
+    global client
     while transferring:
         try:
             client.sendto(data, SERVER_ADDRESS)
             response = client.recv(1024)
+            print(response)
             if response == b'ok':
                 transferring = False
             else:
