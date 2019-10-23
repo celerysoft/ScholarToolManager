@@ -1,6 +1,6 @@
 # -*-coding:utf-8 -*-
 """
-套餐自动续费脚本
+包月套餐自动续费脚本
 每月执行
 """
 from datetime import datetime
@@ -47,11 +47,11 @@ def init_database():
 
 def auto_renew_monthly_service(session):
     services = session.query(model.Service) \
-        .filter(model.Service.type == model.Service.MONTHLY) \
-        .filter(model.Service.auto_renew == True) \
-        .filter(model.Service.reset_at < datetime.now()) \
-        .filter(model.Service.alive == True).all()
-    for service in services:
+        .filter(model.Service.type == model.Service.MONTHLY,
+                model.Service.auto_renew.is_(True),
+                model.Service.alive.is_(True),
+                model.Service.reset_at < datetime.now()).all()
+    for service in services:  # type:model.Service
         # 扣费
         service_template = session.query(model.ServiceTemplate) \
             .filter(model.ServiceTemplate.id == service.template_id).first()

@@ -1,7 +1,7 @@
 # -*-coding:utf-8 -*-
 """
-流量套餐自动失效脚本
-每月执行
+套餐自动失效脚本
+每天执行
 """
 from datetime import datetime
 
@@ -49,12 +49,36 @@ def auto_invalidate_data_service(session):
     # TODO 如果Service过多，需要分片处理
     now = datetime.now()
     services = session.query(model.Service) \
-        .filter(model.Service.type == model.Service.DATA) \
-        .filter(model.Service.expired_at < now) \
-        .filter(model.Service.available == True).all()
+        .filter(model.Service.type == model.Service.DATA,
+                model.Service.expired_at < now,
+                model.Service.available.is_(False),
+                model.Service.alive.is_(True)).all()
 
-    for service in services:
+    for service in services:  # type:model.Service
+        if (now.year - service.expired_at.year) * 12 + now.month - service.expired_at.month > 12:
             service.available = False
+            session.add(service)
+            session.commit()
+
+            service_password = session.query(model.ServicePassword) \
+                .filter(model.ServicePassword.service_id == service.id).first()
+            if service_password is not None:
+                shadowsocks_controller.remove_port(service_password.port)
+
+
+def auto_invalidate_monthly_service(session):
+    # TODO 如果Service过多，需要分片处理
+    now = datetime.now()
+    services = session.query(model.Service) \
+        .filter(model.Service.type == model.Service.MONTHLY,
+                model.Service.alive.is_(True),
+                model.Service.available.is_(False),
+                model.Service.reset_at < now).all()
+    for service in services:  # type:model.Service
+        # 处于待续费的包月套餐在新开/上次续费的一年时间内，都可以继续续费，超过一年则无法续费
+        if (now.year - service.last_reset_at.year) * 12 + now.month - service.last_reset_at.month > 12:
+            service.available = False
+            service.alive = False
             session.add(service)
             session.commit()
 
@@ -69,3 +93,4 @@ if __name__ == '__main__':
 
     with session_scope() as session:
         auto_invalidate_data_service(session)
+        auto_invalidate_monthly_service(session)

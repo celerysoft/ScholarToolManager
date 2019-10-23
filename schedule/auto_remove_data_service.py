@@ -1,7 +1,7 @@
 # -*-coding:utf-8 -*-
 """
-套餐自动失效脚本
-每月执行，需要在『包月套餐自动续费脚本』之前执行
+流量套餐自动变为待续费脚本
+每天执行
 """
 from datetime import datetime
 
@@ -45,14 +45,14 @@ def init_database():
     set_sqlalchemy_database_uri(configs.ProductionConfig.SQLALCHEMY_DATABASE_URI)
 
 
-def auto_remove_monthly_service(session):
+def auto_remove_data_service(session):
     # TODO 如果Service过多，需要分片处理
     now = datetime.now()
     services = session.query(model.Service) \
-        .filter(model.Service.type == model.Service.MONTHLY,
+        .filter(model.Service.type == model.Service.DATA,
                 model.Service.available.is_(True),
                 model.Service.alive.is_(True),
-                model.Service.reset_at < now).all()
+                model.Service.expired_at < now).all()
     for service in services:  # type:model.Service
         service.available = False
         session.add(service)
@@ -68,4 +68,4 @@ if __name__ == '__main__':
     init_database()
 
     with session_scope() as session:
-        auto_remove_monthly_service(session)
+        auto_remove_data_service(session)
