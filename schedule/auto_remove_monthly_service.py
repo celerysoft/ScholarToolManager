@@ -1,7 +1,9 @@
 # -*-coding:utf-8 -*-
-# 每天执行
-
-from datetime import datetime, timedelta
+"""
+套餐自动失效脚本
+每月执行，需要在『套餐自动续费脚本』之前执行
+"""
+from datetime import datetime
 
 from util import shadowsocks_controller
 
@@ -43,31 +45,27 @@ def init_database():
     set_sqlalchemy_database_uri(configs.ProductionConfig.SQLALCHEMY_DATABASE_URI)
 
 
-def auto_invalidate_data_service(session):
-    handle_count = 0
+def auto_remove_monthly_service(session):
+    # TODO 如果Service过多，需要分片处理
     now = datetime.now()
     services = session.query(model.Service) \
-        .filter(model.Service.type == model.Service.DATA) \
-        .filter(model.Service.expired_at < now) \
-        .filter(model.Service.available == True).all()
+        .filter(model.Service.type == model.Service.MONTHLY,
+                model.Service.available.is_(True),
+                model.Service.alive.is_(True),
+                model.Service.reset_at < now).all()
+    for service in services:  # type:model.Service
+        service.available = False
+        session.add(service)
+        session.commit()
 
-    for service in services:
-            service.available = False
-            session.add(service)
-            session.commit()
-
-            service_password = session.query(model.ServicePassword) \
-                .filter(model.ServicePassword.service_id == service.id).first()
-            if service_password is not None:
-                handle_count += 1
-                shadowsocks_controller.remove_port(service_password.port, False)
-
-    if handle_count > 0:
-        shadowsocks_controller.restart_shadowsocks_listener()
+        service_password = session.query(model.ServicePassword) \
+            .filter(model.ServicePassword.service_id == service.id).first()  # type:model.ServicePassword
+        if service_password is not None:
+            shadowsocks_controller.remove_port(service_password.port)
 
 
 if __name__ == '__main__':
     init_database()
 
     with session_scope() as session:
-        auto_invalidate_data_service(session)
+        auto_remove_monthly_service(session)

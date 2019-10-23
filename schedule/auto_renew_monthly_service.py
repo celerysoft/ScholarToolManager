@@ -1,9 +1,8 @@
 # -*-coding:utf-8 -*-
-import sys
-import os
-
-sys.path.append(os.path.abspath(os.path.join(__file__, "../..")))
-
+"""
+套餐自动续费脚本
+每月执行
+"""
 from datetime import datetime
 
 from util import date_util, shadowsocks_controller
@@ -89,10 +88,7 @@ def auto_renew_monthly_service(session):
         service_password = session.query(model.ServicePassword) \
             .filter(model.ServicePassword.service_id == service.id).first()
         if service_password is not None:
-            shadowsocks_controller.add_port(service_password.port, service_password.password, False)
-
-    if services is not None and len(services) > 0:
-        shadowsocks_controller.restart_shadowsocks_listener()
+            shadowsocks_controller.add_port(service_password.port, service_password.password)
 
 
 if __name__ == '__main__':

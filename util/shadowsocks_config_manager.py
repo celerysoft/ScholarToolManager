@@ -44,15 +44,15 @@ def remove_port(port):
         m = re.match(r'^\s*"%s": ".*",.*$' % port, line)
         if m is not None:
             lines.remove(line)
+        else:
+            m = re.match(r'^\s*"%s": ".*".*$' % port, line)
+            if m is not None:
+                former_line = lines[index - 1]
+                last_index = former_line.rindex(',')
+                former_line = former_line[:last_index] + former_line[last_index + 1:]
+                lines[index - 1] = former_line
 
-        m = re.match(r'^\s*"%s": ".*".*$' % port, line)
-        if m is not None:
-            former_line = lines[index - 1]
-            last_index = former_line.rindex(',')
-            former_line = former_line[:last_index] + former_line[last_index + 1:]
-            lines[index - 1] = former_line
-
-            lines.remove(line)
+                lines.remove(line)
 
     with open(__SHADOWSOCKS_CONFIG_FILE_PATH, 'w') as f:
         f.writelines(lines)
