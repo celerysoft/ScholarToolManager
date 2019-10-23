@@ -1618,13 +1618,9 @@ class UsageAPI(BaseView):
     def post(self):
         # TODO 加强安全性
 
-        data = request.data.decode('utf-8')
-        # data = data[6:]
-
-        # print(data)
-
         db_session = derive_db_session()
 
+        data = request.data.decode('utf-8')
         data = json.loads(data)
         for port, usage in data.items():
             # print('port %s use data: %s' % (port, usage))

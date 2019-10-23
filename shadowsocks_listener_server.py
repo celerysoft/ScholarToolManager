@@ -5,7 +5,8 @@ import socket
 import time
 
 import os
-import urllib.request
+
+import requests
 
 import configs
 
@@ -62,7 +63,7 @@ while True:
     msg = None
     try:
         if SS_CLIENT == 'shadowsocks':
-            # when data is transferred on Shadowsocks, you'll receive stat info every 10 seconds
+            # when data is transferred on shadowsocks, you'll receive stat info every 10 seconds
             msg = client.recv(1024)
             # now = datetime.datetime.now()
             # print('TIME[%s] || MESSAGE[%s]' % (now, msg))
@@ -85,12 +86,9 @@ while True:
     api_url = configs.Config.MAIN_SERVER_ADDRESS + '/api/usage'
 
     data = msg.decode('utf-8')
-    data = data[6:].encode()
-    # data = json.dumps(msg.decode('utf-8')).encode('utf-8')
-    request = urllib.request.Request(api_url, data=msg, headers={'Content-type': 'application/json'})
+    data = data[6:]
 
-    # noinspection PyBroadException
-    try:
-        response = urllib.request.urlopen(request).read()
-    except BaseException as e:
-        logging.error(msg.decode())
+    response = requests.post(api_url, data=data)
+    if not response.ok:
+        print(response.text)
+        logging.error(response.text)

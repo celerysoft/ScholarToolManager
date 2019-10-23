@@ -27,6 +27,9 @@ def connect():
     client.settimeout(3)
 
 
+connect()
+
+
 # address of the server
 SERVER_ADDRESS = configs.Config.SS_SERVER_UDS_ADDRESS
 
