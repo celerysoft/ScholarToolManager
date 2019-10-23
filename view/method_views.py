@@ -1359,6 +1359,7 @@ class ServiceAPI(UserView):
             template_id=service_template_id,
             type=service_type,
             usage=0,
+            last_usage=0,
             package=service_template.balance,
             reset_at=reset_at,
             last_reset_at=last_reset_at,
@@ -1625,7 +1626,7 @@ class UsageAPI(BaseView):
         for port, usage in data.items():
             # print('port %s use data: %s' % (port, usage))
             service = db_session.query(model.Service).filter(model.ServicePassword.port == port).filter(
-                model.Service.id == model.ServicePassword.service_id).first()
+                model.Service.id == model.ServicePassword.service_id).first()  # type:model.Service
 
             if service is None:
                 continue
@@ -1635,9 +1636,15 @@ class UsageAPI(BaseView):
                     service.usage += usage
                     service.total_usage += usage
                 elif configs.Config.SS_CLIENT == 'shadowsocks-libev':
-                    old_usage = service.usage
-                    service.usage = usage
-                    service.total_usage += usage - old_usage
+                    diff = usage - service.last_usage
+                    # 每个端口的流量统计信息会在每次被重新添加时归零，所以要考虑归零时的状态
+                    if diff > 0:
+                        service.usage += diff
+                        service.total_usage += diff
+                    else:
+                        service.last_usage = usage
+                        service.usage += usage
+                        service.total_usage += usage
                 else:
                     raise exception.api.InternalServerError(
                         '尚未为{}进行流量统计接口的适配'.format(configs.Config.SS_CLIENT)

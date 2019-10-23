@@ -149,6 +149,8 @@ CREATE TABLE service (
   COMMENT '0 - 包月套餐，1 - 流量套餐',
   `usage`         BIGINT(16) NOT NULL
   COMMENT '已用流量',
+  `last_usage`    BIGINT(16) NOT NULL
+  COMMENT '上次流量监控插件报送的已用流量',
   `package`       BIGINT(16) NOT NULL
   COMMENT '总流量',
   `reset_at`      DATETIME COMMENT '重置流量时间点，包月套餐专用字段',
