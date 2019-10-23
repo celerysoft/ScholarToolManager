@@ -1637,12 +1637,12 @@ class UsageAPI(BaseView):
                     service.total_usage += usage
                 elif configs.Config.SS_CLIENT == 'shadowsocks-libev':
                     diff = usage - service.last_usage
+                    service.last_usage = usage
                     # 每个端口的流量统计信息会在每次被重新添加时归零，所以要考虑归零时的状态
                     if diff > 0:
                         service.usage += diff
                         service.total_usage += diff
                     else:
-                        service.last_usage = usage
                         service.usage += usage
                         service.total_usage += usage
                 else:
