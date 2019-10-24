@@ -91,6 +91,8 @@ class Config(object):
     # ss_listener的unix domain socket的地址
     SS_LISTENER_UDS_CLIEND_ADDRESS = \
         '/Users/admin/Developer/Python/scholar-tool-manager/local/shadowsocks-listener-client.sock'
+    # ss_listener上报流量使用情况的频率（秒）
+    SS_LISTENER_WORKING_FREQUENCY = 30
 
     # ss 客户端名称
     SS_CLIENT = 'shadowsocks'

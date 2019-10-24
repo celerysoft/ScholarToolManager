@@ -54,6 +54,7 @@ SERVER_ADDRESS = configs.Config.SS_SERVER_UDS_ADDRESS
 # print(cli.recv(1024))  # You'll receive 'ok'
 
 SS_CLIENT = configs.Config.SS_CLIENT
+frequency = configs.Config.SS_LISTENER_WORKING_FREQUENCY
 
 if SS_CLIENT == 'shadowsocks':
     client.sendto(b'ping', SERVER_ADDRESS)
@@ -69,7 +70,7 @@ while True:
             # print('TIME[%s] || MESSAGE[%s]' % (now, msg))
             logging.info(msg.decode())
         elif SS_CLIENT == 'shadowsocks-libev':
-            time.sleep(10)
+            time.sleep(frequency)
             client.sendto(b'ping', SERVER_ADDRESS)
             msg = client.recv(1024)
             logging.info(msg.decode())
