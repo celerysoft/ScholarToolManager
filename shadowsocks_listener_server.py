@@ -12,7 +12,7 @@ import configs
 
 LOG_FILE = configs.Config.SS_LISTENER_LOG_FILE
 logging.basicConfig(filename=LOG_FILE,
-                    level=logging.DEBUG,
+                    level=logging.INFO,
                     format='%(asctime)s - %(message)s')
 
 # address of the client

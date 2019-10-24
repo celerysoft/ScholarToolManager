@@ -130,19 +130,19 @@ def derive_page_parameter(query):
 
 
 @celery_app.task
-def add_port(port, password, auto_restart_listener=True):
-    shadowsocks_controller.add_port(port, password, auto_restart_listener)
+def add_port(port, password):
+    shadowsocks_controller.add_port(port, password)
 
 
 @celery_app.task
-def remove_port(port, auto_restart_listener=True):
-    shadowsocks_controller.remove_port(port, auto_restart_listener)
+def remove_port(port):
+    shadowsocks_controller.remove_port(port)
 
 
 @celery_app.task
-def modify_port_password(port, password, auto_restart_listener=True):
-    shadowsocks_controller.remove_port(port, False)
-    shadowsocks_controller.add_port(port, password, auto_restart_listener)
+def modify_port_password(port, password):
+    shadowsocks_controller.remove_port(port)
+    shadowsocks_controller.add_port(port, password)
 
 
 # -------------------------------------------------- decorators -------------------------------------------------- #
@@ -191,11 +191,7 @@ class TestApi(MethodView):
 
         port = request.json['port']
         password = request.json['password']
-        add_port.delay(
-            port=port,
-            password=password,
-            auto_restart_listener=True
-        )
+        add_port.delay(port=port, password=password)
 
         return make_response('指令已发送', 200)
 
@@ -1402,11 +1398,7 @@ class ServiceAPI(UserView):
         finally:
             db_session.close()
 
-        add_port.delay(
-            port=service_port,
-            password=password,
-            auto_restart_listener=True
-        )
+        add_port.delay(port=service_port, password=password)
 
         return make_response(
             jsonify({
@@ -1526,11 +1518,7 @@ class ServiceAPI(UserView):
                 service.available = True
                 service_password = db_session.query(model.ServicePassword) \
                     .filter(model.ServicePassword.service_id == service_id).first()
-                add_port.delay(
-                    port=service_password.port,
-                    password=service_password.password,
-                    auto_restart_listener=True
-                )
+                add_port.delay(port=service_password.port, password=service_password.password)
             if service_template.type == model.ServiceTemplate.MONTHLY:
                 auto_renew = request.json['auto_renew']
                 if auto_renew is None:
@@ -1787,11 +1775,7 @@ class ServicePasswordAPI(UserView):
 
         service = db_session.query(model.Service).filter(model.Service.id == service_id).first()
         if service.available:
-            modify_port_password.delay(
-                port=service_password.port,
-                password=new_password,
-                auto_restart_listener=True
-            )
+            modify_port_password.delay(port=service_password.port, password=new_password)
 
         try:
             db_session.commit()
