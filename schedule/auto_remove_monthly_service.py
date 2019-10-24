@@ -1,6 +1,6 @@
 # -*-coding:utf-8 -*-
 """
-套餐自动失效脚本
+包月套餐自动失效脚本
 每月执行，需要在『包月套餐自动续费脚本』之前执行
 """
 from datetime import datetime
@@ -61,7 +61,11 @@ def auto_remove_monthly_service(session):
         service_password = session.query(model.ServicePassword) \
             .filter(model.ServicePassword.service_id == service.id).first()  # type:model.ServicePassword
         if service_password is not None:
-            shadowsocks_controller.remove_port(service_password.port)
+            try:
+                shadowsocks_controller.remove_port(service_password.port)
+            except BaseException as e:
+                print(e)
+                continue
 
 
 if __name__ == '__main__':

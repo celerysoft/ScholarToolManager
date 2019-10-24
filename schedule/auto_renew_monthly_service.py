@@ -88,7 +88,11 @@ def auto_renew_monthly_service(session):
         service_password = session.query(model.ServicePassword) \
             .filter(model.ServicePassword.service_id == service.id).first()
         if service_password is not None:
-            shadowsocks_controller.add_port(service_password.port, service_password.password)
+            try:
+                shadowsocks_controller.add_port(service_password.port, service_password.password)
+            except BaseException as e:
+                print(e)
+                continue
 
 
 if __name__ == '__main__':

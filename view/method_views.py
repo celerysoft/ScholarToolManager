@@ -1605,7 +1605,9 @@ class UsageAPI(BaseView):
                     diff = usage - service.last_usage
                     service.last_usage = usage
                     # 每个端口的流量统计信息会在每次被重新添加时归零，所以要考虑归零时的状态
-                    if diff > 0:
+                    if diff == 0:
+                        continue
+                    elif diff > 0:
                         service.usage += diff
                         service.total_usage += diff
                     else:

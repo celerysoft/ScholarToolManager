@@ -61,7 +61,11 @@ def auto_remove_data_service(session):
         service_password = session.query(model.ServicePassword) \
             .filter(model.ServicePassword.service_id == service.id).first()  # type:model.ServicePassword
         if service_password is not None:
-            shadowsocks_controller.remove_port(service_password.port)
+            try:
+                shadowsocks_controller.remove_port(service_password.port)
+            except BaseException as e:
+                print(e)
+                continue
 
 
 if __name__ == '__main__':
