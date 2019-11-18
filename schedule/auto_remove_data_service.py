@@ -41,8 +41,9 @@ def session_scope():
 
 
 def init_database():
-    # set_sqlalchemy_database_uri(configs.DevelopmentConfig.SQLALCHEMY_DATABASE_URI)
-    set_sqlalchemy_database_uri(configs.ProductionConfig.SQLALCHEMY_DATABASE_URI)
+    uri = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' \
+          % (configs.DB_USER, configs.DB_PASSWORD, configs.DB_HOST, configs.DB_PORT, configs.DB_NAME)
+    set_sqlalchemy_database_uri(uri)
 
 
 def auto_remove_data_service(session):

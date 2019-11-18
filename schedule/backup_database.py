@@ -8,15 +8,15 @@ import configs
 
 
 class BackupTool(object):
-    __LOCAL_FILE_DIRECTORY = configs.Config.DATABASE_BACKUP_FILE_DIRECTORY
+    __LOCAL_FILE_DIRECTORY = configs.DATABASE_BACKUP_FILE_DIRECTORY
     __KEY = 'celerysoft-science-%s.sql'
     __DATETIME_FORMAT = '%Y%m%d'
 
     __qiniu_instance = None
 
     def __init__(self):
-        self.__qiniu_instance = Auth(configs.Config.QINIU_ACCESS_KEY, configs.Config.QINIU_SECRET_KEY)
-        self.__qiniu_bucket_name = configs.Config.QINIU_BUCKET_NAME_FOR_BACKUP_DATABASE
+        self.__qiniu_instance = Auth(configs.QINIU_ACCESS_KEY, configs.QINIU_SECRET_KEY)
+        self.__qiniu_bucket_name = configs.QINIU_BUCKET_NAME_FOR_BACKUP_DATABASE
 
     def execute(self):
         self.__upload()
@@ -44,7 +44,7 @@ class BackupTool(object):
         key = self.__KEY % _30days_ago.strftime(self.__DATETIME_FORMAT)
         bucket = BucketManager(self.__qiniu_instance)
 
-        ret, info = bucket.stat(configs.Config.QINIU_BUCKET_NAME_FOR_BACKUP_DATABASE, key)
+        ret, info = bucket.stat(configs.QINIU_BUCKET_NAME_FOR_BACKUP_DATABASE, key)
         if ret is None or 'hash' not in ret:
             print('30天前的备份不存在，不需要删除')
         else:

@@ -8,8 +8,8 @@ import configs
 from util import shadowsocks_controller
 
 celery_app = Celery('app',
-                    broker=configs.Config.CELERY_BROKER_URL,
-                    backend=configs.Config.CELERY_RESULT_BACKEND)
+                    broker=configs.CELERY_BROKER_URL,
+                    backend=configs.CELERY_RESULT_BACKEND)
 
 
 @celery_app.task

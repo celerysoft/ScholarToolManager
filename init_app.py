@@ -16,6 +16,7 @@ import time
 #     return q
 from flask_sqlalchemy import SQLAlchemy
 
+import configs
 import database
 from util.static_file_hash_util import derive_hash_filename
 from view import method_views, views
@@ -46,7 +47,9 @@ def init_views(app):
 
 
 def init_database(app):
-    database.set_sqlalchemy_database_uri(app.config['SQLALCHEMY_DATABASE_URI'])
+    uri = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' \
+          % (configs.DB_USER, configs.DB_PASSWORD, configs.DB_HOST, configs.DB_PORT, configs.DB_NAME)
+    database.set_sqlalchemy_database_uri(uri)
     database.set_db_with_pagination(SQLAlchemy(app))
 
 

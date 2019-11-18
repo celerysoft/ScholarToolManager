@@ -5,7 +5,7 @@ import configs
 import model
 
 # /config/multiple_users_config.json
-__SHADOWSOCKS_CONFIG_FILE_PATH = configs.Config.SHADOWSOCKS_CONFIG_FILE_PATH
+__SHADOWSOCKS_CONFIG_FILE_PATH = configs.SHADOWSOCKS_CONFIG_FILE_PATH
 __CONFIG_FILE_INDENT = '  '
 
 

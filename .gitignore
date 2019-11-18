@@ -5,6 +5,7 @@
 .idea/**/workspace.xml
 .idea/**/tasks.xml
 .idea/dictionaries
+.idea/
 
 # Sensitive or high-churn files:
 .idea/**/dataSources/
@@ -159,6 +160,5 @@ config/multiple_users_config.json
 **/multiple_users_config.json
 multiple_users_config.json
 /local
-configs.py
 .qiniu_pythonsdk_hostscache.json
 mysqlbackup.sh

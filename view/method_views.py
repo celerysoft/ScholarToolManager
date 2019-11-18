@@ -369,7 +369,7 @@ class RegisterAPI(BaseView):
         invitation_code.invited_at = datetime.datetime.now().timestamp()
 
         # 将记录写入user_scholar_balance表
-        __SCHOLAR_BALANCE_FOR_NEW_USER = configs.Config.NEW_USER_SCHOLAR_BALANCE
+        __SCHOLAR_BALANCE_FOR_NEW_USER = configs.NEW_USER_SCHOLAR_BALANCE
         user_scholar_balance = model.UserScholarBalance(user.id, __SCHOLAR_BALANCE_FOR_NEW_USER)
         db_session.add(user_scholar_balance)
 
@@ -1600,10 +1600,10 @@ class UsageAPI(BaseView):
                 continue
 
             if service.available:
-                if configs.Config.SS_CLIENT == 'shadowsocks':
+                if configs.SS_CLIENT == 'shadowsocks':
                     service.usage += usage
                     service.total_usage += usage
-                elif configs.Config.SS_CLIENT == 'shadowsocks-libev':
+                elif configs.SS_CLIENT == 'shadowsocks-libev':
                     diff = usage - service.last_usage
                     service.last_usage = usage
                     # 每个端口的流量统计信息会在每次被重新添加时归零，所以要考虑归零时的状态
@@ -1617,7 +1617,7 @@ class UsageAPI(BaseView):
                         service.total_usage += usage
                 else:
                     raise exception.api.InternalServerError(
-                        '尚未为{}进行流量统计接口的适配'.format(configs.Config.SS_CLIENT)
+                        '尚未为{}进行流量统计接口的适配'.format(configs.SS_CLIENT)
                     )
 
                 if service.usage > service.package:

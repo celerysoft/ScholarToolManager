@@ -10,7 +10,7 @@ import configs
 
 
 def derive_hash_filename(filename: str):
-    project_root_path = configs.Config.BASE_DIR
+    project_root_path = configs.BASE_DIR
     filename_splits = os.path.splitext(filename)
 
     hash_str = derive_file_md5(project_root_path + filename)
@@ -20,7 +20,7 @@ def derive_hash_filename(filename: str):
     else:
         raise RuntimeError()
 
-    static_root_path = os.path.abspath((os.path.join(configs.Config.STATIC_ROOT, '../')))
+    static_root_path = os.path.abspath((os.path.join(configs.STATIC_ROOT, '../')))
     copy_file(project_root_path + filename, static_root_path + hashed_filename)
 
     return hashed_filename
@@ -36,7 +36,7 @@ def generate_hashed_filename(filename):
         abs_filename = filename
         filename = os.path.split(filename)[1]
     else:
-        abs_filename = configs.Config.BASE_DIR + filename
+        abs_filename = configs.BASE_DIR + filename
 
     hash_str = derive_file_md5(abs_filename)
 
@@ -93,9 +93,9 @@ def mkdir_for_file(dst):
 
 
 class Command(object):
-    access_key = configs.Config.QINIU_ACCESS_KEY
-    secret_key = configs.Config.QINIU_SECRET_KEY
-    bucket_name = configs.Config.QINIU_BUCKET_NAME
+    access_key = configs.QINIU_ACCESS_KEY
+    secret_key = configs.QINIU_SECRET_KEY
+    bucket_name = configs.QINIU_BUCKET_NAME
 
     SLASH_SUBSTITUTE_BY = '####'
     exclude_files = [
@@ -114,7 +114,7 @@ class Command(object):
     ]
 
     def execute(self, generate_type):
-        src = os.path.join(configs.Config.BASE_DIR, 'static')
+        src = os.path.join(configs.BASE_DIR, 'static')
         self.__iterate_then_generate(src, generate_type=generate_type)
         if generate_type == 0:
             self.rename_static_file_in_cdn()
@@ -148,7 +148,7 @@ class Command(object):
     def __generate_static_resource_for_uploading_to_cdn(filename):
         hashed_filename = generate_hashed_filename(filename)
 
-        relpath = os.path.relpath(filename, configs.Config.BASE_DIR)
+        relpath = os.path.relpath(filename, configs.BASE_DIR)
         filename_splits = os.path.split(relpath)
         if len(filename_splits) == 2:
             hashed_filename = '%s/%s' % (filename_splits[0], hashed_filename)
@@ -157,7 +157,7 @@ class Command(object):
 
         hashed_filename = hashed_filename.replace(os.path.sep, Command.SLASH_SUBSTITUTE_BY)
 
-        dst = os.path.join(configs.Config.CDN_STATIC_ROOT, hashed_filename)
+        dst = os.path.join(configs.CDN_STATIC_ROOT, hashed_filename)
         copy_file_success = copy_file(filename, dst, print_log=True)
 
         return dst if copy_file_success else None
@@ -166,14 +166,14 @@ class Command(object):
     def __generate_static_resource_for_local_serving(filename):
         hashed_filename = generate_hashed_filename(filename)
 
-        relpath = os.path.relpath(filename, configs.Config.BASE_DIR)
+        relpath = os.path.relpath(filename, configs.BASE_DIR)
         filename_splits = os.path.split(relpath)
         if len(filename_splits) == 2:
             hashed_filename = '%s/%s' % (filename_splits[0], hashed_filename)
         else:
             raise RuntimeError()
 
-        static_root_path = os.path.abspath(os.path.dirname(configs.Config.STATIC_ROOT))
+        static_root_path = os.path.abspath(os.path.dirname(configs.STATIC_ROOT))
         copy_file(filename, os.path.join(static_root_path, hashed_filename), print_log=False)
 
     @staticmethod
@@ -200,7 +200,7 @@ class Command(object):
         exclude_files = [
             r'.DS_Store',
         ]
-        cdn_file_path = configs.Config.CDN_STATIC_ROOT
+        cdn_file_path = configs.CDN_STATIC_ROOT
         file_list = {}
         for x in os.listdir(cdn_file_path):
             if x in exclude_files:

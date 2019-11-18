@@ -6,7 +6,7 @@ import configs
 from util import shadowsocks_config_manager
 
 # address of the client
-CLIENT_ADDRESS = configs.Config.SS_CONTROLLER_UDS_CLIEND_ADDRESS
+CLIENT_ADDRESS = configs.SS_CONTROLLER_UDS_CLIEND_ADDRESS
 
 
 # client instance
@@ -31,7 +31,7 @@ connect()
 
 
 # address of the server
-SERVER_ADDRESS = configs.Config.SS_SERVER_UDS_ADDRESS
+SERVER_ADDRESS = configs.SS_SERVER_UDS_ADDRESS
 
 
 # print('send "ping"')

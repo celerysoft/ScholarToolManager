@@ -41,8 +41,9 @@ def session_scope():
 
 
 def init_database():
-    # set_sqlalchemy_database_uri(configs.DevelopmentConfig.SQLALCHEMY_DATABASE_URI)
-    set_sqlalchemy_database_uri(configs.ProductionConfig.SQLALCHEMY_DATABASE_URI)
+    uri = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' \
+          % (configs.DB_USER, configs.DB_PASSWORD, configs.DB_HOST, configs.DB_PORT, configs.DB_NAME)
+    set_sqlalchemy_database_uri(uri)
 
 
 def auto_invalidate_data_service(session):
@@ -60,10 +61,9 @@ def auto_invalidate_data_service(session):
                 model.Service.alive.is_(True)).all()
 
     for service in services:  # type:model.Service
-        if (now.year - service.expired_at) * 12 + (now.month - service.expired_at) > 1:
-            service.alive = False
-            session.add(service)
-            session.commit()
+        service.alive = False
+        session.add(service)
+        session.commit()
 
 
 def auto_invalidate_monthly_service(session):

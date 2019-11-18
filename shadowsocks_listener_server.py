@@ -10,13 +10,13 @@ import requests
 
 import configs
 
-LOG_FILE = configs.Config.SS_LISTENER_LOG_FILE
+LOG_FILE = configs.SS_LISTENER_LOG_FILE
 logging.basicConfig(filename=LOG_FILE,
                     level=logging.INFO,
                     format='%(asctime)s - %(message)s')
 
 # address of the client
-CLIENT_ADDRESS = configs.Config.SS_LISTENER_UDS_CLIEND_ADDRESS
+CLIENT_ADDRESS = configs.SS_LISTENER_UDS_CLIEND_ADDRESS
 
 # client instance
 client = None
@@ -39,7 +39,7 @@ def connect():
 connect()
 
 
-SERVER_ADDRESS = configs.Config.SS_SERVER_UDS_ADDRESS
+SERVER_ADDRESS = configs.SS_SERVER_UDS_ADDRESS
 
 # print('send "ping"')
 # cli.sendto(b'ping', SERVER_ADDRESS)
@@ -53,8 +53,8 @@ SERVER_ADDRESS = configs.Config.SS_SERVER_UDS_ADDRESS
 # cli.sendto(b'remove: {"server_port":8001}', SERVER_ADDRESS)
 # print(cli.recv(1024))  # You'll receive 'ok'
 
-SS_CLIENT = configs.Config.SS_CLIENT
-frequency = configs.Config.SS_LISTENER_WORKING_FREQUENCY
+SS_CLIENT = configs.SS_CLIENT
+frequency = configs.SS_LISTENER_WORKING_FREQUENCY
 
 if SS_CLIENT == 'shadowsocks':
     client.sendto(b'ping', SERVER_ADDRESS)
@@ -76,7 +76,7 @@ while True:
             logging.info(msg.decode())
         else:
             raise RuntimeError(
-                '尚未为{}进行流量监听的适配'.format(configs.Config.SS_CLIENT)
+                '尚未为{}进行流量监听的适配'.format(configs.SS_CLIENT)
             )
     except socket.timeout:
         connect()
@@ -84,7 +84,7 @@ while True:
     if msg is None:
         continue
 
-    api_url = configs.Config.MAIN_SERVER_ADDRESS + '/api/usage'
+    api_url = configs.MAIN_SERVER_ADDRESS + '/api/usage'
 
     data = msg.decode('utf-8')
     data = data[6:]

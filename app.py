@@ -13,11 +13,6 @@ import permission
 from util import shadowsocks_controller
 from view import views, method_views
 
-app = Flask(__name__)
-app.config.from_object('configs.Config')
-
-Session(app)
-
 
 def action_before_app_run():
     db_session = database.derive_db_session()
@@ -30,31 +25,35 @@ def action_before_app_run():
         db_session.close()
 
 
-def create_app(config='configs.DevelopmentConfig'):
+def create_app():
     """
     生成app实例
-    :param config: 'configs.DevelopmentConfig' or 'configs.ProductionConfig'
+
     :return:
     """
-    # app.config.from_object('configs.DevelopmentConfig')
-    # app.config.from_object('configs.ProductionConfig')
-    app.config.from_object(config)
+    flask_app = Flask(__name__)
+    flask_app.config.from_pyfile('configs.py')
 
-    handler = logging.FileHandler(app.config['LOG_FILE'], encoding='UTF-8')
+    Session(flask_app)
+
+    handler = logging.FileHandler(flask_app.config['LOG_FILE'], encoding='UTF-8')
     handler.setLevel(logging.WARNING)
     logging_format = logging.Formatter(
         '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')
     handler.setFormatter(logging_format)
-    app.logger.addHandler(handler)
+    flask_app.logger.addHandler(handler)
 
     init_app.init_jinja2()
-    init_app.init_jinja2_global(app)
-    init_app.init_views(app)
-    init_app.init_method_views(app)
-    init_app.init_database(app)
+    init_app.init_jinja2_global(flask_app)
+    init_app.init_views(flask_app)
+    init_app.init_method_views(flask_app)
+    init_app.init_database(flask_app)
 
-    action_before_app_run()
-    return app
+    return flask_app
+
+
+app = create_app()
+action_before_app_run()
 
 
 @app.teardown_appcontext
@@ -212,10 +211,8 @@ app.add_url_rule('/api/service-password', view_func=method_views.ServicePassword
 
 
 if __name__ == '__main__':
-    create_app()
-    # create_app('configs.ProductionConfig')
-    host = app.config['HOST']
-    port = app.config['PORT']
-    processes = app.config['PROCESSES']
-
-    app.run(host=host, port=port, processes=processes)
+    error_message = """
+    Don't run app.py directly. 
+    Use "FLASK_APP=manage.py;FLASK_DEBUG=1 python -m flask run --host 127.0.0.1 --port 12345" to serve the app.
+    """
+    raise RuntimeError(error_message)

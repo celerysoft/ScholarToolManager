@@ -1,17 +1,15 @@
+"""
+FLASK_APP=manage.py flask hello
+FLASK_APP=manage.py flask status
+"""
 import click
-import os
 
-from app import create_app
+from app import app as flask_app
 
 # 通过配置创建 app
 from util import static_file_hash_util
 
-DEBUG = os.environ.get('FLASK_DEBUG', 0)
-app = None
-if DEBUG == 0:
-    app = create_app('configs.ProductionConfig')
-else:
-    app = create_app('configs.DevelopmentConfig')
+app = flask_app
 
 
 @app.cli.command()
