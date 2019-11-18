@@ -37,8 +37,6 @@ class Config(object):
     SESSION_TYPE = 'sqlalchemy'
     SESSION_USE_SIGNER = True
     # 数据库的URI
-    # SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://' \
-    #                           + _db_user + ':' + _db_password + '@' + _db_host + ':' + _db_port + '/' + _db_name
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' \
                               % (_db_user, _db_password, _db_host, _db_port, _db_name)
     SQLALCHEMY_TRACK_MODIFICATIONS = False

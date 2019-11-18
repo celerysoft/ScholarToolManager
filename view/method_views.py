@@ -13,6 +13,8 @@ import random
 import re
 
 import os
+
+import requests
 import sqlalchemy
 from flask import make_response, jsonify, json, request, session, abort, g
 from flask.views import MethodView
@@ -188,18 +190,18 @@ class TodayInHistoryAPI(MethodView):
     methods = ['GET']
 
     def get(self):
-        api_url = 'http://www.ipip5.com/today/api.php?type=json'
-
-        context = ssl.create_default_context()
-        context.check_hostname = False
-        context.verify_mode = ssl.CERT_NONE
-
-        # noinspection PyUnresolvedReferences
-        http_request = urllib.request.Request(api_url)
-        # noinspection PyUnresolvedReferences
-        response = urllib.request.urlopen(http_request, context=context).read()
-
-        return make_response(jsonify(json.loads(response)), 200)
+        api_url = 'http://www.ipip5.com/today/api.php'
+        params = {
+            'type': 'json'
+        }
+        response = requests.get(api_url, params=params, verify=True)
+        if response.ok:
+            return make_response(jsonify(json.loads(response.text)), 200)
+        else:
+            api_response = {
+                'message': '获取数据失败'
+            }
+            return make_response(jsonify(api_response), 503)
 
 
 class ReCaptchaApi(MethodView):
