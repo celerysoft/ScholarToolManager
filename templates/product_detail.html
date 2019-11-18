@@ -87,10 +87,6 @@
                 });
             });
 
-            document.getElementById('test').addEventListener('click', function () {
-                modifyPasswordDialogInstance.open();
-            });
-
             let autoRenewDialog = $('#dialog-auto-renew');
             let autoRenewCheckbox = $('#cb-auto-renew');
             autoRenewDialog.on('open.mdui.dialog', function () {
@@ -156,7 +152,7 @@
     <div id="scholar-detail">
         <div class="mdui-row mdui-valign">
             <div class="mdui-col-xs-6">
-                <h2 id="test">{{title}}</h2>
+                <h2>{{title}}</h2>
                 <p>下次付款日期：{{renewAt}}</p>
             </div>
             <div class="mdui-col-xs-3 mdui-text-center mdui-color-theme" style="padding: 16px 16px;">已用流量：{{usage}} M
