@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 # -*-coding:utf-8 -*-
 import datetime
-import ssl
 
 import hashlib
 import urllib
@@ -20,11 +19,8 @@ from flask import make_response, jsonify, json, request, session, abort, g
 from flask.views import MethodView
 
 import configs
-import database
-import exception
-import model
-import permission
-from util import date_util, background_task
+from application.model import model
+from application.util import date_util, background_task, database, permission
 
 app = None
 
@@ -107,7 +103,7 @@ def derive_page_parameter(query):
         page = int(page) if page is not None else 1
     except ValueError:
         # noinspection PyUnresolvedReferences
-        raise exception.api.InvalidRequest('Invalid page field.')
+        raise application.exception.api.InvalidRequest('Invalid page field.')
     page_size = request.args.get('page_size')
     try:
         page_size = int(page_size) if page_size is not None else __ITEM_PER_PAGE
@@ -119,7 +115,7 @@ def derive_page_parameter(query):
 
     if 0 < record_count <= offset:
         # noinspection PyUnresolvedReferences
-        raise exception.api.InvalidRequest('Item index is out of bounds, try modify page and page_size.')
+        raise application.exception.api.InvalidRequest('Item index is out of bounds, try modify page and page_size.')
     max_page = math.ceil(record_count / page_size)
 
     return page, page_size, offset, max_page
@@ -518,7 +514,7 @@ class InvitationCodeAPI(UserView):
         if user_id is None:
             return self.api_document('Need user_id')
         if not permission.check_manage_invitation_code_permission(db_session, user_id, True):
-            raise exception.api.Forbidden('ID为%s的用户无权创建邀请码' % user_id)
+            raise application.exception.api.Forbidden('ID为%s的用户无权创建邀请码' % user_id)
 
         invitation_code = None
         invitation = 1
@@ -654,7 +650,7 @@ class EventAPI(UserView):
         if user_id is None:
             return self.api_document('Need user_id')
         if not permission.check_manage_event_permission(db_session, user_id):
-            raise exception.api.Forbidden('ID为%s的用户无权创建公告' % user_id)
+            raise application.exception.api.Forbidden('ID为%s的用户无权创建公告' % user_id)
 
         name = request.json['name']
         tag = request.json['tag']
@@ -696,7 +692,7 @@ class EventAPI(UserView):
         if user_id is None:
             return self.api_document('Need user_id')
         if not permission.check_manage_event_permission(db_session, user_id):
-            raise exception.api.Forbidden('ID为%s的用户无权编辑公告' % user_id)
+            raise application.exception.api.Forbidden('ID为%s的用户无权编辑公告' % user_id)
 
         id = request.json['id']
         name = request.json['name']
@@ -741,7 +737,7 @@ class EventAPI(UserView):
         user_id = derive_user_id_from_session()
         db_session = derive_db_session()
         if not permission.check_manage_event_permission(db_session, user_id):
-            raise exception.api.Forbidden('ID为%s的用户无权删除公告' % user_id)
+            raise application.exception.api.Forbidden('ID为%s的用户无权删除公告' % user_id)
 
         product_id = request.json['id']
         if not product_id:
@@ -948,7 +944,7 @@ class RoleAPI(UserView):
         user_id = derive_user_id_from_session()
         db_session = derive_db_session()
         if not permission.check_manage_event_permission(db_session, user_id):
-            raise exception.api.Forbidden('ID为%s的用户无权删除角色' % user_id)
+            raise application.exception.api.Forbidden('ID为%s的用户无权删除角色' % user_id)
 
         role_id = request.json['id']
         if not role_id:
@@ -961,7 +957,7 @@ class RoleAPI(UserView):
             .filter(model.Role.id == role_id).all()
 
         if users is not None and len(users) > 0:
-            raise exception.api.InvalidRequest('当前还有%s位用户的角色为待删除角色，故无法删除该角色' % len(users))
+            raise application.exception.api.InvalidRequest('当前还有%s位用户的角色为待删除角色，故无法删除该角色' % len(users))
 
         # 从role_permission表删除记录
         role_permissions = db_session.query(model.RolePermission) \
@@ -1024,7 +1020,7 @@ class ServiceTemplateAPI(UserView):
         user_id = derive_user_id_from_session()
         db_session = derive_db_session()
         if not permission.check_manage_service_template_permission(db_session, user_id):
-            raise exception.api.Forbidden('ID为%s的用户无权创建套餐模版' % user_id)
+            raise application.exception.api.Forbidden('ID为%s的用户无权创建套餐模版' % user_id)
 
         service_type = request.json['type']
         if service_type is None:
@@ -1079,7 +1075,7 @@ class ServiceTemplateAPI(UserView):
         user_id = derive_user_id_from_session()
         db_session = derive_db_session()
         if not permission.check_manage_service_template_permission(db_session, user_id):
-            raise exception.api.Forbidden('ID为%s的用户无权修改套餐模版' % user_id)
+            raise application.exception.api.Forbidden('ID为%s的用户无权修改套餐模版' % user_id)
 
         service_id = request.json.get('id', None)
         if service_id is None:
@@ -1151,7 +1147,7 @@ class ServiceTemplateAPI(UserView):
         user_id = derive_user_id_from_session()
         db_session = derive_db_session()
         if not permission.check_manage_service_template_permission(db_session, user_id):
-            raise exception.api.Forbidden('ID为%s的用户无权删除套餐模版' % user_id)
+            raise application.exception.api.Forbidden('ID为%s的用户无权删除套餐模版' % user_id)
 
         service_template_id = request.json['id']
         if service_template_id is None:
@@ -1275,7 +1271,7 @@ class ServiceAPI(UserView):
         user_id = derive_user_id_from_session()
         db_session = derive_db_session()
         if not permission.check_manage_service_permission(db_session, user_id, True):
-            raise exception.api.Forbidden("无权创建套餐")
+            raise application.exception.api.Forbidden("无权创建套餐")
 
         service_template_id = None
         try:
@@ -1430,7 +1426,7 @@ class ServiceAPI(UserView):
             .filter(model.UserService.user_id == user_id) \
             .filter(model.UserService.service_id == service_id).first()
         if user_service is None:
-            raise exception.api.Forbidden("无权修改套餐")
+            raise application.exception.api.Forbidden("无权修改套餐")
 
         service = db_session.query(model.Service) \
             .filter(model.Service.id == service_id).first()
@@ -1538,7 +1534,7 @@ class UsageAPI(BaseView):
         user_id = derive_user_id_from_session()
         db_session = derive_db_session()
         if not permission.check_manage_permission(db_session, user_id):
-            raise exception.api.Forbidden("无权限")
+            raise application.exception.api.Forbidden("无权限")
 
         SHADOWSOCKS_LOG_FILE_PATH = app.config['SS_LISTENER_LOG_FILE']
         lines = []
@@ -1572,7 +1568,7 @@ class UsageAPI(BaseView):
         user_id = derive_user_id_from_session()
         db_session = derive_db_session()
         if not permission.check_manage_permission(db_session, user_id):
-            raise exception.api.Forbidden("无权限")
+            raise application.exception.api.Forbidden("无权限")
 
         restart_shell_file = app.config['SS_LISTENER_RESTART_SHELL_FILE_PATH']
         status = os.system('. %s' % restart_shell_file)
@@ -1616,7 +1612,7 @@ class UsageAPI(BaseView):
                         service.usage += usage
                         service.total_usage += usage
                 else:
-                    raise exception.api.InternalServerError(
+                    raise application.exception.api.InternalServerError(
                         '尚未为{}进行流量统计接口的适配'.format(configs.SS_CLIENT)
                     )
 
@@ -1681,7 +1677,7 @@ class ScholarBalanceAPI(UserView):
         user_id = derive_user_id_from_session()
         db_session = derive_db_session()
         if not permission.check_manage_scholar_balance_permission(db_session, user_id, True):
-            raise exception.api.Forbidden("无权管理学术积分")
+            raise application.exception.api.Forbidden("无权管理学术积分")
 
         query_user_id = request.json['user_id']
         if query_user_id is None:

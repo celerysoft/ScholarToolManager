@@ -7,7 +7,7 @@ import click
 from app import app as flask_app
 
 # 通过配置创建 app
-from util import static_file_hash_util
+from application.util import static_file_hash_util
 
 app = flask_app
 

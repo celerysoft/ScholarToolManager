@@ -1,1 +1,0 @@
-ssserver --manager-address /Users/admin/Developer/shadowsocks-manager.sock -c /Users/admin/Developer/Python/scholar-tool-manager/config/multiple_users_config.json

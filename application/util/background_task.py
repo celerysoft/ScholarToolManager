@@ -5,7 +5,7 @@
 from celery import Celery
 
 import configs
-from util import shadowsocks_controller
+from application.util import shadowsocks_controller
 
 celery_app = Celery('app',
                     broker=configs.CELERY_BROKER_URL,

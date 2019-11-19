@@ -5,11 +5,9 @@ import markdown2
 from flask import render_template, session, request, redirect, url_for, abort
 from flask.views import View
 
-import database
+from application.util import database, permission
 
-import exception
-import model
-import permission
+from application.model import model
 
 app = None
 
@@ -87,7 +85,7 @@ class PermissionRequiredView(UserView):
     def _check_permission(self):
         if self.permission_func is not None:
             if not self.permission_func(derive_db_session(), derive_user_id_from_session()):
-                raise exception.http.Forbidden()
+                raise application.exception.http.Forbidden()
 
 
 class LoginView(BaseView):

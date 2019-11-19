@@ -3,7 +3,7 @@ import socket
 import os
 
 import configs
-from util import shadowsocks_config_manager
+from application.util import shadowsocks_config_manager
 
 # address of the client
 CLIENT_ADDRESS = configs.SS_CONTROLLER_UDS_CLIEND_ADDRESS

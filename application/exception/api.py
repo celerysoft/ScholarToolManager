@@ -1,3 +1,8 @@
+import json
+
+from flask import Response
+
+
 class BaseApiException(Exception):
     status_code = 500
 
@@ -8,10 +13,12 @@ class BaseApiException(Exception):
             self.status_code = status_code
         self.payload = payload
 
-    def to_dict(self):
+    def to_response(self):
         rv = dict(self.payload or ())
         rv['message'] = self.message
-        return rv
+        return Response(json.dumps(rv),
+                        status=self.status_code,
+                        mimetype='application/json')
 
 
 class InvalidRequest(BaseApiException):

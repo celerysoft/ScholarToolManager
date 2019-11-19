@@ -3,9 +3,8 @@
 
 from flask import session
 
-import model
-import exception.http
-import exception.api
+from application.model import model
+import application.exception.http
 
 
 def check_user_api_permission():
@@ -14,7 +13,7 @@ def check_user_api_permission():
     :return:
     """
     if 'user' not in session.keys():
-        raise exception.api.Unauthorized('该接口只允许已登录用户调用')
+        raise application.exception.api.Unauthorized('该接口只允许已登录用户调用')
 
 
 def check_user_permission():
@@ -23,7 +22,7 @@ def check_user_permission():
     :return:
     """
     if 'user' not in session.keys():
-        raise exception.http.Unauthorized('请先登录')
+        raise application.exception.http.Unauthorized('请先登录')
 
 
 def derive_user_permissions(db_session, user_id):

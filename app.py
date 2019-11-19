@@ -2,22 +2,21 @@
 # -*-coding:utf-8 -*-
 import logging
 
-from flask import Flask, redirect, url_for, session
-from flask.json import jsonify
+from flask import Flask, redirect, url_for, session, make_response
 from flask_session import Session
 
-import database
-import exception.http
-import init_app
-import permission
-from util import shadowsocks_controller
-from view import views, method_views
+import configs
+import application.exception.http
+from application.exception.api import BaseApiException
+from application.util import shadowsocks_controller, database, permission, init_app
+from application.view import views
+from application.view import method_views
 
 
-def action_before_app_run():
+def action_before_app_run(flask_app):
     db_session = database.derive_db_session()
     try:
-        shadowsocks_controller.recreate_shadowsocks_config_file(db_session, app.debug)
+        shadowsocks_controller.recreate_shadowsocks_config_file(db_session, flask_app.debug)
     except BaseException:
         db_session.rollback()
         raise
@@ -49,11 +48,12 @@ def create_app():
     init_app.init_method_views(flask_app)
     init_app.init_database(flask_app)
 
+    action_before_app_run(flask_app)
+
     return flask_app
 
 
 app = create_app()
-action_before_app_run()
 
 
 @app.teardown_appcontext
@@ -76,12 +76,12 @@ def handle_base_exception(error):
 # ------------------------------------------------ Page Error Handler ------------------------------------------------ #
 
 
-@app.errorhandler(exception.http.Unauthorized)
+@app.errorhandler(application.exception.http.Unauthorized)
 def handle_unauthorized(error):
     return redirect(url_for('login'))
 
 
-@app.errorhandler(exception.http.Forbidden)
+@app.errorhandler(application.exception.http.Forbidden)
 def handle_forbidden(error):
     return redirect(url_for('login'))
 
@@ -89,25 +89,11 @@ def handle_forbidden(error):
 # ------------------------------------------------ Api Error Handler ------------------------------------------------ #
 
 
-@app.errorhandler(exception.api.Unauthorized)
-def handle_api_unauthorized(error):
-    response = jsonify(error.to_dict())
-    response.status_code = error.status_code
-    return response
-
-
-@app.errorhandler(exception.api.Forbidden)
-def handle_api_forbidden(error):
-    response = jsonify(error.to_dict())
-    response.status_code = error.status_code
-    return response
-
-
-@app.errorhandler(exception.api.InvalidRequest)
-def handle_api_invalid_request(error):
-    response = jsonify(error.to_dict())
-    response.status_code = error.status_code
-    return response
+@app.errorhandler(BaseApiException)
+def handle_api_exception(error):
+    if configs.BUILD_API_EXCEPTION:
+        app.logger.exception(error)
+    return make_response(error.to_response())
 
 
 # -------------------------------------------------- PAGE -------------------------------------------------- #

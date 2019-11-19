@@ -5,7 +5,7 @@
 """
 from datetime import datetime
 
-from util import shadowsocks_controller
+from application.util import shadowsocks_controller
 
 from contextlib import contextmanager
 
@@ -13,7 +13,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import configs
-import model
+from application.model import model
 
 engine = None
 Session = None

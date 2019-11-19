@@ -16,6 +16,9 @@ DB_NAME = 'scholar_tool_manager'
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# Write api exception to log file
+BUILD_API_EXCEPTION = False
+
 # JSON显示中文
 JSON_AS_ASCII = False
 # session的secret
@@ -72,7 +75,7 @@ SS_LISTENER_LOG_FILE = '/Users/admin/Developer/Python/scholar-tool-manager/local
 SERVICE_MIN_PORT = 20001
 # SS服务配置文件路径
 SHADOWSOCKS_CONFIG_FILE_PATH = \
-    '/Users/admin/Developer/Python/scholar-tool-manager/config/multiple_users_config.json'
+    '/Users/admin/Developer/Python/scholar-tool-manager/local/multiple_users_config.json'
 # 主服务器地址，数据库，网页所在的服务器地址
 MAIN_SERVER_ADDRESS = 'http://127.0.0.1:20000'
 # SS服务unix domain socket的地址
