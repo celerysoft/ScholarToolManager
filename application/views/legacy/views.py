@@ -1,5 +1,8 @@
 #!/usr/bin/python3
 # -*-coding:utf-8 -*-
+"""
+Front-end pages.
+"""
 
 import markdown2
 from flask import render_template, session, request, redirect, url_for, abort

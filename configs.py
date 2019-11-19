@@ -5,7 +5,7 @@ import os
 # 是否开启DEBUG模式
 DEBUG = True
 # 是否开启TESTING模式
-TESTING = True
+TEST = True
 
 # 数据库相关
 DB_HOST = '127.0.0.1'
@@ -15,6 +15,8 @@ DB_PASSWORD = 'www->R&daD6xZM6283n3-data'
 DB_NAME = 'scholar_tool_manager'
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+BASE_URL = '/api'
 
 # Write api exception to log file
 BUILD_API_EXCEPTION = False

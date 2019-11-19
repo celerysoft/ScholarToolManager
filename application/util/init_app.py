@@ -19,8 +19,7 @@ from flask_sqlalchemy import SQLAlchemy
 import configs
 from application.util import database
 from application.util.static_file_hash_util import derive_hash_filename
-from application.view import views
-from application.view import method_views
+from application.views.legacy import method_views, views
 
 
 def init_jinja2_global(app):

@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 # -*-coding:utf-8 -*-
+from contextlib import contextmanager
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
@@ -40,3 +42,17 @@ def close_database():
     global db_session
     if db_session is not None:
         db_session.remove()
+
+
+@contextmanager
+def session_scope():
+    global Session
+    session = Session()
+    try:
+        yield session
+        session.commit()
+    except:
+        session.rollback()
+        raise
+    finally:
+        session.close()

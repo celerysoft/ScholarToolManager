@@ -2,15 +2,125 @@
 # -*-coding:utf-8 -*-
 import logging
 
-from flask import Flask, redirect, url_for, session, make_response
+from flask import Flask, redirect, url_for, session, make_response, Blueprint
 from flask_session import Session
+from werkzeug.utils import find_modules, import_string
 
 import configs
 import application.exception.http
 from application.exception.api import BaseApiException
 from application.util import shadowsocks_controller, database, permission, init_app
-from application.view import views
-from application.view import method_views
+from application.views.legacy import method_views, views
+from application.views.base_api import BaseView
+
+BASE_URL = configs.BASE_URL
+
+
+def derive_import_root(current_name):
+    return '.'.join(current_name.split('.')[:-1])
+
+
+def add_url_rules_for_blueprint(root, blueprint: Blueprint):
+    for name in find_modules(root, recursive=True):
+        mod = import_string(name)
+        if hasattr(mod, 'bp_view') and isinstance(mod.bp_view, type(BaseView)):
+            add_url_rule_for_blueprint(root, mod.bp_view, name, blueprint)
+
+
+def add_url_rule_for_blueprint(root: str, view, import_name: str, blueprint: Blueprint, log: bool = False):
+    index = import_name.find(root)
+    if index != -1:
+        url = import_name[len(root):]
+    else:
+        url = import_name
+    while url.startswith('.'):
+        url = url[1:]
+    urls = url.split('.')
+    length = len(urls)
+    if length > 0:
+        url = '/{}' * length
+        url = url.format(*urls)
+        if log:
+            print(url)
+        blueprint.add_url_rule(url, view_func=view.as_view(view.__name__))
+
+
+def add_url_rules_and_register_blueprints(root: str, flask_app: Flask):
+    for name in find_modules(root, recursive=True):
+        mod = import_string(name)
+        if hasattr(mod, 'view') and isinstance(mod.view, type(BaseView)):
+            add_url_rule(mod.view, name, root, flask_app)
+        elif hasattr(mod, 'bp') and isinstance(mod.bp, Blueprint):
+            register_blueprint(mod.bp, name, root, flask_app)
+
+
+def add_url_rule(view, import_name: str, root: str, flask_app: Flask, log: bool = False):
+    # when handling the view's(blueprint's) path to url, need to ignore application/views
+    # we want the url of the view application/views/login.py is '/login' not '/application/views/login'
+    print(import_name, root, flask_app, log)
+    index = import_name.find(root)
+    if index != -1:
+        url = import_name[len(root):]
+    else:
+        url = import_name
+    while url.startswith('.'):
+        url = url[1:]
+
+    urls = url.split('.')
+    length = len(urls)
+    if length > 0:
+        url = '/{}' * length
+        url = url.format(*urls)
+        url = '{}{}'.format(BASE_URL, url)
+        if log:
+            print(url)
+        print(url)
+        flask_app.add_url_rule(url, view_func=view.as_view(import_name))
+
+
+def register_blueprint(blueprint: Blueprint, import_name: str, root: str, flask_app: Flask, log: bool = False):
+    index = import_name.find(root)
+    if index != -1:
+        url = import_name[len(root):]
+    else:
+        url = import_name
+    while url.startswith('.'):
+        url = url[1:]
+    urls = url.split('.')
+    length = len(urls)
+
+    # if the bp's import name is application.views.user.user
+    # make sure the url_prefix is /user other than /user/user
+    if length >= 2 and urls[-1] == urls[-2]:
+        urls = urls[:-1]
+        length = len(urls)
+
+    if length > 0:
+        prefix = '/{}' * length
+        prefix = prefix.format(*urls)
+        prefix = '{}{}'.format(BASE_URL, prefix)
+        if log:
+            print(prefix)
+        flask_app.register_blueprint(blueprint, url_prefix=prefix)
+
+
+# def register_cacheable_model(root):
+#     for name in find_modules(root, recursive=True):
+#         mod = import_string(name)
+#         if hasattr(mod, 'cacheable'):
+#             def after_update_listener(mapper, connection, target):
+#                 cache.set_model(target)
+#
+#             event.listen(mod.cacheable, 'after_update', after_update_listener)
+
+
+def init_logging(flask_app: Flask):
+    handler = logging.FileHandler(configs.LOG_FILE, encoding='UTF-8')
+    handler.setLevel(logging.WARNING)
+    logging_format = logging.Formatter(
+        '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')
+    handler.setFormatter(logging_format)
+    flask_app.logger.addHandler(handler)
 
 
 def action_before_app_run(flask_app):
@@ -31,22 +141,20 @@ def create_app():
     :return:
     """
     flask_app = Flask(__name__)
-    flask_app.config.from_pyfile('configs.py')
+    # flask_app.config.from_pyfile('configs.py')
+    flask_app.config.from_object('configs')
 
     Session(flask_app)
-
-    handler = logging.FileHandler(flask_app.config['LOG_FILE'], encoding='UTF-8')
-    handler.setLevel(logging.WARNING)
-    logging_format = logging.Formatter(
-        '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')
-    handler.setFormatter(logging_format)
-    flask_app.logger.addHandler(handler)
 
     init_app.init_jinja2()
     init_app.init_jinja2_global(flask_app)
     init_app.init_views(flask_app)
     init_app.init_method_views(flask_app)
     init_app.init_database(flask_app)
+
+    init_logging(flask_app)
+
+    add_url_rules_and_register_blueprints('application.views', flask_app)
 
     action_before_app_run(flask_app)
 
@@ -191,7 +299,7 @@ app.add_url_rule('/api/event', view_func=method_views.EventAPI.as_view('api_even
 app.add_url_rule('/api/role', view_func=method_views.RoleAPI.as_view('api_role'))
 app.add_url_rule('/api/service-template', view_func=method_views.ServiceTemplateAPI.as_view('api_service_template'))
 app.add_url_rule('/api/service', view_func=method_views.ServiceAPI.as_view('api_service'))
-app.add_url_rule('/api/usage', view_func=method_views.UsageAPI.as_view('api_usage'))
+# app.add_url_rule('/api/usage', view_func=method_views.UsageAPI.as_view('api_usage'))
 app.add_url_rule('/api/scholar-balance', view_func=method_views.ScholarBalanceAPI.as_view('api_scholar_balance'))
 app.add_url_rule('/api/service-password', view_func=method_views.ServicePasswordAPI.as_view('api_service_password'))
 

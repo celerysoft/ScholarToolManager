@@ -1,3 +1,4 @@
+# -*-coding:utf-8 -*-
 class BaseRequestException(Exception):
     status_code = 500
 

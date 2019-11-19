@@ -1,3 +1,4 @@
+# -*-coding:utf-8 -*-
 """
 FLASK_APP=manage.py flask hello
 FLASK_APP=manage.py flask status
@@ -6,7 +7,6 @@ import click
 
 from app import app as flask_app
 
-# 通过配置创建 app
 from application.util import static_file_hash_util
 
 app = flask_app
@@ -21,7 +21,7 @@ def hello():
 def status():
     global app
     print('DEBUG = %s, TESTING = %s'
-          % (app.config['DEBUG'], app.config['TESTING']))
+          % (app.config['DEBUG'], app.config['TEST']))
 
 
 @app.cli.command()
