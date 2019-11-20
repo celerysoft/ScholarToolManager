@@ -104,7 +104,7 @@ class BaseView(MethodView):
     @classmethod
     def valid_data(cls, data) -> bool:
         if type(data) == str:
-            return data is not None and len(data) > 0
+            return data is not None and len(data.strip()) > 0
         else:
             return data is not None
 

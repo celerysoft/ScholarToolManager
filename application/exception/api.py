@@ -42,6 +42,11 @@ class NotFound(BaseApiException):
         BaseApiException.__init__(self, message, status_code=404, payload=payload)
 
 
+class Conflict(BaseApiException):
+    def __init__(self, message, payload=None):
+        BaseApiException.__init__(self, message, status_code=409, payload=payload)
+
+
 class InternalServerError(BaseApiException):
     def __init__(self, message, payload=None):
         BaseApiException.__init__(self, message, status_code=500, payload=payload)
