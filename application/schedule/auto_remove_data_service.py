@@ -27,7 +27,7 @@ def set_sqlalchemy_database_uri(uri):
 
 
 @contextmanager
-def session_scope():
+def _session_scope():
     global Session
     session = Session()
     try:
@@ -72,5 +72,5 @@ def auto_remove_data_service(session):
 if __name__ == '__main__':
     init_database()
 
-    with session_scope() as session:
+    with _session_scope() as session:
         auto_remove_data_service(session)

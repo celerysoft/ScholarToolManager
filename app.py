@@ -58,7 +58,6 @@ def add_url_rules_and_register_blueprints(root: str, flask_app: Flask):
 def add_url_rule(view, import_name: str, root: str, flask_app: Flask, log: bool = False):
     # when handling the view's(blueprint's) path to url, need to ignore application/views
     # we want the url of the view application/views/login.py is '/login' not '/application/views/login'
-    print(import_name, root, flask_app, log)
     index = import_name.find(root)
     if index != -1:
         url = import_name[len(root):]
@@ -75,7 +74,6 @@ def add_url_rule(view, import_name: str, root: str, flask_app: Flask, log: bool 
         url = '{}{}'.format(BASE_URL, url)
         if log:
             print(url)
-        print(url)
         flask_app.add_url_rule(url, view_func=view.as_view(import_name))
 
 
@@ -285,7 +283,7 @@ app.add_url_rule('/api/grecaptcha', view_func=ReCaptchaApi.as_view('api_g_re_cap
 # app.add_url_rule('/api/test', view_func=method_views.TestApi.as_view('test'))
 # app.add_url_rule('/api/grecaptcha', view_func=method_views.ReCaptchaApi.as_view('api_g_re_captcha'))
 # app.add_url_rule('/api/today-in-history', view_func=method_views.TodayInHistoryAPI.as_view('api_today_in_history'))
-app.add_url_rule('/api/login', view_func=method_views.LoginAPI.as_view('api_login'))
+# app.add_url_rule('/api/login', view_func=method_views.LoginAPI.as_view('api_login'))
 app.add_url_rule('/api/register', view_func=method_views.RegisterAPI.as_view('api_register'))
 app.add_url_rule('/api/user', view_func=method_views.UserAPI.as_view('api_user'))
 app.add_url_rule('/api/user/role', view_func=method_views.UserRoleAPI.as_view('api_user_role'))

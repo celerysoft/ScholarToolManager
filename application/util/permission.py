@@ -5,6 +5,7 @@ from flask import session
 
 from application.model import model
 import application.exception.http
+from application.model.model import Permission
 
 
 def check_user_api_permission():
@@ -109,3 +110,46 @@ def check_manage_service_permission(db_session, user_id, call_by_api=False):
         check_user_api_permission()
 
     return check_permission(db_session, user_id, model.Permission.MANAGE_SERVICE)
+
+
+class PermissionToolkit(object):
+    @staticmethod
+    def _derive_user_permissions(db_session, user_id):
+        """
+        查询用户权限
+        :param db_session: sqlalchemy
+        :param user_id: 用户id
+        :return: 用户的权限
+        """
+        permissions = db_session.query(model.Permission) \
+            .filter(model.User.id == model.UserRole.user_id) \
+            .filter(model.UserRole.role_id == model.Role.id) \
+            .filter(model.Role.id == model.RolePermission.role_id) \
+            .filter(model.RolePermission.permission_id == model.Permission.id) \
+            .filter(model.User.id == user_id).all()
+
+        return permissions
+
+    @classmethod
+    def _check_permission(cls, db_session, user_id, permission_id) -> bool:
+        # permissions = cls._derive_user_permissions(db_session, user_id)
+        # for permission in permissions:
+        #     if permission.id == permission_id:
+        #         return True
+        #
+        # return False
+        permission = db_session.query(model.Permission) \
+            .filter(model.User.id == model.UserRole.user_id) \
+            .filter(model.UserRole.role_id == model.Role.id) \
+            .filter(model.Role.id == model.RolePermission.role_id) \
+            .filter(model.RolePermission.permission_id == model.Permission.id) \
+            .filter(model.User.id == user_id) \
+            .filter(model.Permission.id == permission_id) \
+            .first()
+        return permission is not None
+
+    def check_login_permission(self, db_session, user_id) -> bool:
+        return self._check_permission(db_session, user_id, Permission.LOGIN)
+
+
+toolkit = PermissionToolkit()

@@ -71,17 +71,27 @@ class BaseView(MethodView):
                 query_dict[key] = value
         return query_dict
 
-    @staticmethod
-    def get_data(key, req=request):
-        return req.args.get(key, None)
+    @classmethod
+    def get_data(cls, key, require=False, error_message=None, req=request):
+        data = req.args.get(key, None)
 
-    @staticmethod
-    def get_post_data(key, req=request):
-        post_data = None
+        if require and not cls.valid_data(data):
+            error_message = error_message if error_message is not None else '缺少{}参数'.format(key)
+            raise exception.api.InvalidRequest(error_message)
+
+        return data
+
+    @classmethod
+    def get_post_data(cls, key, require=False, error_message=None, req=request):
         if req.json is not None:
             post_data = req.json.get(key, None)
         else:
             post_data = req.form.get(key, None)
+
+        if require and not cls.valid_data(post_data):
+            error_message = error_message if error_message is not None else '缺少{}参数'.format(key)
+            raise exception.api.InvalidRequest(error_message)
+
         return post_data
 
     @staticmethod
