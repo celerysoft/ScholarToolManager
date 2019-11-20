@@ -276,7 +276,7 @@ app.add_url_rule('/manage/usage/', view_func=views.PermissionRequiredView.as_vie
 # -------------------------------------------------- API -------------------------------------------------- #
 
 # ---------------------------------------------- Legacy API ----------------------------------------------- #
-app.add_url_rule('/api/grecaptcha', view_func=ReCaptchaApi.as_view('api_g_re_captcha'))
+# app.add_url_rule('/api/grecaptcha', view_func=ReCaptchaApi.as_view('api_g_re_captcha'))
 # TODO -------------------- Remove Legacy API after separating front-end and back-end --------------------- #
 
 
