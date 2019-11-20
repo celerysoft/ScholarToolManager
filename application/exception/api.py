@@ -40,3 +40,8 @@ class Forbidden(BaseApiException):
 class InternalServerError(BaseApiException):
     def __init__(self, message, payload=None):
         BaseApiException.__init__(self, message, status_code=500, payload=payload)
+
+
+class ServiceUnavailable(BaseApiException):
+    def __init__(self, message, payload=None):
+        BaseApiException.__init__(self, message, status_code=503, payload=payload)

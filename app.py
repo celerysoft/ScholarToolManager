@@ -10,6 +10,7 @@ import configs
 import application.exception.http
 from application.exception.api import BaseApiException
 from application.util import shadowsocks_controller, database, permission, init_app
+from application.views.grecaptcha import ReCaptchaApi
 from application.views.legacy import method_views, views
 from application.views.base_api import BaseView
 
@@ -285,9 +286,12 @@ app.add_url_rule('/manage/usage/', view_func=views.PermissionRequiredView.as_vie
 # -------------------------------------------------- API -------------------------------------------------- #
 # -------------------------------------------------- API -------------------------------------------------- #
 
+# ---------------------------------------------- Legacy API ----------------------------------------------- #
+app.add_url_rule('/api/grecaptcha', view_func=ReCaptchaApi.as_view('api_g_re_captcha'))
+
 
 # app.add_url_rule('/api/test', view_func=method_views.TestApi.as_view('test'))
-app.add_url_rule('/api/grecaptcha', view_func=method_views.ReCaptchaApi.as_view('api_g_re_captcha'))
+# app.add_url_rule('/api/grecaptcha', view_func=method_views.ReCaptchaApi.as_view('api_g_re_captcha'))
 app.add_url_rule('/api/today-in-history', view_func=method_views.TodayInHistoryAPI.as_view('api_today_in_history'))
 app.add_url_rule('/api/login', view_func=method_views.LoginAPI.as_view('api_login'))
 app.add_url_rule('/api/register', view_func=method_views.RegisterAPI.as_view('api_register'))
