@@ -283,8 +283,10 @@ class ManageEventView(PermissionRequiredView):
         except ValueError:
             return redirect(url_for('manage_event'))
 
-        pagination = db_session.query(model.Event).order_by(model.Event.created_at.desc()).paginate(
-            page, get_item_per_page(), False)
+        pagination = db_session.query(model.Event) \
+            .filter(model.Event.available.is_(True)) \
+            .order_by(model.Event.created_at.desc()) \
+            .paginate(page, get_item_per_page(), False)
         if page > 1 and len(pagination.items) is 0:
             return redirect(url_for('manage_event'))
         else:
@@ -360,16 +362,17 @@ class EventView(UserView):
             return redirect(url_for(request.endpoint))
 
         db_session = derive_db_session(pagination=True)
-        pagination = db_session.query(model.Event).order_by(model.Event.created_at.desc()).paginate(
-            page, get_item_per_page(), False
-        )
+        pagination = db_session.query(model.Event) \
+            .filter(model.Event.available.is_(True)) \
+            .order_by(model.Event.created_at.desc()) \
+            .paginate(page, get_item_per_page(), False)
         if page > 1 and len(pagination.items) is 0:
             return redirect(url_for(request.endpoint))
 
-        for evenet in pagination.items:
-            user = db_session.query(model.User).filter_by(id=evenet.user_id).first()
-            evenet.user_name = user.name
-            evenet.user_image = user.image
+        for event in pagination.items:
+            user = db_session.query(model.User).filter_by(id=event.user_id).first()
+            event.user_name = user.name
+            event.user_image = user.image
 
         return render_template(self.template,
                                title=self.title,

@@ -151,5 +151,8 @@ class PermissionToolkit(object):
     def check_login_permission(self, db_session, user_id) -> bool:
         return self._check_permission(db_session, user_id, Permission.LOGIN)
 
+    def check_manage_event_permission(self, db_session, user_id) -> bool:
+        return self._check_permission(db_session, user_id, Permission.MANAGE_EVENT)
+
 
 toolkit = PermissionToolkit()

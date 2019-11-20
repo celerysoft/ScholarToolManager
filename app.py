@@ -10,7 +10,6 @@ import configs
 import application.exception.http
 from application.exception.api import BaseApiException
 from application.util import shadowsocks_controller, database, permission, init_app
-from application.views.grecaptcha import ReCaptchaApi
 from application.views.legacy import method_views, views
 from application.views.base_api import BaseView
 
@@ -276,7 +275,10 @@ app.add_url_rule('/manage/usage/', view_func=views.PermissionRequiredView.as_vie
 # -------------------------------------------------- API -------------------------------------------------- #
 
 # ---------------------------------------------- Legacy API ----------------------------------------------- #
-# app.add_url_rule('/api/grecaptcha', view_func=ReCaptchaApi.as_view('api_g_re_captcha'))
+# app.add_url_rule('/api/service-template', view_func=method_views.ServiceTemplateAPI.as_view('api_service_template'))
+# app.add_url_rule('/api/scholar-balance', view_func=method_views.ScholarBalanceAPI.as_view('api_scholar_balance'))
+# app.add_url_rule('/api/service-password', view_func=method_views.ServicePasswordAPI.as_view('api_service_password'))
+# app.add_url_rule('/api/usage', view_func=method_views.UsageAPI.as_view('api_usage'))
 # TODO -------------------- Remove Legacy API after separating front-end and back-end --------------------- #
 
 
@@ -289,7 +291,7 @@ app.add_url_rule('/api/user', view_func=method_views.UserAPI.as_view('api_user')
 app.add_url_rule('/api/user/role', view_func=method_views.UserRoleAPI.as_view('api_user_role'))
 app.add_url_rule('/api/invitation', view_func=method_views.InvitationCodeAPI.as_view('api_invitation'))
 app.add_url_rule('/api/permission', view_func=method_views.PermissionAPI.as_view('api_permission'))
-app.add_url_rule('/api/event', view_func=method_views.EventAPI.as_view('api_event'))
+# app.add_url_rule('/api/event', view_func=method_views.EventAPI.as_view('api_event'))
 app.add_url_rule('/api/role', view_func=method_views.RoleAPI.as_view('api_role'))
 app.add_url_rule('/api/service-template', view_func=method_views.ServiceTemplateAPI.as_view('api_service_template'))
 app.add_url_rule('/api/service', view_func=method_views.ServiceAPI.as_view('api_service'))

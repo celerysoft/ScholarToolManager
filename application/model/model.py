@@ -158,6 +158,7 @@ class InvitationCode(Base):
 
 class Event(Base):
     __tablename__ = 'event'
+    __immutable_columns__ = ['id', 'user_id', 'created_at']
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer)
