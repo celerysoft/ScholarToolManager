@@ -142,7 +142,6 @@ def create_app():
     :return:
     """
     flask_app = Flask(__name__)
-    # flask_app.config.from_pyfile('configs.py')
     flask_app.config.from_object('configs')
 
     Session(flask_app)
@@ -175,16 +174,12 @@ def teardown_db(exception=None):
 # -------------------------------------------------- Error Handler -------------------------------------------------- #
 # -------------------------------------------------- Error Handler -------------------------------------------------- #
 # -------------------------------------------------- Error Handler -------------------------------------------------- #
-
-
 @app.errorhandler(Exception)
 def handle_base_exception(error):
     app.logger.exception(error)
 
 
 # ------------------------------------------------ Page Error Handler ------------------------------------------------ #
-
-
 @app.errorhandler(application.exception.http.Unauthorized)
 def handle_unauthorized(error):
     return redirect(url_for('login'))
@@ -192,12 +187,10 @@ def handle_unauthorized(error):
 
 @app.errorhandler(application.exception.http.Forbidden)
 def handle_forbidden(error):
-    return redirect(url_for('login'))
+    return redirect(url_for('/'))
 
 
-# ------------------------------------------------ Api Error Handler ------------------------------------------------ #
-
-
+# ------------------------------------------------ API Error Handler ------------------------------------------------ #
 @app.errorhandler(BaseApiException)
 def handle_api_exception(error):
     if configs.BUILD_API_EXCEPTION:
@@ -210,8 +203,6 @@ def handle_api_exception(error):
 # -------------------------------------------------- PAGE -------------------------------------------------- #
 # -------------------------------------------------- PAGE -------------------------------------------------- #
 # -------------------------------------------------- PAGE -------------------------------------------------- #
-
-
 @app.route('/logout/')
 def logout():
     session.pop('user', None)
@@ -288,11 +279,12 @@ app.add_url_rule('/manage/usage/', view_func=views.PermissionRequiredView.as_vie
 
 # ---------------------------------------------- Legacy API ----------------------------------------------- #
 app.add_url_rule('/api/grecaptcha', view_func=ReCaptchaApi.as_view('api_g_re_captcha'))
+# TODO -------------------- Remove Legacy API after separating front-end and back-end --------------------- #
 
 
 # app.add_url_rule('/api/test', view_func=method_views.TestApi.as_view('test'))
 # app.add_url_rule('/api/grecaptcha', view_func=method_views.ReCaptchaApi.as_view('api_g_re_captcha'))
-app.add_url_rule('/api/today-in-history', view_func=method_views.TodayInHistoryAPI.as_view('api_today_in_history'))
+# app.add_url_rule('/api/today-in-history', view_func=method_views.TodayInHistoryAPI.as_view('api_today_in_history'))
 app.add_url_rule('/api/login', view_func=method_views.LoginAPI.as_view('api_login'))
 app.add_url_rule('/api/register', view_func=method_views.RegisterAPI.as_view('api_register'))
 app.add_url_rule('/api/user', view_func=method_views.UserAPI.as_view('api_user'))
