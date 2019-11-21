@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 from flask import make_response
 
-import configs
 from application import exception
-from application.model.model import User, UserScholarBalance, UserScholarBalanceLog
+from application.model.model import UserScholarBalance, UserScholarBalanceLog
 from application.util import permission
 from application.util.database import session_scope
 from application.views.base_api import BaseNeedLoginAPI, ApiResult

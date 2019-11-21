@@ -24,7 +24,7 @@ def add_url_rules_for_blueprint(root, blueprint: Blueprint):
     for name in find_modules(root, recursive=True):
         mod = import_string(name)
         if hasattr(mod, 'view') and isinstance(mod.view, type(BaseView)):
-            add_url_rule_for_blueprint(root, mod.view, name, blueprint, True)
+            add_url_rule_for_blueprint(root, mod.view, name, blueprint)
 
 
 def add_url_rule_for_blueprint(root: str, view, import_name: str, blueprint: Blueprint, log: bool = False):
@@ -293,6 +293,7 @@ app.add_url_rule('/manage/usage/', view_func=views.PermissionRequiredView.as_vie
 # app.add_url_rule('/api/service-password', view_func=method_views.ServicePasswordAPI.as_view('api_service_password'))
 # app.add_url_rule('/api/usage', view_func=method_views.UsageAPI.as_view('api_usage'))
 app.add_url_rule('/api/scholar-balance', view_func=method_views.ScholarBalanceAPI.as_view('api_scholar_balance'))
+# app.add_url_rule('/api/permission', view_func=method_views.PermissionAPI.as_view('api_permission'))
 # TODO -------------------- Remove Legacy API after separating front-end and back-end --------------------- #
 
 # app.add_url_rule('/api/test', view_func=method_views.TestApi.as_view('test'))
@@ -301,16 +302,16 @@ app.add_url_rule('/api/scholar-balance', view_func=method_views.ScholarBalanceAP
 # app.add_url_rule('/api/login', view_func=method_views.LoginAPI.as_view('api_login'))
 # app.add_url_rule('/api/register', view_func=method_views.RegisterAPI.as_view('api_register'))
 # app.add_url_rule('/api/user', view_func=method_views.UserAPI.as_view('api_user'))
-app.add_url_rule('/api/user/role', view_func=method_views.UserRoleAPI.as_view('api_user_role'))
+# app.add_url_rule('/api/user/role', view_func=method_views.UserRoleAPI.as_view('api_user_role'))
 app.add_url_rule('/api/invitation', view_func=method_views.InvitationCodeAPI.as_view('api_invitation'))
+app.add_url_rule('/api/role', view_func=method_views.RoleAPI.as_view('api_role'))
 app.add_url_rule('/api/permission', view_func=method_views.PermissionAPI.as_view('api_permission'))
 # app.add_url_rule('/api/event', view_func=method_views.EventAPI.as_view('api_event'))
-app.add_url_rule('/api/role', view_func=method_views.RoleAPI.as_view('api_role'))
-app.add_url_rule('/api/service-template', view_func=method_views.ServiceTemplateAPI.as_view('api_service_template'))
 app.add_url_rule('/api/service', view_func=method_views.ServiceAPI.as_view('api_service'))
+app.add_url_rule('/api/service-template', view_func=method_views.ServiceTemplateAPI.as_view('api_service_template'))
+app.add_url_rule('/api/service-password', view_func=method_views.ServicePasswordAPI.as_view('api_service_password'))
 # app.add_url_rule('/api/usage', view_func=method_views.UsageAPI.as_view('api_usage'))
 # app.add_url_rule('/api/scholar-balance', view_func=method_views.ScholarBalanceAPI.as_view('api_scholar_balance'))
-app.add_url_rule('/api/service-password', view_func=method_views.ServicePasswordAPI.as_view('api_service_password'))
 
 
 if __name__ == '__main__':

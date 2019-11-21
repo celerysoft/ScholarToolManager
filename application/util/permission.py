@@ -132,12 +132,6 @@ class PermissionToolkit(object):
 
     @classmethod
     def _check_permission(cls, db_session, user_id, permission_id) -> bool:
-        # permissions = cls._derive_user_permissions(db_session, user_id)
-        # for permission in permissions:
-        #     if permission.id == permission_id:
-        #         return True
-        #
-        # return False
         permission = db_session.query(model.Permission) \
             .filter(model.User.id == model.UserRole.user_id) \
             .filter(model.UserRole.role_id == model.Role.id) \
@@ -154,8 +148,11 @@ class PermissionToolkit(object):
     def check_manage_event_permission(self, db_session, user_id) -> bool:
         return self._check_permission(db_session, user_id, Permission.MANAGE_EVENT)
 
-    def check_manage_scholar_balance_permission(self, db_session, user_id):
+    def check_manage_scholar_balance_permission(self, db_session, user_id) -> bool:
         return self._check_permission(db_session, user_id, model.Permission.MANAGE_SCHOLAR_BALANCE)
+
+    def check_manage_role_permission(self, db_session, user_id) -> bool:
+        return self._check_permission(db_session, user_id, model.Permission.MANAGE_ROLE)
 
 
 toolkit = PermissionToolkit()
