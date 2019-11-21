@@ -23,11 +23,19 @@ def derive_import_root(current_name):
 def add_url_rules_for_blueprint(root, blueprint: Blueprint):
     for name in find_modules(root, recursive=True):
         mod = import_string(name)
-        if hasattr(mod, 'bp_view') and isinstance(mod.bp_view, type(BaseView)):
-            add_url_rule_for_blueprint(root, mod.bp_view, name, blueprint)
+        if hasattr(mod, 'view') and isinstance(mod.view, type(BaseView)):
+            add_url_rule_for_blueprint(root, mod.view, name, blueprint, True)
 
 
 def add_url_rule_for_blueprint(root: str, view, import_name: str, blueprint: Blueprint, log: bool = False):
+    # if the view's import name is application.views.user.user
+    # so that the Blueprint's url_prefix is /user
+    # make sure the view's url is /user other than /user/user
+    import_names = import_name.split('.')
+    if len(import_names) >= 2 and import_names[-1] == import_names[-2]:
+        import_names = import_names[:-1]
+        import_name = '.'.join(import_names)
+
     index = import_name.find(root)
     if index != -1:
         url = import_name[len(root):]
@@ -35,23 +43,29 @@ def add_url_rule_for_blueprint(root: str, view, import_name: str, blueprint: Blu
         url = import_name
     while url.startswith('.'):
         url = url[1:]
-    urls = url.split('.')
-    length = len(urls)
-    if length > 0:
+    if len(url) > 0:
+        urls = url.split('.')
+        length = len(urls)
         url = '/{}' * length
         url = url.format(*urls)
-        if log:
-            print(url)
-        blueprint.add_url_rule(url, view_func=view.as_view(view.__name__))
+    else:
+        url = ''
+    if log:
+        print('url => "{}"'.format(url))
+    blueprint.add_url_rule(url, view_func=view.as_view(view.__name__))
 
 
 def add_url_rules_and_register_blueprints(root: str, flask_app: Flask):
+    root_depth = len(root.split('.'))
     for name in find_modules(root, recursive=True):
-        mod = import_string(name)
-        if hasattr(mod, 'view') and isinstance(mod.view, type(BaseView)):
-            add_url_rule(mod.view, name, root, flask_app)
-        elif hasattr(mod, 'bp') and isinstance(mod.bp, Blueprint):
-            register_blueprint(mod.bp, name, root, flask_app)
+        module_depth = len(name.split('.'))
+        depth_difference = module_depth - root_depth
+        if depth_difference in (1, 2):
+            mod = import_string(name)
+            if depth_difference == 1 and hasattr(mod, 'view') and isinstance(mod.view, type(BaseView)):
+                add_url_rule(mod.view, name, root, flask_app)
+            elif depth_difference == 2 and hasattr(mod, 'bp') and isinstance(mod.bp, Blueprint):
+                register_blueprint(mod.bp, name, root, flask_app)
 
 
 def add_url_rule(view, import_name: str, root: str, flask_app: Flask, log: bool = False):
@@ -281,13 +295,12 @@ app.add_url_rule('/manage/usage/', view_func=views.PermissionRequiredView.as_vie
 # app.add_url_rule('/api/usage', view_func=method_views.UsageAPI.as_view('api_usage'))
 # TODO -------------------- Remove Legacy API after separating front-end and back-end --------------------- #
 
-
 # app.add_url_rule('/api/test', view_func=method_views.TestApi.as_view('test'))
 # app.add_url_rule('/api/grecaptcha', view_func=method_views.ReCaptchaApi.as_view('api_g_re_captcha'))
 # app.add_url_rule('/api/today-in-history', view_func=method_views.TodayInHistoryAPI.as_view('api_today_in_history'))
 # app.add_url_rule('/api/login', view_func=method_views.LoginAPI.as_view('api_login'))
 # app.add_url_rule('/api/register', view_func=method_views.RegisterAPI.as_view('api_register'))
-app.add_url_rule('/api/user', view_func=method_views.UserAPI.as_view('api_user'))
+# app.add_url_rule('/api/user', view_func=method_views.UserAPI.as_view('api_user'))
 app.add_url_rule('/api/user/role', view_func=method_views.UserRoleAPI.as_view('api_user_role'))
 app.add_url_rule('/api/invitation', view_func=method_views.InvitationCodeAPI.as_view('api_invitation'))
 app.add_url_rule('/api/permission', view_func=method_views.PermissionAPI.as_view('api_permission'))
