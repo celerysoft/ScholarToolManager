@@ -154,5 +154,8 @@ class PermissionToolkit(object):
     def check_manage_event_permission(self, db_session, user_id) -> bool:
         return self._check_permission(db_session, user_id, Permission.MANAGE_EVENT)
 
+    def check_manage_scholar_balance_permission(self, db_session, user_id):
+        return self._check_permission(db_session, user_id, model.Permission.MANAGE_SCHOLAR_BALANCE)
+
 
 toolkit = PermissionToolkit()
