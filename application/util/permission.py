@@ -114,7 +114,7 @@ def check_manage_service_permission(db_session, user_id, call_by_api=False):
 
 class PermissionToolkit(object):
     @staticmethod
-    def _derive_user_permissions(db_session, user_id):
+    def derive_user_permissions(db_session, user_id):
         """
         查询用户权限
         :param db_session: sqlalchemy
