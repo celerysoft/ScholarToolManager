@@ -1,11 +1,29 @@
 #!/usr/bin/python3
 # -*-coding:utf-8 -*-
+import json
 import time
+from datetime import datetime
 
 from sqlalchemy import Table, Column, Integer, String, Date, Float, Boolean, LargeBinary, DATETIME, BIGINT, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
+
+
+def to_dict2(model):
+    data = {}
+    for column in model.__table__.columns:
+        row = getattr(model, column.name, '')
+        if isinstance(row, datetime):
+            # row = row.strftime('%Y-%m-%d %H:%M:%S')
+            row = row.isoformat()
+        data[column.name] = row
+    return data
+
+
+def to_json_string(model):
+    data = to_dict2(model)
+    return json.dumps(data)
 
 
 def to_dict(model):
