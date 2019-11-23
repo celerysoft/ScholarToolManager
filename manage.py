@@ -2,6 +2,10 @@
 """
 FLASK_APP=manage.py flask hello
 FLASK_APP=manage.py flask status
+
+静态资源版本更新
+每次.js，.css，或者其他静态资源有变动时，需要执行这条命令进行静态资源版本更新
+FLASK_APP=manage.py flask generate_static_file --type 0
 """
 import click
 
