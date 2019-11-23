@@ -1,4 +1,3 @@
-const BASE_URL = '/api/';
-// const BASE_URL = 'http://api.celerysoft.science/';
+const BASE_URL = '/api/v1/';
 
 const PAGE_SIZE = 10;

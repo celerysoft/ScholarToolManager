@@ -211,7 +211,7 @@ class Command(object):
         bucket = BucketManager(q)
 
         # force为true时强制同名覆盖, 字典的键为原文件，值为目标文件
-        ops = build_batch_rename(self.bucket_name, file_list, force='true')
+        ops = build_batch_rename(self.bucket_name, file_list, force='false')
         ret, info = bucket.batch(ops)
         print(ret)
         print(info)

@@ -289,29 +289,23 @@ app.add_url_rule('/manage/usage/', view_func=views.PermissionRequiredView.as_vie
 # -------------------------------------------------- API -------------------------------------------------- #
 
 # ---------------------------------------------- Legacy API ----------------------------------------------- #
-app.add_url_rule('/api/service-template', view_func=method_views.ServiceTemplateAPI.as_view('api_service_template'))
-app.add_url_rule('/api/service-password', view_func=method_views.ServicePasswordAPI.as_view('api_service_password'))
-app.add_url_rule('/api/usage', view_func=method_views.UsageAPI.as_view('api_usage'))
-app.add_url_rule('/api/scholar-balance', view_func=method_views.ScholarBalanceAPI.as_view('api_scholar_balance'))
-app.add_url_rule('/api/permission', view_func=method_views.PermissionAPI.as_view('api_permission'))
+app.add_url_rule('/api/v1/test', view_func=method_views.TestApi.as_view('test'))
+app.add_url_rule('/api/v1/grecaptcha', view_func=method_views.ReCaptchaApi.as_view('api_g_re_captcha'))
+app.add_url_rule('/api/v1/today-in-history', view_func=method_views.TodayInHistoryAPI.as_view('api_today_in_history'))
+app.add_url_rule('/api/v1/login', view_func=method_views.LoginAPI.as_view('api_login'))
+app.add_url_rule('/api/v1/register', view_func=method_views.RegisterAPI.as_view('api_register'))
+app.add_url_rule('/api/v1/user', view_func=method_views.UserAPI.as_view('api_user'))
+app.add_url_rule('/api/v1/user/role', view_func=method_views.UserRoleAPI.as_view('api_user_role'))
+app.add_url_rule('/api/v1/invitation', view_func=method_views.InvitationCodeAPI.as_view('api_invitation'))
+app.add_url_rule('/api/v1/role', view_func=method_views.RoleAPI.as_view('api_role'))
+app.add_url_rule('/api/v1/permission', view_func=method_views.PermissionAPI.as_view('api_permission'))
+app.add_url_rule('/api/v1/event', view_func=method_views.EventAPI.as_view('api_event'))
+app.add_url_rule('/api/v1/service', view_func=method_views.ServiceAPI.as_view('api_service'))
+app.add_url_rule('/api/v1/service-template', view_func=method_views.ServiceTemplateAPI.as_view('api_service_template'))
+app.add_url_rule('/api/v1/service-password', view_func=method_views.ServicePasswordAPI.as_view('api_service_password'))
+app.add_url_rule('/api/v1/usage', view_func=method_views.UsageAPI.as_view('api_usage'))
+app.add_url_rule('/api/v1/scholar-balance', view_func=method_views.ScholarBalanceAPI.as_view('api_scholar_balance'))
 # TODO -------------------- Remove Legacy API after separating front-end and back-end --------------------- #
-
-# app.add_url_rule('/api/test', view_func=method_views.TestApi.as_view('test'))
-# app.add_url_rule('/api/grecaptcha', view_func=method_views.ReCaptchaApi.as_view('api_g_re_captcha'))
-# app.add_url_rule('/api/today-in-history', view_func=method_views.TodayInHistoryAPI.as_view('api_today_in_history'))
-# app.add_url_rule('/api/login', view_func=method_views.LoginAPI.as_view('api_login'))
-# app.add_url_rule('/api/register', view_func=method_views.RegisterAPI.as_view('api_register'))
-# app.add_url_rule('/api/user', view_func=method_views.UserAPI.as_view('api_user'))
-# app.add_url_rule('/api/user/role', view_func=method_views.UserRoleAPI.as_view('api_user_role'))
-# app.add_url_rule('/api/invitation', view_func=method_views.InvitationCodeAPI.as_view('api_invitation'))
-# app.add_url_rule('/api/role', view_func=method_views.RoleAPI.as_view('api_role'))
-# app.add_url_rule('/api/permission', view_func=method_views.PermissionAPI.as_view('api_permission'))
-# app.add_url_rule('/api/event', view_func=method_views.EventAPI.as_view('api_event'))
-# app.add_url_rule('/api/service', view_func=method_views.ServiceAPI.as_view('api_service'))
-# app.add_url_rule('/api/service-template', view_func=method_views.ServiceTemplateAPI.as_view('api_service_template'))
-# app.add_url_rule('/api/service-password', view_func=method_views.ServicePasswordAPI.as_view('api_service_password'))
-# app.add_url_rule('/api/usage', view_func=method_views.UsageAPI.as_view('api_usage'))
-# app.add_url_rule('/api/scholar-balance', view_func=method_views.ScholarBalanceAPI.as_view('api_scholar_balance'))
 
 
 if __name__ == '__main__':
