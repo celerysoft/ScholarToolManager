@@ -157,5 +157,8 @@ class PermissionToolkit(object):
     def check_manage_invitation_code_permission(self, db_session, user_id) -> bool:
         return self._check_permission(db_session, user_id, model.Permission.MANAGE_INVITATION_CODE)
 
+    def check_manage_service_template_permission(self, db_session, user_id) -> bool:
+        return self._check_permission(db_session, user_id, model.Permission.MANAGE_SERVICE_TEMPLATE)
+
 
 toolkit = PermissionToolkit()

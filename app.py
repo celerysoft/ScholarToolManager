@@ -289,7 +289,7 @@ app.add_url_rule('/manage/usage/', view_func=views.PermissionRequiredView.as_vie
 # -------------------------------------------------- API -------------------------------------------------- #
 
 # ---------------------------------------------- Legacy API ----------------------------------------------- #
-# app.add_url_rule('/api/service-template', view_func=method_views.ServiceTemplateAPI.as_view('api_service_template'))
+app.add_url_rule('/api/service-template', view_func=method_views.ServiceTemplateAPI.as_view('api_service_template'))
 app.add_url_rule('/api/service-password', view_func=method_views.ServicePasswordAPI.as_view('api_service_password'))
 app.add_url_rule('/api/usage', view_func=method_views.UsageAPI.as_view('api_usage'))
 app.add_url_rule('/api/scholar-balance', view_func=method_views.ScholarBalanceAPI.as_view('api_scholar_balance'))
@@ -308,7 +308,7 @@ app.add_url_rule('/api/permission', view_func=method_views.PermissionAPI.as_view
 # app.add_url_rule('/api/permission', view_func=method_views.PermissionAPI.as_view('api_permission'))
 # app.add_url_rule('/api/event', view_func=method_views.EventAPI.as_view('api_event'))
 # app.add_url_rule('/api/service', view_func=method_views.ServiceAPI.as_view('api_service'))
-app.add_url_rule('/api/service-template', view_func=method_views.ServiceTemplateAPI.as_view('api_service_template'))
+# app.add_url_rule('/api/service-template', view_func=method_views.ServiceTemplateAPI.as_view('api_service_template'))
 # app.add_url_rule('/api/service-password', view_func=method_views.ServicePasswordAPI.as_view('api_service_password'))
 # app.add_url_rule('/api/usage', view_func=method_views.UsageAPI.as_view('api_usage'))
 # app.add_url_rule('/api/scholar-balance', view_func=method_views.ScholarBalanceAPI.as_view('api_scholar_balance'))
