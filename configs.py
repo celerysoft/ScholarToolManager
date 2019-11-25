@@ -8,11 +8,17 @@ DEBUG = True
 TEST = True
 
 # 数据库相关
-DB_HOST = '127.0.0.1'
+LEGACY_DB_HOST = '127.0.0.1'
+LEGACY_DB_PORT = '3306'
+LEGACY_DB_USER = 'www-data'
+LEGACY_DB_PASSWORD = 'www->R&daD6xZM6283n3-data'
+LEGACY_DB_NAME = 'scholar_tool_manager'
+
+DB_HOST = '127.0.0.'
 DB_PORT = '3306'
 DB_USER = 'www-data'
 DB_PASSWORD = 'www->R&daD6xZM6283n3-data'
-DB_NAME = 'scholar_tool_manager'
+DB_NAME = 'scholar_tool'
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -36,7 +42,7 @@ SESSION_TYPE = 'sqlalchemy'
 SESSION_USE_SIGNER = True
 # 数据库的URI
 SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' \
-                          % (DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME)
+                          % (LEGACY_DB_USER, LEGACY_DB_PASSWORD, LEGACY_DB_HOST, LEGACY_DB_PORT, LEGACY_DB_NAME)
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 
 # 手动生成以hash版本命名的静态资源文件的目录

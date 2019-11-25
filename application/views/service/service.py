@@ -6,7 +6,7 @@ from flask import make_response, Blueprint
 import configs
 from app import derive_import_root, add_url_rules_for_blueprint
 from application import exception
-from application.model.model import to_dict2, Service, ServiceTemplate, \
+from application.model.legacy.model import to_dict2, Service, ServiceTemplate, \
     ServicePassword, UserService, UserScholarBalance, UserScholarBalanceLog
 from application.util import permission, date_util, background_task
 from application.util.database import session_scope

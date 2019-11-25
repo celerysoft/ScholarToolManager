@@ -2,7 +2,7 @@
 from flask import make_response
 
 from application import exception
-from application.model.model import ServiceTemplate, to_dict2, Service
+from application.model.legacy.model import ServiceTemplate, to_dict2, Service
 from application.util import permission
 from application.util.database import session_scope
 from application.views.base_api import BaseNeedLoginAPI, ApiResult

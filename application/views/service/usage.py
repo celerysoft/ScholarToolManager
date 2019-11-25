@@ -8,7 +8,7 @@ from flask import make_response, request
 import configs
 from application import exception
 
-from application.model import model
+from application.model.legacy import model
 from application.util import permission, background_task
 from application.util.database import session_scope
 from application.views.base_api import BaseNeedLoginAPI, ApiResult

@@ -3,7 +3,7 @@ import os
 import re
 
 import configs
-from application.model import model
+from application.model.legacy import model
 
 # /config/multiple_users_config.json
 __SHADOWSOCKS_CONFIG_FILE_PATH = configs.SHADOWSOCKS_CONFIG_FILE_PATH

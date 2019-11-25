@@ -6,6 +6,7 @@ import requests
 
 from application import exception
 from application.util.cache import cache
+from application.util.dict import dict_toolkit
 from application.views.base_api import BaseAPI, ApiResult
 
 
@@ -27,9 +28,8 @@ class TodayInHistoryAPI(BaseAPI):
             else:
                 raise exception.api.ServiceUnavailable('获取历史上的今天数据失败')
 
-        result = ApiResult('获取历史上的今天数据成功', payload={
-            'data': today_in_history_json_str
-        })
+        payload = json.loads(today_in_history_json_str)
+        result = ApiResult('获取历史上的今天数据成功', payload=payload)
         return result.to_response()
 
 

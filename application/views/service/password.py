@@ -2,9 +2,9 @@
 from flask import make_response
 
 from application import exception
-from application.model.model import User, UserRole, Role, Permission, to_dict, RolePermission, ServicePassword, \
+from application.model.legacy.model import ServicePassword, \
     UserService, Service
-from application.util import permission, background_task
+from application.util import background_task
 from application.util.database import session_scope
 from application.views.base_api import BaseNeedLoginAPI, ApiResult
 

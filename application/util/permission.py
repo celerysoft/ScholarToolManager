@@ -3,9 +3,9 @@
 
 from flask import session
 
-from application.model import model
+from application.model.legacy import model
 import application.exception.http
-from application.model.model import Permission
+from application.model.legacy.model import Permission
 
 
 def check_user_api_permission():

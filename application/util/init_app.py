@@ -47,10 +47,15 @@ def init_views(app):
 
 
 def init_database(app):
+    legacy_uri = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' \
+          % (configs.LEGACY_DB_USER, configs.LEGACY_DB_PASSWORD, configs.LEGACY_DB_HOST,
+             configs.LEGACY_DB_PORT, configs.LEGACY_DB_NAME)
+    database.set_legacy_sqlalchemy_database_uri(legacy_uri)
+    database.set_db_with_pagination(SQLAlchemy(app))
+
     uri = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' \
           % (configs.DB_USER, configs.DB_PASSWORD, configs.DB_HOST, configs.DB_PORT, configs.DB_NAME)
     database.set_sqlalchemy_database_uri(uri)
-    database.set_db_with_pagination(SQLAlchemy(app))
 
 
 def datetime_filter(t):

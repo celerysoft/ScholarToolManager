@@ -3,7 +3,7 @@ from flask import make_response, Blueprint
 
 from app import derive_import_root, add_url_rules_for_blueprint
 from application import exception
-from application.model.model import User, Role, UserRole, to_dict, RolePermission
+from application.model.legacy.model import User, Role, UserRole, to_dict, RolePermission
 from application.util import permission
 from application.util.database import session_scope
 from application.views.base_api import BaseNeedLoginAPI, ApiResult

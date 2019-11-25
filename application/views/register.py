@@ -7,7 +7,7 @@ from flask import session, make_response
 
 import configs
 from application import exception
-from application.model.model import User, Role, UserRole, to_dict, InvitationCode, UserScholarBalance
+from application.model.legacy.model import User, Role, UserRole, to_dict, InvitationCode, UserScholarBalance
 from application.util.database import session_scope
 from application.views.base_api import BaseAPI, ApiResult
 

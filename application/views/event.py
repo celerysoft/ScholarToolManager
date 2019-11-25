@@ -4,7 +4,7 @@ from flask import make_response
 
 import configs
 from application import exception
-from application.model.model import to_dict, Event
+from application.model.legacy.model import to_dict, Event
 from application.util import permission
 from application.util.database import session_scope
 from application.views.base_api import BaseNeedLoginAPI, ApiResult

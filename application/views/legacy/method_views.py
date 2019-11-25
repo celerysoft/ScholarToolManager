@@ -20,7 +20,7 @@ from flask.views import MethodView
 
 import configs
 from application import exception
-from application.model import model
+from application.model.legacy import model
 from application.util import date_util, background_task, database, permission
 from application.util.cache import cache
 

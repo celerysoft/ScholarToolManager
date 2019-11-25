@@ -10,7 +10,7 @@ from flask.views import View
 
 from application.util import database, permission
 
-from application.model import model
+from application.model.legacy import model
 
 app = None
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from flask import make_response
 
-from application.model.model import to_dict
+from application.model.legacy.model import to_dict
 from application.util import permission
 from application.util.database import session_scope
 from application.views.base_api import BaseNeedLoginAPI, ApiResult

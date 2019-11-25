@@ -14,7 +14,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import configs
-from application.model import model
+from application.model.legacy import model
 
 engine = None
 Session = None
@@ -43,7 +43,7 @@ def _session_scope():
 
 def init_database():
     uri = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' \
-          % (configs.DB_USER, configs.DB_PASSWORD, configs.DB_HOST, configs.DB_PORT, configs.DB_NAME)
+          % (configs.LEGACY_DB_USER, configs.LEGACY_DB_PASSWORD, configs.LEGACY_DB_HOST, configs.LEGACY_DB_PORT, configs.LEGACY_DB_NAME)
     set_sqlalchemy_database_uri(uri)
 
 
