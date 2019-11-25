@@ -26,6 +26,14 @@ def to_json_string(model):
     return json.dumps(data)
 
 
+def from_json_string(cls, json_string: str):
+    data = json.loads(json_string)  # type:dict
+    model = cls(**data)
+    for key, value in data.items():
+        setattr(model, key, value)
+    return model
+
+
 def to_dict(model):
     return {c.name: getattr(model, c.name) for c in model.__table__.columns}
 

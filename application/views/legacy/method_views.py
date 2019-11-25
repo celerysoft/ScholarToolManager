@@ -22,6 +22,7 @@ import configs
 from application import exception
 from application.model import model
 from application.util import date_util, background_task, database, permission
+from application.util.cache import cache
 
 app = None
 
@@ -187,18 +188,25 @@ class TodayInHistoryAPI(MethodView):
     methods = ['GET']
 
     def get(self):
-        api_url = 'http://www.ipip5.com/today/api.php'
-        params = {
-            'type': 'json'
-        }
-        response = requests.get(api_url, params=params, verify=True)
-        if response.ok:
-            return make_response(jsonify(json.loads(response.text)), 200)
-        else:
-            api_response = {
-                'message': '获取数据失败'
+        cache_key = 'api-today-in-history-{}'.format(datetime.datetime.now().strftime('%Y-%m-%d'))
+        today_in_history_json_str = cache.get(cache_key)
+        if today_in_history_json_str is None or len(today_in_history_json_str) == 0:
+            api_url = 'http://www.ipip5.com/today/api.php'
+            params = {
+                'type': 'json'
             }
-            return make_response(jsonify(api_response), 503)
+            response = requests.get(api_url, params=params, verify=True)
+            if response.ok:
+                today_in_history_json_str = response.text
+                cache.set(cache_key, today_in_history_json_str)
+                return make_response(jsonify(json.loads(today_in_history_json_str)), 200)
+            else:
+                api_response = {
+                    'message': '获取数据失败'
+                }
+                return make_response(jsonify(api_response), 503)
+        else:
+            return make_response(jsonify(json.loads(today_in_history_json_str)), 200)
 
 
 class ReCaptchaApi(MethodView):
