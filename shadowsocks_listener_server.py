@@ -84,7 +84,7 @@ while True:
     if msg is None:
         continue
 
-    api_url = configs.MAIN_SERVER_ADDRESS + '/api/usage'
+    api_url = configs.MAIN_SERVER_ADDRESS + '/api/v1/usage'
 
     data = msg.decode('utf-8')
     data = data[6:]
