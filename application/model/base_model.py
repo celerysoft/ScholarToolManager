@@ -44,7 +44,7 @@ class BaseModelMixin(IdMixin, UuidMixin, TimestampMixin, StatusMixin):
             table_args['comment'] = cls.__comment__
         return table_args
 
-    def to_dict2(self):
+    def to_dict(self):
         data = {}
         for column in self.__table__.columns:
             row = getattr(self, column.name, '')

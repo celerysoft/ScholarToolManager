@@ -29,13 +29,13 @@ class BaseView(MethodView):
     user_uuid = ''
 
     @classmethod
-    def _derive_page_parameter(cls, record_count):
-        default_items_per_page = 10
+    def derive_page_parameter(cls, record_count):
         page = request.args.get('page', 1)
         try:
             page = int(page) if page is not None else 1
         except ValueError:
             raise exception.api.InvalidRequest('Invalid page field.')
+        default_items_per_page = 10
         page_size = request.args.get('page_size', 10)
         try:
             page_size = int(page_size) if page_size is not None else default_items_per_page
@@ -50,6 +50,10 @@ class BaseView(MethodView):
         max_page = math.ceil(record_count / page_size)
 
         return page, page_size, offset, max_page
+
+    @classmethod
+    def _derive_page_parameter(cls, record_count):
+        return cls.derive_page_parameter(record_count)
 
     @staticmethod
     def _derive_get_method_query_dict(model_class):
