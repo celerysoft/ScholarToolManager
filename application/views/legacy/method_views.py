@@ -270,12 +270,18 @@ class LoginAPI(BaseView):
 
         else:
             return self.api_document('请输入用户名或邮箱', 400)
+        
+        print(name, password)
 
         # 检查密码
         sha1 = hashlib.sha1()
         sha1.update(derive_sha1_password_salt().encode('utf-8'))
         sha1.update(b':')
         sha1.update(password.encode('utf-8'))
+
+        print(user.password)
+        print(sha1.hexdigest())
+
         if user.password != sha1.hexdigest():
             return self.api_document('密码错误，请重试', 400)
 

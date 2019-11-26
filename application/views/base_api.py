@@ -4,16 +4,11 @@ import math
 
 from flask import request, Response, session
 from flask.views import MethodView
-# from jwt import PyJWTError
+from jwt import PyJWTError
 
 import configs
 from application import exception
-# from application.toolkit.authorization import decode_jwt_token
-# from application.util.database import session_scope
-# from application.models.user import User
-# from application.toolkits.authorization import decode_jwt_token
-# from application.toolkits.cache import cache
-# from application.toolkits.task_queue import queue
+from application.util import authorization
 
 
 class ApiResult(object):
@@ -31,7 +26,7 @@ class ApiResult(object):
 
 
 class BaseView(MethodView):
-    user_id = ''
+    user_uuid = ''
 
     @classmethod
     def _derive_page_parameter(cls, record_count):
@@ -135,31 +130,6 @@ class BaseView(MethodView):
             if cls.valid_data(value) and arg in fields:
                 setattr(model, arg, value)
 
-    # def check_jwt(self) -> str:
-    #     """
-    #     check if user login or not
-    #
-    #     :return: user's uuid
-    #     """
-    #     if hasattr(self, 'uuid') and len(self.uuid) > 0:
-    #         return self.uuid
-    #
-    #     jwt = request.headers.get('Authorization', None)
-    #     if jwt is None or len(jwt) == 0:
-    #         return ''
-    #
-    #     try:
-    #         decoded_jwt = decode_jwt_token(jwt)
-    #     except PyJWTError:
-    #         return ''
-    #
-    #     with session_scope() as session:
-    #         # user = session.query(User).filter(User.uuid == decoded_jwt['uuid']).first()  # type:User
-    #         # self.uuid = user.uuid
-    #         # return user.uuid
-    #         self.uuid = decoded_jwt['uuid']
-    #         return self.uuid
-
 
 class BaseAPI(BaseView):
     pass
@@ -181,32 +151,28 @@ class BaseAPI(BaseView):
 
 
 def jwt_api(func):
-    pass
-    # def handle_jwt(view: MethodView):
-    #     jwt = request.headers.get('Authorization', None)
-    #     if jwt is None or len(jwt) == 0:
-    #         raise exception.api.Unauthorized('请先登录')
-    #
-    #     try:
-    #         decoded_jwt = decode_jwt_token(jwt)
-    #     except PyJWTError as e:
-    #         raise exception.api.Unauthorized('请先登录')
-    #
-    #     with session_scope() as session:
-    #         # user = session.query(User).filter(User.id == decoded_jwt['user_id']).first()  # type:User
-    #         # view.uuid = user.uuid
-    #         view.user_id = decoded_jwt['user_id']
-    #
-    # def wrapper(*args, **kwargs):
-    #     for parameter in args:
-    #         if isinstance(parameter, BaseNeedLoginAPI):
-    #             if parameter.need_login_methods is not None and request.method in parameter.need_login_methods:
-    #                 handle_jwt(parameter)
-    #         elif isinstance(parameter, MethodView):
-    #             handle_jwt(parameter)
-    #     return func(*args, **kwargs)
-    #
-    # return wrapper
+    def handle_jwt(view: MethodView):
+        jwt = request.headers.get('Authorization', None)
+        if jwt is None or len(jwt) == 0:
+            raise exception.api.Unauthorized('请先登录')
+
+        try:
+            decoded_jwt = authorization.toolkit.decode_jwt_token(jwt)
+        except PyJWTError:
+            raise exception.api.Unauthorized('请先登录')
+
+        view.uuid = decoded_jwt['uuid']
+
+    def wrapper(*args, **kwargs):
+        for parameter in args:
+            if isinstance(parameter, BaseNeedLoginAPI):
+                if parameter.need_login_methods is not None and request.method in parameter.need_login_methods:
+                    handle_jwt(parameter)
+            elif isinstance(parameter, MethodView):
+                handle_jwt(parameter)
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
 def session_api(func):
@@ -246,17 +212,17 @@ class BaseNeedLoginAPI(BaseAPI):
 
     def check_login_status(self):
         try:
-            self.check_session()
+            self.check_jwt()
         except exception.api.Unauthorized as e:
             if not configs.TEST:
                 raise e
             else:
                 if request.method in ['GET', 'DELETE']:
-                    self.user_id = self.get_data('user_id')
+                    self.user_uuid = self.get_data('user_uuid')
                 elif request.method in ['POST', 'PATCH', 'PUT']:
-                    self.user_id = self.get_post_data('user_id')
+                    self.user_uuid = self.get_post_data('user_uuid')
 
-                if not self.valid_data(self.user_id):
+                if not self.valid_data(self.user_uuid):
                     raise e
 
     @session_api

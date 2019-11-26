@@ -33,6 +33,9 @@ JSON_AS_ASCII = False
 SECRET_KEY = 'scholar.celerysoft.com'
 # 加密密码时的盐
 SHA1_SALT = 'whosyourdaddy'
+# 新版密码的盐
+PASSWORD_SALT = 'whosyourdaddy'
+JWT_SECRET = 'whosyourdaddy'
 # 分页时每页的项目数
 ITEM_PER_PAGE = 10
 # session的域名
