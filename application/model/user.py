@@ -21,7 +21,6 @@ class User(Base, BaseModelMixin):
         self.email = email
         self.password = password
         self.status = 0
-        self.uuid = str(uuid.uuid4())
 
 
 cacheable = User

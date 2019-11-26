@@ -161,7 +161,7 @@ def jwt_api(func):
         except PyJWTError:
             raise exception.api.Unauthorized('请先登录')
 
-        view.uuid = decoded_jwt['uuid']
+        view.user_uuid = decoded_jwt['uuid']
 
     def wrapper(*args, **kwargs):
         for parameter in args:
