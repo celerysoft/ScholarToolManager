@@ -18,11 +18,13 @@ class UserAPI(BaseNeedLoginAPI):
     def get(self):
         with session_scope() as session:
             print('uuid: ', self.user_uuid)
-            user = session.query(User).filter(User.uuid == self.user_uuid).first()
+            user = session.query(User).filter(User.uuid == self.user_uuid).first()  # type:User
 
             result = ApiResult('获取个人信息成功', payload={
                 'uuid': user.uuid,
+                'username': user.username,
                 'email': user.email,
+                'register_date': user.created_at.isoformat(),
                 'status': user.status
             })
             return result.to_response()
