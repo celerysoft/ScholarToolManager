@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
-import hashlib
+from flask import Blueprint
+from jwt import PyJWTError
 
-from flask import make_response, Blueprint
-
-import configs
 from app import derive_import_root, add_url_rules_for_blueprint
 from application import exception
 from application.model.user import User
+from application.util import authorization
 from application.util.database import session_scope
 from application.views.base_api import BaseNeedLoginAPI, ApiResult
 
 
 class UserAPI(BaseNeedLoginAPI):
-    methods = ['GET', 'PATCH']
-    need_login_methods = ['GET', 'PATCH']
+    methods = ['GET', 'PUT']
+    need_login_methods = ['GET']
 
     def get(self):
         with session_scope() as session:
@@ -28,30 +27,33 @@ class UserAPI(BaseNeedLoginAPI):
             })
             return result.to_response()
 
-    def patch(self):
-        raise exception.api.ServiceUnavailable('接口建设中')
-        # old_password = self.get_post_data('old_password', require=True, error_message='请输入原密码')
-        # password = self.get_post_data('password', require=True, error_message='请输入新密码')
-        #
-        # with session_scope() as db_session:
-        #
-        #     user = db_session.query(User).filter(User.id == self.user_id).first()
-        #
-        #     sha1 = hashlib.sha1()
-        #     sha1.update(configs.SHA1_SALT.encode('utf-8'))
-        #     sha1.update(b':')
-        #     sha1.update(old_password.encode('utf-8'))
-        #     if user.password != sha1.hexdigest():
-        #         raise exception.api.InvalidRequest('原密码错误，修改密码失败')
-        #     else:
-        #         sha1 = hashlib.sha1()
-        #         sha1.update(configs.SHA1_SALT.encode('utf-8'))
-        #         sha1.update(b':')
-        #         sha1.update(password.encode('utf-8'))
-        #         user.password = sha1.hexdigest()
-        #
-        # result = ApiResult('修改密码成功')
-        # return make_response(result.to_response())
+    def put(self):
+        jwt = self.get_post_data('jwt')
+        if self.valid_data(jwt):
+            return self.validate_email(jwt)
+
+    def validate_email(self, jwt):
+        try:
+            jwt_dict = authorization.toolkit.decode_jwt_token(jwt)  # type:dict
+        except PyJWTError:
+            raise exception.api.InvalidRequest('激活链接已过期或者激活请求非法')
+
+        if 'sub' not in jwt_dict.keys() or jwt_dict['sub'] != 'activation':
+            raise exception.api.InvalidRequest('激活请求非法')
+
+        uuid = jwt_dict['uuid']
+        with session_scope() as session:
+            user = session.query(User).filter(User.uuid == uuid).first()
+            if user.status == 1:
+                raise exception.api.Conflict('邮箱已完成验证，无需重复验证')
+
+            user.status = 1
+
+            jwt_token = authorization.toolkit.derive_jwt_token(uuid)
+            result = ApiResult('邮箱验证成功', 201, payload={
+                'jwt': jwt_token
+            })
+            return result.to_response()
 
 
 view = UserAPI
