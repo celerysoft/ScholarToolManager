@@ -19,9 +19,10 @@ class UserPasswordAPI(BaseNeedLoginAPI):
                 raise exception.api.Unauthorized('请先登录')
 
             hashed_old_password = authorization.toolkit.hash_plaintext(old_password)
-            if hashed_old_password == user.password:
-                user.password = authorization.toolkit.hash_plaintext(password)
+            if hashed_old_password != user.password:
+                raise exception.api.InvalidRequest('旧密码错误')
 
+            user.password = authorization.toolkit.hash_plaintext(password)
             return ApiResult('修改密码成功', 201).to_response()
 
 
