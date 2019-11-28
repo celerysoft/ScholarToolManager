@@ -5,7 +5,7 @@
 from celery import Celery
 
 import configs
-from application.util import shadowsocks_controller
+from application.util import shadowsocks_controller, email
 
 celery_app = Celery('app',
                     broker=configs.CELERY_BROKER_URL,
@@ -26,3 +26,8 @@ def remove_port(port):
 def modify_port_password(port, password):
     shadowsocks_controller.remove_port(port)
     shadowsocks_controller.add_port(port, password)
+
+
+@celery_app.task
+def send_activation_email(user_email, username, activate_url):
+    email.toolkit.send_activation_email(user_email, username, activate_url)

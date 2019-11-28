@@ -111,6 +111,9 @@ CELERY_RESULT_BACKEND = 'redis://localhost:6379/10'
 REDIS_HOST = 'localhost'
 REDIS_PORT = '6379'
 
+# 邮件服务
+SMTP_PASSWORD = ''
+
 
 try:
     from local_settings import *
