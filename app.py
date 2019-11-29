@@ -165,6 +165,20 @@ def create_app():
 
     init_logging(flask_app)
 
+    if configs.DEBUG:
+        def after_request(resp):
+            # Enable CORS supported
+            resp.headers['Access-Control-Allow-Origin'] = '*'
+            resp.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS'
+            resp.headers['Access-Control-Allow-Credentials'] = True
+            resp.headers['Access-Control-Max-Age'] = 1728000
+            resp.headers['Access-Control-Allow-Headers'] = \
+                'DNT,X-Custom-Header,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,' \
+                'Content-Type,Authorization'
+
+            return resp
+        flask_app.after_request(after_request)
+
     add_url_rules_and_register_blueprints('application.views', flask_app)
 
     action_before_app_run(flask_app)
