@@ -1,17 +1,22 @@
 # -*- coding: utf-8 -*-
+import re
+from datetime import datetime
+
 from flask import Blueprint
 from jwt import PyJWTError
 
+import configs
 from app import derive_import_root, add_url_rules_for_blueprint
 from application import exception
+from application.model.invitation_code import InvitationCode
 from application.model.user import User
-from application.util import authorization
+from application.util import authorization, background_task
 from application.util.database import session_scope
 from application.views.base_api import BaseNeedLoginAPI, ApiResult
 
 
 class UserAPI(BaseNeedLoginAPI):
-    methods = ['GET', 'PUT']
+    methods = ['GET', 'POST', 'PUT']
     need_login_methods = ['GET']
 
     def get(self):
@@ -26,6 +31,66 @@ class UserAPI(BaseNeedLoginAPI):
                 'status': user.status
             })
             return result.to_response()
+
+    def post(self):
+        re_email = re.compile(r'^[a-z0-9\.\-\_]+\@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$')
+
+        username = self.get_post_data('username', require=True, error_message='请输入用户名')
+        email = self.get_post_data('email', require=True, error_message='请输入邮箱')
+        if not re_email.match(email):
+            raise exception.api.InvalidRequest('请输入正确的邮箱')
+        password = self.get_post_data('password', require=True, error_message='请输入密码')
+        code = self.get_post_data('invitation_code', require=True, error_message='请输入邀请码')
+
+        with session_scope() as session:
+            user = session.query(User).filter(User.username == username, User.status != User.STATUS.DELETED).first()
+            if user is not None:
+                raise exception.api.Conflict('用户名已被注册')
+            user = session.query(User).filter(User.email == email, User.status != User.STATUS.DELETED).first()
+            if user is not None:
+                return exception.api.Conflict('邮箱已被注册')
+
+            invitation_code = session.query(InvitationCode) \
+                .filter(InvitationCode.code == code).first()  # type:InvitationCode
+            if invitation_code is None:
+                raise exception.api.NotFound('邀请码不存在')
+            elif invitation_code.status != 1:
+                raise exception.api.Conflict('邀请码已被使用')
+
+            # 将记录写入user表
+            hashed_password = authorization.toolkit.hash_plaintext(password)
+            user = User(username=username.strip(), email=email, password=hashed_password)  # type: User
+
+            session.add(user)
+            session.flush()
+
+            # 将记录写入invitation_code表
+            invitation_code.status = 2
+            invitation_code.invitee_uuid = user.uuid
+            invitation_code.invited_at = datetime.now()
+
+            self.send_activation_email(user)
+
+            result = ApiResult('注册成功', status=201, payload={
+                'jwt': authorization.toolkit.derive_jwt_token(user.uuid)
+            })
+            return result.to_response()
+
+    def send_activation_email(self, user: User):
+        expired_in = 48
+        extra_payload = {
+            'sub': 'activation'
+        }
+        jwt = authorization.toolkit.derive_jwt_token(user.uuid, expired_in, extra_payload)
+        if configs.DEBUG:
+            domain = 'http://localhost:8080'
+        else:
+            domain = 'http://www.celerysoft.science'
+        activate_url = '{}/activation?jwt={}'.format(domain, jwt)
+
+        background_task.send_activation_email.delay(user_email=user.email,
+                                                    username=user.username,
+                                                    activate_url=activate_url)
 
     def put(self):
         jwt = self.get_post_data('jwt')

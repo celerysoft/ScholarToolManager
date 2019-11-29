@@ -14,9 +14,10 @@ class LoginAPI(BaseAPI):
         password = self.get_post_data('password', require=True, error_message='请输入密码')
 
         with session_scope() as session:
-            user = session.query(User).filter(User.username == username).first()  # type:User
+            user = session.query(User) \
+                .filter(User.username == username, User.status != User.STATUS.DELETED).first()  # type:User
             if user is None:
-                user = session.query(User).filter(User.email == username).first()
+                user = session.query(User).filter(User.email == username, User.status != User.STATUS.DELETED).first()
                 if user is None:
                     raise exception.api.NotFound('用户不存在')
 
@@ -24,6 +25,9 @@ class LoginAPI(BaseAPI):
 
                 if user.password != hashed_password:
                     raise exception.api.InvalidRequest('密码错误，请重试')
+
+                if user.status == User.STATUS.SUSPENDED:
+                    raise exception.api.Forbidden('用户已申请停用账号，如需恢复使用，请联系管理员')
 
                 #     if not permission.toolkit.check_login_permission(db_session, user.id):
                 #         user_role = db_session.query(UserRole).filter(UserRole.user_id == user.id).first()

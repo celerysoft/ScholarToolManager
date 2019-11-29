@@ -14,6 +14,12 @@ class User(Base, BaseModelMixin):
     email = Column(String(64), nullable=False, comment='电子邮箱')
     password = Column(String(256), nullable=False, comment='密码')
 
+    class STATUS(object):
+        INACTIVATED = 0
+        ACTIVATED = 1
+        SUSPENDED = 2
+        DELETED = 4
+
     def __init__(self, username, email, password, *args, **kwargs):
         super().__init__()
 
