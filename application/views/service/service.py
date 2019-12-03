@@ -6,8 +6,10 @@ from flask import make_response, Blueprint
 import configs
 from app import derive_import_root, add_url_rules_for_blueprint
 from application import exception
-from application.model.legacy.model import to_dict2, Service, ServiceTemplate, \
+from application.model.legacy.model import ServiceTemplate, \
     ServicePassword, UserService, UserScholarBalance, UserScholarBalanceLog
+from application.model.service import Service
+from application.model.service_template import ServiceTemplate
 from application.util import permission, date_util, background_task
 from application.util.database import session_scope
 from application.views.base_api import BaseNeedLoginAPI, ApiResult
@@ -17,65 +19,56 @@ class ServiceAPI(BaseNeedLoginAPI):
     methods = ['GET', 'POST', 'PATCH']
 
     def get(self):
-        service_id = self.get_data('id')
-        if self.valid_data(service_id):
-            return self.get_service_by_id(service_id)
+        service_uuid = self.get_data('uuid')
+        if self.valid_data(service_uuid):
+            return self.get_service_by_uuid(service_uuid)
         else:
-            return self.get_user_services(self.user_id)
+            return self.get_user_services(self.user_uuid)
 
-    def get_user_services(self, user_id):
+    def get_user_services(self, user_uuid):
         with session_scope() as db_session:
-
-            query = db_session.query(Service) \
-                .filter(UserService.user_id == user_id) \
-                .filter(UserService.service_id == Service.id)
+            query = db_session.query(Service, ServiceTemplate.title) \
+                .outerjoin(ServiceTemplate, Service.template_uuid == ServiceTemplate.uuid) \
+                .filter(Service.user_uuid == user_uuid) \
+                .filter(Service.status != Service.STATUS.DELETED)
 
             page, page_size, offset, max_page = self._derive_page_parameter(query.count())
 
             services = query.offset(offset).limit(page_size).all()
 
             service_list = []
+            for record in services:  # type:ServiceTemplate
+                service = record.Service
+                service_dict = service.to_dict()
+                service_dict['title'] = record.title
+                service_list.append(service_dict)
 
-            for s in services:
-                service = to_dict2(s)
-                template = db_session.query(ServiceTemplate).filter(ServiceTemplate.id == s.template_id).first()
-                service_password = db_session.query(ServicePassword) \
-                    .filter(ServicePassword.service_id == s.id).first()
-                service['title'] = template.title
-                service['price'] = template.price
-                service['port'] = service_password.port
-                service_list.append(service)
+            result = ApiResult('获取用户学术服务信息成功', payload={
+                'page': page,
+                'page_size': page_size,
+                'max_page': max_page,
+                'service': service_list
+            })
+            return result.to_response()
 
-        result = ApiResult('获取用户套餐信息成功', payload={
-            'page': page,
-            'page_size': page_size,
-            'max_page': max_page,
-            'service': service_list
-        })
-        return make_response(result.to_response())
-
-    def get_service_by_id(self, service_id):
+    def get_service_by_uuid(self, service_uuid):
         with session_scope() as session:
-            service = session.query(Service).filter(Service.id == service_id).first()
+            service = session.query(Service).filter(Service.uuid == service_uuid,
+                                                    Service.status != Service.STATUS.DELETED).first()
             if service is None:
-                raise exception.api.NotFound('指定id的套餐不存在')
+                raise exception.api.NotFound('套餐不存在')
 
             template = session.query(ServiceTemplate) \
-                .filter(ServiceTemplate.id == service.template_id).first()
-            service_password = session.query(ServicePassword) \
-                .filter(ServicePassword.service_id == service.id).first()
-            service_dict = to_dict2(service)
-            service_dict['type'] = template.type
+                .filter(ServiceTemplate.uuid == service.template_uuid).first()
+            service_dict = service.to_dict()
             service_dict['title'] = template.title
             service_dict['price'] = template.price
-            service_dict['port'] = service_password.port
-            service_dict['password'] = service_password.password
             if template.type == ServiceTemplate.MONTHLY:
                 service_dict['renew_at'] = date_util.toolkit.datetime_to_str(service.reset_at)
             else:
                 service_dict['renew_at'] = date_util.toolkit.datetime_to_str(service.expired_at)
 
-        result = ApiResult('获取套餐详情成功', payload={
+        result = ApiResult('获取学术服务详情成功', payload={
             'service': service_dict
         })
         return make_response(result.to_response())

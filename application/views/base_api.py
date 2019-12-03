@@ -48,6 +48,7 @@ class BaseView(MethodView):
             # noinspection PyUnresolvedReferences
             raise exception.api.InvalidRequest('Item index is out of bounds, try modify page and page_size.')
         max_page = math.ceil(record_count / page_size)
+        max_page = max_page if max_page > 0 else 1
 
         return page, page_size, offset, max_page
 

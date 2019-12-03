@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import uuid
-
 from sqlalchemy import Column, String
 
 from application.model.base_model import Base, BaseModelMixin
@@ -17,11 +15,11 @@ class User(Base, BaseModelMixin):
     class STATUS(object):
         INACTIVATED = 0
         ACTIVATED = 1
-        SUSPENDED = 2
-        DELETED = 4
+        DELETED = 2
+        SUSPENDED = 3
 
     def __init__(self, username, email, password, *args, **kwargs):
-        super().__init__()
+        super().__init__(*args, **kwargs)
 
         self.username = username
         self.email = email

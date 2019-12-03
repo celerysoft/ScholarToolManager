@@ -16,7 +16,7 @@ class Event(Base, BaseModelMixin):
     content = Column(String)
 
     def __init__(self, author_uuid=None, title=None, summary=None, content=None):
-        super().__init__()
+        super().__init__(*args, **kwargs)
 
         self.author_uuid = author_uuid
         self.title = title

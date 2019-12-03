@@ -15,7 +15,7 @@ class InvitationCode(Base, BaseModelMixin):
     invited_at = Column(DATETIME)
 
     def __init__(self, code, inviter_uuid, *args, **kwargs):
-        super().__init__()
+        super().__init__(*args, **kwargs)
 
         self.code = code
         self.inviter_uuid = inviter_uuid
