@@ -58,12 +58,15 @@ class ServiceAPI(BaseNeedLoginAPI):
             if service is None:
                 raise exception.api.NotFound('套餐不存在')
 
+            if service.user_uuid != self.user_uuid:
+                raise exception.api.Forbidden('无权查看其他用户的套餐信息')
+
             template = session.query(ServiceTemplate) \
                 .filter(ServiceTemplate.uuid == service.template_uuid).first()
             service_dict = service.to_dict()
             service_dict['title'] = template.title
             service_dict['price'] = template.price
-            if template.type == ServiceTemplate.MONTHLY:
+            if template.type == Service.TYPE.MONTHLY:
                 service_dict['renew_at'] = date_util.toolkit.datetime_to_str(service.reset_at)
             else:
                 service_dict['renew_at'] = date_util.toolkit.datetime_to_str(service.expired_at)

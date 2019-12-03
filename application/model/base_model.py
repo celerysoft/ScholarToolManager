@@ -44,9 +44,23 @@ class BaseModelMixin(IdMixin, UuidMixin, TimestampMixin, StatusMixin):
             table_args['comment'] = cls.__comment__
         return table_args
 
-    def to_dict(self):
+    def to_dict(self, *exclude_columns):
+        """
+        convert model to dict, ignore id column as default.
+
+        :param exclude_columns:
+        :return:
+        """
+        if len(exclude_columns) == 0:
+            exclude_columns = ('id',)
+        else:
+            ['id'].extend(exclude_columns)
+
         data = {}
         for column in self.__table__.columns:
+            if column.name in exclude_columns:
+
+                continue
             row = getattr(self, column.name, '')
             if isinstance(row, datetime):
                 # row = row.strftime('%Y-%m-%d %H:%M:%S')

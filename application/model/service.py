@@ -34,6 +34,12 @@ class Service(Base, BaseModelMixin):
         # 已失效
         INVALID = 4
 
+    class TYPE(object):
+        # 包月
+        MONTHLY = 0
+        # 流量
+        DATA = 1
+
     def __init__(self, user_uuid, template_uuid, service_type, package, usage=0, auto_renew=None, reset_at=None,
                  last_reset_at=None, expired_at=None, total_usage=0, *args, **kwargs):
         super().__init__(*args, **kwargs)
