@@ -1,40 +1,33 @@
 # -*- coding: utf-8 -*-
-from flask import make_response
-
 from application import exception
-from application.model.legacy.model import ServicePassword, \
-    UserService, Service
+from application.model.service import Service
 from application.util import background_task
 from application.util.database import session_scope
 from application.views.base_api import BaseNeedLoginAPI, ApiResult
 
 
 class ServicePasswordAPI(BaseNeedLoginAPI):
-    methods = ['PATCH']
+    methods = ['PUT']
 
-    def patch(self):
-        service_id = self.get_post_data('service_id', require=True, error_message='缺少service_id字段')
-        new_password = self.get_post_data('new_password', require=True, error_message='请输入长度至少为1位的新密码')
+    def put(self):
+        service_uuid = self.get_post_data('uuid', require=True, error_message='缺少uuid字段')
+        password = self.get_post_data('password', require=True, error_message='请输入长度至少为1位的新密码')
 
         with session_scope() as session:
-            service = session.query(Service).filter(Service.id == service_id).first()
+            service = session.query(Service).filter(Service.uuid == service_uuid).first()
             if service is None:
                 raise exception.api.NotFound('套餐不存在')
 
-            service_password = session.query(ServicePassword) \
-                .filter(ServicePassword.service_id == service_id) \
-                .filter(UserService.service_id == ServicePassword.service_id) \
-                .filter(UserService.user_id == self.user_id).first()
-            if service_password is None:
-                raise exception.api.Forbidden('无权修改他人套餐的连接密码')
+            if service.user_uuid != self.user_uuid:
+                raise exception.api.Forbidden('无权修改其他用户的学术服务密码')
 
-            service_password.password = new_password
+            service.password = password
 
-            if service.available:
-                background_task.modify_port_password.delay(port=service_password.port, password=new_password)
+            if service.status == Service.STATUS.ACTIVATED:
+                background_task.modify_port_password.delay(port=service.port, password=password)
 
-        result = ApiResult('修改连接密码成功', 201)
-        return make_response(result.to_response())
+            result = ApiResult('修改连接密码成功', 201)
+            return result.to_response()
 
 
 view = ServicePasswordAPI
