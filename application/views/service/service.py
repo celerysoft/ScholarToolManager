@@ -6,8 +6,7 @@ from flask import make_response, Blueprint
 import configs
 from app import derive_import_root, add_url_rules_for_blueprint
 from application import exception
-from application.model.legacy.model import ServiceTemplate, \
-    ServicePassword, UserService, UserScholarBalance, UserScholarBalanceLog
+from application.model.legacy.model import ServicePassword, UserService, UserScholarBalance, UserScholarBalanceLog
 from application.model.service import Service
 from application.model.service_template import ServiceTemplate
 from application.util import permission, date_util, background_task
@@ -16,7 +15,7 @@ from application.views.base_api import BaseNeedLoginAPI, ApiResult
 
 
 class ServiceAPI(BaseNeedLoginAPI):
-    methods = ['GET', 'POST', 'PATCH']
+    methods = ['GET', 'POST', 'PATCH', 'PUT']
 
     def get(self):
         service_uuid = self.get_data('uuid')
@@ -173,6 +172,35 @@ class ServiceAPI(BaseNeedLoginAPI):
             return service_password.port + 1
 
     def patch(self):
+        with session_scope() as session:
+            uuid = self.get_post_data('uuid', require=True, error_message='缺少uuid字段')
+
+            service = session.query(Service).filter(Service.uuid == uuid).first()
+            if service is None:
+                raise exception.api.NotFound('学术服务不存在')
+
+            if service.user_uuid != self.user_uuid:
+                raise exception.api.Forbidden('无权修改其他用户的学术服务')
+
+            auto_renew = self.get_post_data('auto_renew')
+            if self.valid_data(auto_renew):
+                self.patch_service_auto_renew(service)
+
+            result = ApiResult('修改套餐成功', 201)
+            return result.to_response()
+
+    @staticmethod
+    def patch_service_auto_renew(service: Service):
+        if service.type == service.TYPE.MONTHLY:
+            latter_auto_renew_status = 1 if service.auto_renew == 0 else 0
+            service.auto_renew = latter_auto_renew_status
+            service.reset_at = date_util.toolkit.derive_1st_datetime_of_next_month(datetime.now())
+            if latter_auto_renew_status == 1:
+                service.expired_at = datetime(2099, 12, 31, 23, 59, 59)
+            elif latter_auto_renew_status == 0:
+                service.expired_at = service.reset_at
+
+    def put(self):
         with session_scope() as session:
             service_id = self.get_post_data('id', require=True, error_message='缺少id字段')
             auto_renew = self.get_post_data('auto_renew')
