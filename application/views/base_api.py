@@ -8,6 +8,7 @@ from jwt import PyJWTError
 
 import configs
 from application import exception
+from application.model.base_model import BaseModelMixin
 from application.util import authorization
 
 
@@ -134,6 +135,13 @@ class BaseView(MethodView):
 
             if cls.valid_data(value) and arg in fields:
                 setattr(model, arg, value)
+
+    @staticmethod
+    def models_to_list(models: list):
+        model_list = []
+        for model in models:  # type: BaseModelMixin
+            model_list.append(model.to_dict())
+        return model_list
 
 
 class BaseAPI(BaseView):

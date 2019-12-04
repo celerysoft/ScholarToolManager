@@ -25,6 +25,14 @@ class ServiceTemplate(Base, BaseModelMixin):
         # 已删除
         DELETED = 2
 
+    class TYPE(object):
+        # 包月
+        MONTHLY = 0
+        # 流量
+        DATA = 1
+        # 推荐
+        RECOMMENDATION = 2
+
     def __init__(self, service_type: int, title: str, subtitle: str, description: str, package: int, price: int,
                  initialization_fee: int, *args, **kwargs):
         super().__init__(*args, **kwargs)
