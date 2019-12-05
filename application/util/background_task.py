@@ -31,3 +31,8 @@ def modify_port_password(port, password):
 @celery_app.task
 def send_activation_email(user_email, username, activate_url):
     email.toolkit.send_activation_email(user_email, username, activate_url)
+
+
+@celery_app.task
+def send_activation_email_for_modifying_email_address(user_email, username, activate_url):
+    email.toolkit.send_activation_email_for_modifying_email_address(user_email, username, activate_url)

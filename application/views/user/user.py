@@ -11,6 +11,7 @@ from application import exception
 from application.model.invitation_code import InvitationCode
 from application.model.user import User
 from application.util import authorization, background_task
+from application.util.constant import JwtSub
 from application.util.database import session_scope
 from application.views.base_api import BaseNeedLoginAPI, ApiResult
 
@@ -103,7 +104,7 @@ class UserAPI(BaseNeedLoginAPI):
         except PyJWTError:
             raise exception.api.InvalidRequest('激活链接已过期或者激活请求非法')
 
-        if 'sub' not in jwt_dict.keys() or jwt_dict['sub'] != 'activation':
+        if 'sub' not in jwt_dict.keys() or jwt_dict['sub'] != JwtSub.Activation.value:
             raise exception.api.InvalidRequest('激活请求非法')
 
         uuid = jwt_dict['uuid']
