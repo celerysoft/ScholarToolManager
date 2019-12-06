@@ -76,6 +76,9 @@ class ServiceAPI(BaseNeedLoginAPI):
         return make_response(result.to_response())
 
     def post(self):
+        if configs.DEBUG:
+            raise exception.api.ServiceUnavailable('网站更新中，暂停开通新的学术服务')
+
         service_template_id = self.get_post_data('template_id', require=True, error_message='缺少template_id字段')
         password = self.get_post_data('password', require=True, error_message='缺少password字段')
 
