@@ -1,6 +1,7 @@
 import json
 import uuid
 from datetime import datetime
+from decimal import Decimal
 
 from sqlalchemy import Column, func
 from sqlalchemy.dialects.mysql import TINYINT, VARCHAR, DATETIME, INTEGER
@@ -59,12 +60,16 @@ class BaseModelMixin(IdMixin, UuidMixin, TimestampMixin, StatusMixin):
         data = {}
         for column in self.__table__.columns:
             if column.name in exclude_columns:
-
                 continue
+
             row = getattr(self, column.name, '')
+
             if isinstance(row, datetime):
                 # row = row.strftime('%Y-%m-%d %H:%M:%S')
                 row = row.isoformat()
+            if isinstance(row, Decimal):
+                row = float(row)
+
             data[column.name] = row
         return data
 

@@ -23,8 +23,8 @@ class Service(Base, BaseModelMixin):
     password = Column(VARCHAR(64), nullable=False, comment='服务密码')
 
     class STATUS(object):
-        # 初始化，待开通
-        INACTIVATED = 0
+        # 初始化，待创建订单
+        INITIALIZATION = 0
         # 有效
         ACTIVATED = 1
         # 已删除
@@ -33,6 +33,8 @@ class Service(Base, BaseModelMixin):
         SUSPENDED = 3
         # 已失效
         INVALID = 4
+        # 订单创建成功，待支付
+        CREATED = 5
 
     class TYPE(object):
         # 包月
@@ -40,8 +42,8 @@ class Service(Base, BaseModelMixin):
         # 流量
         DATA = 1
 
-    def __init__(self, user_uuid, template_uuid, service_type, package, usage=0, auto_renew=None, reset_at=None,
-                 last_reset_at=None, expired_at=None, total_usage=0, *args, **kwargs):
+    def __init__(self, user_uuid, template_uuid, service_type, package, usage, auto_renew, reset_at,
+                 last_reset_at, expired_at, total_usage, port: int, password: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.user_uuid = user_uuid
@@ -54,6 +56,9 @@ class Service(Base, BaseModelMixin):
         self.last_reset_at = last_reset_at
         self.expired_at = expired_at
         self.total_usage = total_usage
+        self.port = port
+        self.password = password
+
         self.status = 1
 
 

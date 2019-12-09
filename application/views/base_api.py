@@ -70,7 +70,24 @@ class BaseView(MethodView):
                 continue
             if key in fields:
                 query_dict[key] = value
+        for key, value in request.args.lists():
+            if value in [None, '']:
+                continue
+
+            format_key = key.replace('[]', '')
+            if format_key in fields:
+                query_dict[format_key] = value
         return query_dict
+
+    def derive_query_for_get_method(self, session, model_class):
+        query_dict = self._derive_get_method_query_dict(model_class)
+        query = session.query(model_class)
+        for key, value in query_dict.items():
+            if isinstance(value, list):
+                query = query.filter(getattr(model_class, key).in_(value))
+            else:
+                query = query.filter(getattr(model_class, key) == value)
+        return query
 
     @classmethod
     def get_data(cls, key, require=False, error_message=None, req=request):

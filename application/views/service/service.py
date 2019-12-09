@@ -9,7 +9,10 @@ from application import exception
 from application.model.legacy.model import ServicePassword, UserService, UserScholarBalance, UserScholarBalanceLog
 from application.model.service import Service
 from application.model.service_template import ServiceTemplate
-from application.util import permission, date_util, background_task
+from application.model.subscribe_service_snapshot import SubscribeServiceSnapshot
+from application.model.trade_order import TradeOrder
+from application.model.user_account import UserAccount
+from application.util import date_util, background_task
 from application.util.database import session_scope
 from application.views.base_api import BaseNeedLoginAPI, ApiResult
 
@@ -46,7 +49,7 @@ class ServiceAPI(BaseNeedLoginAPI):
                 'page': page,
                 'page_size': page_size,
                 'max_page': max_page,
-                'service': service_list
+                'services': service_list
             })
             return result.to_response()
 
@@ -79,89 +82,8 @@ class ServiceAPI(BaseNeedLoginAPI):
         if configs.DEBUG:
             raise exception.api.ServiceUnavailable('网站更新中，暂停开通新的学术服务')
 
-        service_template_id = self.get_post_data('template_id', require=True, error_message='缺少template_id字段')
-        password = self.get_post_data('password', require=True, error_message='缺少password字段')
-
-        with session_scope() as session:
-            if not permission.check_manage_service_permission(session, self.user_id, True):
-                raise exception.api.Forbidden("无权创建套餐")
-
-            service_template = session.query(ServiceTemplate) \
-                .filter(ServiceTemplate.id == service_template_id).first()
-            if not service_template.available:
-                raise exception.api.Forbidden('该套餐已下架，故无法办理')
-
-            # 扣费
-            total_payment = service_template.initialization_fee + service_template.price
-            user_scholar_balance = session.query(UserScholarBalance) \
-                .filter(UserScholarBalance.user_id == self.user_id).first()
-            balance = user_scholar_balance.balance
-            if balance < total_payment:
-                raise exception.api.Forbidden('余额不足，创建套餐失败')
-            else:
-                user_scholar_balance.balance -= total_payment
-
-                user_scholar_balance_log = UserScholarBalanceLog(
-                    user_id=user_scholar_balance.user_id,
-                    amount=(-total_payment),
-                    balance=user_scholar_balance.balance,
-                    message='新购套餐：{}'.format(service_template.title)
-                )
-                session.add(user_scholar_balance_log)
-
-            # 创建服务
-            service_type = service_template.type
-            now = datetime.now()
-            created_at = now
-            last_reset_at = None
-            auto_renew = None
-            if service_type == ServiceTemplate.MONTHLY:
-                auto_renew = self.get_post_data('auto_renew', require=True, error_message='缺少auto_renew字段')
-                reset_at = date_util.toolkit.derive_1st_datetime_of_next_month(now)
-                if auto_renew:
-                    expired_at = datetime(2099, 12, 31, 23, 59, 59)
-                else:
-                    expired_at = reset_at
-            elif service_type == ServiceTemplate.DATA:
-                reset_at = None
-                expired_at = datetime.fromtimestamp(created_at.timestamp() + 365 * 24 * 60 * 60)
-            else:
-                raise exception.api.NotFound('未知套餐类型')
-
-            service = Service(
-                template_id=service_template_id,
-                type=service_type,
-                usage=0,
-                last_usage=0,
-                package=service_template.balance,
-                reset_at=reset_at,
-                last_reset_at=last_reset_at,
-                created_at=created_at,
-                expired_at=expired_at,
-                total_usage=0,
-                auto_renew=auto_renew
-            )
-            session.add(service)
-            session.flush()
-
-            service_id = service.id
-
-            # 关联user_service表
-            user_service = UserService(self.user_id, service_id)
-            session.add(user_service)
-
-            # 关联service_password表
-            service_port = self.derive_available_shadowsocks_port(session)
-
-            service_password = ServicePassword(service.id, service_port, password)
-            session.add(service_password)
-
-            background_task.add_port.delay(port=service_port, password=password)
-
-        result = ApiResult('创建套餐成功', 201, {
-            'service_id': service_id
-        })
-        return make_response(result.to_response())
+        result = ApiResult('创建服务成功', 201)
+        return result.to_response()
 
     def derive_available_shadowsocks_port(self, db_session):
         service_password = db_session.query(ServicePassword) \

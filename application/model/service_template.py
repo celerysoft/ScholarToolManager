@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from sqlalchemy import Column
-from sqlalchemy.dialects.mysql import TINYINT, BIGINT, DATETIME, VARCHAR, TEXT, INTEGER
+from sqlalchemy.dialects.mysql import TINYINT, BIGINT, VARCHAR, TEXT, DECIMAL
 
 from application.model.base_model import Base, BaseModelMixin
 
@@ -14,16 +14,18 @@ class ServiceTemplate(Base, BaseModelMixin):
     subtitle = Column(VARCHAR(64), nullable=False, comment='副标题')
     description = Column(TEXT, nullable=False, comment='套餐描述')
     package = Column(BIGINT, nullable=False, comment='总流量')
-    price = Column(INTEGER, nullable=False, comment='价格')
-    initialization_fee = Column(INTEGER, nullable=False, comment='初装费')
+    price = Column(DECIMAL(12, 2), nullable=False, comment='价格')
+    initialization_fee = Column(DECIMAL(12, 2), nullable=False, comment='初装费')
 
     class STATUS(object):
         # 初始化
-        INACTIVATED = 0
+        INITIALIZATION = 0
         # 有效
-        ACTIVATED = 1
+        VALID = 1
         # 已删除
         DELETED = 2
+        # 下架
+        SUSPEND = 3
 
     class TYPE(object):
         # 包月
@@ -33,8 +35,8 @@ class ServiceTemplate(Base, BaseModelMixin):
         # 推荐
         RECOMMENDATION = 2
 
-    def __init__(self, service_type: int, title: str, subtitle: str, description: str, package: int, price: int,
-                 initialization_fee: int, *args, **kwargs):
+    def __init__(self, service_type: int, title: str, subtitle: str, description: str, package: int, price,
+                 initialization_fee, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.type = service_type

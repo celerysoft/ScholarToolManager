@@ -132,7 +132,7 @@ CREATE TABLE trade_order
 (
     `id`           INT(11)        NOT NULL AUTO_INCREMENT,
     `uuid`         VARCHAR(36)    NOT NULL,
-    `account_uuid` VARCHAR(36)    NOT NULL COMMENT '交易方账户',
+    `user_uuid` VARCHAR(36)    NOT NULL COMMENT '交易方UUID',
     `type`         TINYINT        NOT NULL COMMENT '0 - 退款，1 - 充值，2 - 消费，3 - 转账，4 - 提现',
     `amount`       DECIMAL(12, 2) NOT NULL COMMENT '金额',
     `description`  TEXT COMMENT '交易描述',
@@ -150,6 +150,9 @@ CREATE TABLE subscribe_service_snapshot
     `id`                    INT(11)        NOT NULL AUTO_INCREMENT,
     `uuid`                  VARCHAR(36)    NOT NULL,
     `trade_order_uuid`      VARCHAR(36)    NOT NULL COMMENT '交易订单UUID',
+    `user_uuid`             VARCHAR(36)    NOT NULL COMMENT '订购人UUID',
+    `service_password`      VARCHAR(64)    NOT NULL COMMENT '服务密码',
+    `auto_renew`            TINYINT        NOT NULL DEFAULT 0 COMMENT '是否自动续费：0 - 否，1 - 是',
     `service_template_uuid` VARCHAR(36)    NOT NULL COMMENT '服务模板UUID',
     `type`                  INT(4)         NOT NULL
         COMMENT '套餐类型：0 - 包月套餐，1 - 流量套餐',
