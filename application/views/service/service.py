@@ -9,9 +9,6 @@ from application import exception
 from application.model.legacy.model import ServicePassword, UserService, UserScholarBalance, UserScholarBalanceLog
 from application.model.service import Service
 from application.model.service_template import ServiceTemplate
-from application.model.subscribe_service_snapshot import SubscribeServiceSnapshot
-from application.model.trade_order import TradeOrder
-from application.model.user_account import UserAccount
 from application.util import date_util, background_task
 from application.util.database import session_scope
 from application.views.base_api import BaseNeedLoginAPI, ApiResult
@@ -67,7 +64,7 @@ class ServiceAPI(BaseNeedLoginAPI):
                 .filter(ServiceTemplate.uuid == service.template_uuid).first()
             service_dict = service.to_dict()
             service_dict['title'] = template.title
-            service_dict['price'] = template.price
+            service_dict['price'] = float(template.price)
             if template.type == Service.TYPE.MONTHLY:
                 service_dict['renew_at'] = date_util.toolkit.datetime_to_str(service.reset_at)
             else:

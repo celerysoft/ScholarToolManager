@@ -79,9 +79,9 @@ class BaseView(MethodView):
                 query_dict[format_key] = value
         return query_dict
 
-    def derive_query_for_get_method(self, session, model_class):
+    def derive_query_for_get_method(self, session, model_class, query=None):
         query_dict = self._derive_get_method_query_dict(model_class)
-        query = session.query(model_class)
+        query = session.query(model_class) if query is None else query
         for key, value in query_dict.items():
             if isinstance(value, list):
                 query = query.filter(getattr(model_class, key).in_(value))

@@ -138,7 +138,7 @@ CREATE TABLE trade_order
     `description`  TEXT COMMENT '交易描述',
     `created_at`   DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`   DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `status`       TINYINT(4)     NOT NULL DEFAULT 1 COMMENT '状态：0 - 初始化，1 - 支付完成，2 - 作废，3 - 支付中，4 - 部分支付，5 - 退款中，6 - 部分退款，7 - 全部退款',
+    `status`       TINYINT(4)     NOT NULL DEFAULT 1 COMMENT '状态：0 - 初始化，1 - 支付完成，2 - 作废，3 - 支付中，4 - 部分支付，5 - 退款中，6 - 部分退款，7 - 全部退款，8 - 取消',
     PRIMARY KEY (`id`)
 )
     ENGINE = innodb

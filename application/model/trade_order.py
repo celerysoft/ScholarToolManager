@@ -17,11 +17,12 @@ class TradeOrder(Base, BaseModelMixin):
     description = Column(TEXT, comment='订单描述')
 
     class STATUS(Enum):
-        # 状态：0 - 初始化，1 - 支付完成，2 - 作废，3 - 支付中，4 - 部分支付，5 - 退款中，6 - 部分退款，7 - 全部退款
+        # 状态：0 - 初始化，1 - 支付完成，2 - 作废，3 - 支付中，4 - 部分支付，5 - 退款中，6 - 部分退款，7 - 全部退款，8 - 取消
         INITIALIZATION = 0
         VALID = 1
         DELETED = 2
         PAYING = 3
+        CANCEL = 8
 
     class TYPE(Enum):
         RECHARGE = 1

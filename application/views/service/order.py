@@ -32,10 +32,13 @@ class ServiceOrderAPI(BaseNeedLoginAPI):
     def get_orders(self):
         with session_scope() as session:
             order_list = []
-            orders = self.derive_query_for_get_method(session, TradeOrder) \
+            query = session.query(TradeOrder, SubscribeServiceSnapshot.title)
+            orders = self.derive_query_for_get_method(session, TradeOrder, query) \
                 .filter(TradeOrder.user_uuid == self.user_uuid).all()
-            for order in orders:  # type: TradeOrder
-                order_list.append(order.to_dict())
+            for order in orders:
+                order_dict = order.TradeOrder.to_dict()
+                order_dict['title'] = order.title
+                order_list.append(order_dict)
 
             result = ApiResult('获取订单信息成功', payload={
                 'orders': order_list,
@@ -106,9 +109,8 @@ class ServiceOrderAPI(BaseNeedLoginAPI):
 
     def check_is_order_conflict(self, service_template_uuid: str):
         with session_scope() as session:
-            threshold_in_minutes = 30
-            critical_time = datetime.now() - timedelta(minutes=threshold_in_minutes)
-            print(critical_time)
+            threshold_in_day = 1
+            critical_time = datetime.now() - timedelta(days=threshold_in_day)
             orders = session.query(TradeOrder) \
                 .filter(TradeOrder.user_uuid == self.user_uuid,
                         TradeOrder.status.in_([TradeOrder.STATUS.INITIALIZATION.value, TradeOrder.STATUS.PAYING.value]),
