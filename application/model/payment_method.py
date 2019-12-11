@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from enum import Enum
+
 from sqlalchemy import Column
 from sqlalchemy.dialects.mysql import VARCHAR
 
@@ -11,7 +13,7 @@ class PaymentMethod(Base, BaseModelMixin):
 
     name = Column(VARCHAR(32), nullable=False, comment='渠道名')
 
-    class STATUS(object):
+    class STATUS(Enum):
         INITIALIZATION = 0
         VALID = 1
         DELETED = 2
