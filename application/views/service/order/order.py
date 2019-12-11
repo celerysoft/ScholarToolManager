@@ -5,11 +5,9 @@ from flask import Blueprint
 
 from app import derive_import_root, add_url_rules_for_blueprint
 from application import exception
-from application.model.service import Service
 from application.model.service_template import ServiceTemplate
 from application.model.subscribe_service_snapshot import SubscribeServiceSnapshot
 from application.model.trade_order import TradeOrder
-from application.model.user_account import UserAccount
 from application.util.database import session_scope
 from application.views.base_api import BaseNeedLoginAPI, ApiResult
 
@@ -28,15 +26,21 @@ class ServiceOrderAPI(BaseNeedLoginAPI):
         with session_scope() as session:
             order = session.query(TradeOrder) \
                 .filter(TradeOrder.uuid == uuid,
-                        TradeOrder.status != TradeOrder.STATUS.DELETED).first()  # type:
+                        TradeOrder.status != TradeOrder.STATUS.DELETED.value).first()  # type: TradeOrder
             if order is None:
                 raise exception.api.NotFound('订单不存在')
+
+            result = ApiResult('获取订单信息成功', payload={
+                'order': order.to_dict()
+            })
+            return result.to_response()
 
     def get_orders(self):
         with session_scope() as session:
             order_list = []
             query = session.query(TradeOrder, SubscribeServiceSnapshot.title)
             orders = self.derive_query_for_get_method(session, TradeOrder, query) \
+                .outerjoin(SubscribeServiceSnapshot, SubscribeServiceSnapshot.trade_order_uuid == TradeOrder.uuid) \
                 .filter(TradeOrder.user_uuid == self.user_uuid).all()
             for order in orders:
                 order_dict = order.TradeOrder.to_dict()
@@ -128,6 +132,30 @@ class ServiceOrderAPI(BaseNeedLoginAPI):
 
     def put(self):
         pass
+
+    def delete(self):
+        uuid = self.get_data('uuid', require=True, error_message='缺少uuid字段')
+        with session_scope() as session:
+            order = session.query(TradeOrder) \
+                .filter(TradeOrder.uuid == uuid,
+                        TradeOrder.status != TradeOrder.STATUS.DELETED.value).first()  # type: TradeOrder
+
+            if order is None:
+                raise exception.api.NotFound('订单不存在')
+
+            if order.user_uuid != self.user_uuid:
+                raise exception.api.Forbidden('无权修改他人的订单')
+
+            if order.status == TradeOrder.STATUS.CANCEL.value:
+                raise exception.api.Conflict('订单已取消，无法重复取消')
+
+            if order.status not in [TradeOrder.STATUS.INITIALIZATION.value, TradeOrder.STATUS.PAYING.value]:
+                raise exception.api.InvalidRequest('订单已进入支付流程，无法取消，请完成支付后进行退款操作')
+
+            order.status = TradeOrder.STATUS.CANCEL.value
+
+            result = ApiResult('订单取消成功')
+            return result.to_response()
 
 
 view = ServiceOrderAPI
