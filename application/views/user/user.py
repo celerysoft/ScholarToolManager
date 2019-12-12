@@ -125,7 +125,7 @@ class UserAPI(BaseNeedLoginAPI):
 
             scholar_payment_account = session.query(ScholarPaymentAccount) \
                 .filter(ScholarPaymentAccount.user_uuid == uuid,
-                        ScholarPaymentAccount.status == ScholarPaymentAccount.STATUS.VALID) \
+                        ScholarPaymentAccount.status == ScholarPaymentAccount.STATUS.VALID.value) \
                 .first()  # type: ScholarPaymentAccount
             if scholar_payment_account is not None:
                 scholar_payment_account.balance = configs.NEW_USER_SCHOLAR_BALANCE

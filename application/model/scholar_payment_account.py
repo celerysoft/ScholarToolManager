@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+from enum import Enum
+
 from sqlalchemy import Column
-from sqlalchemy.dialects.mysql import VARCHAR, INTEGER
+from sqlalchemy.dialects.mysql import VARCHAR, DECIMAL
 
 from application.model.base_model import Base, BaseModelMixin
 
@@ -10,9 +12,9 @@ class ScholarPaymentAccount(Base, BaseModelMixin):
     __comment__ = '学术积分账户'
 
     user_uuid = Column(VARCHAR(36), nullable=False, comment='账户持有人UUID')
-    balance = Column(INTEGER, default=0, comment='账户余额')
+    balance = Column(DECIMAL(12, 2), default=0, comment='账户余额')
 
-    class STATUS(object):
+    class STATUS(Enum):
         INITIALIZATION = 0
         VALID = 1
         DELETED = 2

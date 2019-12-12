@@ -128,6 +128,24 @@ CREATE TABLE scholar_payment_account
     DEFAULT CHARSET = utf8
     COMMENT = '学术积分账户';
 
+CREATE TABLE scholar_payment_account_log
+(
+    `id`         INT(11)        NOT NULL AUTO_INCREMENT,
+    `uuid`       VARCHAR(36)    NOT NULL,
+    `account_uuid`  VARCHAR(36)    NOT NULL COMMENT '学术积分账户UUID',
+    `former_balance`    DECIMAL(12, 2) NOT NULL COMMENT '操作前账户余额',
+    `balance`    DECIMAL(12, 2) NOT NULL COMMENT '操作后账户余额',
+    `type` TINYINT NOT NULL COMMENT '0 - 减少，1 - 增加',
+    `purpose_type` TINYINT NOT NULL COMMENT '0 - 消费(-)，1 - 充值(+)，2 - 转出(-)，3 - 转入(+)，4 - 补缴(-)，5 - 补偿(+)',
+    `created_at` DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `status`     TINYINT(4)     NOT NULL DEFAULT 1 COMMENT '状态：0 - 初始化，1 - 有效，2 - 作废',
+    PRIMARY KEY (`id`)
+)
+    ENGINE = innodb
+    DEFAULT CHARSET = utf8
+    COMMENT = '学术积分账户流水';
+
 CREATE TABLE trade_order
 (
     `id`           INT(11)        NOT NULL AUTO_INCREMENT,
