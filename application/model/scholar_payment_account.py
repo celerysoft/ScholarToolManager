@@ -5,9 +5,9 @@ from sqlalchemy.dialects.mysql import VARCHAR, INTEGER
 from application.model.base_model import Base, BaseModelMixin
 
 
-class UserAccount(Base, BaseModelMixin):
-    __tablename__ = 'user_account'
-    __comment__ = '用户账户'
+class ScholarPaymentAccount(Base, BaseModelMixin):
+    __tablename__ = 'scholar_payment_account'
+    __comment__ = '学术积分账户'
 
     user_uuid = Column(VARCHAR(36), nullable=False, comment='账户持有人UUID')
     balance = Column(INTEGER, default=0, comment='账户余额')
@@ -25,4 +25,4 @@ class UserAccount(Base, BaseModelMixin):
         self.status = 1
 
 
-cacheable = UserAccount
+cacheable = ScholarPaymentAccount

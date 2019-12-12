@@ -9,6 +9,7 @@ import configs
 from app import derive_import_root, add_url_rules_for_blueprint
 from application import exception
 from application.model.invitation_code import InvitationCode
+from application.model.scholar_payment_account import ScholarPaymentAccount
 from application.model.user import User
 from application.util import authorization, background_task
 from application.util.constant import JwtSub
@@ -70,6 +71,13 @@ class UserAPI(BaseNeedLoginAPI):
             invitation_code.invitee_uuid = user.uuid
             invitation_code.invited_at = datetime.now()
 
+            # 创建学术积分账户
+            scholar_payment_account = ScholarPaymentAccount(
+                user_uuid=user.uuid,
+                balance=0,
+            )
+            session.add(scholar_payment_account)
+
             self.send_activation_email(user)
 
             result = ApiResult('注册成功', status=201, payload={
@@ -114,6 +122,13 @@ class UserAPI(BaseNeedLoginAPI):
                 raise exception.api.Conflict('邮箱已完成验证，无需重复验证')
 
             user.status = 1
+
+            scholar_payment_account = session.query(ScholarPaymentAccount) \
+                .filter(ScholarPaymentAccount.user_uuid == uuid,
+                        ScholarPaymentAccount.status == ScholarPaymentAccount.STATUS.VALID) \
+                .first()  # type: ScholarPaymentAccount
+            if scholar_payment_account is not None:
+                scholar_payment_account.balance = configs.NEW_USER_SCHOLAR_BALANCE
 
             jwt_token = authorization.toolkit.derive_jwt_token(uuid)
             result = ApiResult('邮箱验证成功', 201, payload={

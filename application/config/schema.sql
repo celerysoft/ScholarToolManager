@@ -113,7 +113,7 @@ CREATE TABLE service_template
     DEFAULT CHARSET = utf8
     COMMENT = '学术服务模板';
 
-CREATE TABLE user_account
+CREATE TABLE scholar_payment_account
 (
     `id`         INT(11)        NOT NULL AUTO_INCREMENT,
     `uuid`       VARCHAR(36)    NOT NULL,
@@ -126,7 +126,7 @@ CREATE TABLE user_account
 )
     ENGINE = innodb
     DEFAULT CHARSET = utf8
-    COMMENT = '用户账户';
+    COMMENT = '学术积分账户';
 
 CREATE TABLE trade_order
 (
