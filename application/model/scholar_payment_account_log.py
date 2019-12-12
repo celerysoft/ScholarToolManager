@@ -7,12 +7,13 @@ from sqlalchemy.dialects.mysql import VARCHAR, DECIMAL, TINYINT
 from application.model.base_model import Base, BaseModelMixin
 
 
-class ScholarPaymentAccount(Base, BaseModelMixin):
+class ScholarPaymentAccountLog(Base, BaseModelMixin):
     __tablename__ = 'scholar_payment_account_log'
     __comment__ = '学术积分账户流水'
 
     account_uuid = Column(VARCHAR(36), nullable=False, comment='学术积分账户UUID')
     former_balance = Column(DECIMAL(12, 2), nullable=False, comment='账户余额')
+    amount = Column(DECIMAL(12, 2), nullable=False, comment='金额')
     balance = Column(DECIMAL(12, 2), nullable=False, comment='账户余额')
     type = Column(TINYINT, nullable=False, comment='0 - 减少，1 - 增加')
     purpose_type = Column(TINYINT, nullable=False,
@@ -31,15 +32,16 @@ class ScholarPaymentAccount(Base, BaseModelMixin):
         VALID = 1
         DELETED = 2
 
-    def __init__(self, account_uuid: str, former_balance, balance, log_type, purpose_type, *args, **kwargs):
+    def __init__(self, account_uuid: str, former_balance, amount, balance, log_type, purpose_type, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.account_uuid = account_uuid
         self.former_balance = former_balance
         self.balance = balance
+        self.amount = amount
         self.type = log_type
         self.purpose_type = purpose_type
         self.status = 1
 
 
-cacheable = ScholarPaymentAccount
+cacheable = ScholarPaymentAccountLog

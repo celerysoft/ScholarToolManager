@@ -130,16 +130,17 @@ CREATE TABLE scholar_payment_account
 
 CREATE TABLE scholar_payment_account_log
 (
-    `id`         INT(11)        NOT NULL AUTO_INCREMENT,
-    `uuid`       VARCHAR(36)    NOT NULL,
-    `account_uuid`  VARCHAR(36)    NOT NULL COMMENT '学术积分账户UUID',
-    `former_balance`    DECIMAL(12, 2) NOT NULL COMMENT '操作前账户余额',
-    `balance`    DECIMAL(12, 2) NOT NULL COMMENT '操作后账户余额',
-    `type` TINYINT NOT NULL COMMENT '0 - 减少，1 - 增加',
-    `purpose_type` TINYINT NOT NULL COMMENT '0 - 消费(-)，1 - 充值(+)，2 - 转出(-)，3 - 转入(+)，4 - 补缴(-)，5 - 补偿(+)',
-    `created_at` DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `status`     TINYINT(4)     NOT NULL DEFAULT 1 COMMENT '状态：0 - 初始化，1 - 有效，2 - 作废',
+    `id`             INT(11)        NOT NULL AUTO_INCREMENT,
+    `uuid`           VARCHAR(36)    NOT NULL,
+    `account_uuid`   VARCHAR(36)    NOT NULL COMMENT '学术积分账户UUID',
+    `former_balance` DECIMAL(12, 2) NOT NULL COMMENT '操作前账户余额',
+    `amount`         DECIMAL(12, 2) NOT NULL COMMENT '金额',
+    `balance`        DECIMAL(12, 2) NOT NULL COMMENT '操作后账户余额',
+    `type`           TINYINT        NOT NULL COMMENT '0 - 减少，1 - 增加',
+    `purpose_type`   TINYINT        NOT NULL COMMENT '0 - 消费(-)，1 - 充值(+)，2 - 转出(-)，3 - 转入(+)，4 - 补缴(-)，5 - 补偿(+)',
+    `created_at`     DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`     DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `status`         TINYINT(4)     NOT NULL DEFAULT 1 COMMENT '状态：0 - 初始化，1 - 有效，2 - 作废',
     PRIMARY KEY (`id`)
 )
     ENGINE = innodb
@@ -148,15 +149,15 @@ CREATE TABLE scholar_payment_account_log
 
 CREATE TABLE trade_order
 (
-    `id`           INT(11)        NOT NULL AUTO_INCREMENT,
-    `uuid`         VARCHAR(36)    NOT NULL,
-    `user_uuid` VARCHAR(36)    NOT NULL COMMENT '交易方UUID',
-    `type`         TINYINT        NOT NULL COMMENT '0 - 退款，1 - 充值，2 - 消费，3 - 转账，4 - 提现',
-    `amount`       DECIMAL(12, 2) NOT NULL COMMENT '金额',
-    `description`  TEXT COMMENT '交易描述',
-    `created_at`   DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`   DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `status`       TINYINT(4)     NOT NULL DEFAULT 1 COMMENT '状态：0 - 初始化，1 - 支付完成，2 - 作废，3 - 支付中，4 - 部分支付，5 - 退款中，6 - 部分退款，7 - 全部退款，8 - 取消',
+    `id`          INT(11)        NOT NULL AUTO_INCREMENT,
+    `uuid`        VARCHAR(36)    NOT NULL,
+    `user_uuid`   VARCHAR(36)    NOT NULL COMMENT '交易方UUID',
+    `type`        TINYINT        NOT NULL COMMENT '0 - 退款，1 - 充值，2 - 消费，3 - 转账，4 - 提现',
+    `amount`      DECIMAL(12, 2) NOT NULL COMMENT '金额',
+    `description` TEXT COMMENT '交易描述',
+    `created_at`  DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`  DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `status`      TINYINT(4)     NOT NULL DEFAULT 1 COMMENT '状态：0 - 初始化，1 - 支付完成，2 - 作废，3 - 支付中，4 - 部分支付，5 - 退款中，6 - 部分退款，7 - 全部退款，8 - 取消',
     PRIMARY KEY (`id`)
 )
     ENGINE = innodb

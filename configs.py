@@ -107,9 +107,21 @@ SS_CLIENT = 'shadowsocks-libev'
 CELERY_BROKER_URL = 'redis://localhost:6379/10'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/10'
 
-# Redis
+# 学术积分账户支付系统Celery配置
+SCHOLAR_PAYMENT_SYSTEM_CELERY_BROKER_URL = 'redis://localhost:6379/8'
+SCHOLAR_PAYMENT_SYSTEM_CELERY_RESULT_BACKEND = 'redis://localhost:6379/8'
+
+# 学术积分账户系统配置
+# app_id 及 app_secret
+SCHOLAR_PAYMENT_SYSTEM_UUID_IN_PAYMENT_METHOD = ''
+SCHOLAR_PAYMENT_SYSTEM_APP_ID = '0001'
+SCHOLAR_PAYMENT_SYSTEM_APP_SECRET = ''
+
+
+# Redis for Cache System
 REDIS_HOST = 'localhost'
 REDIS_PORT = '6379'
+REDIS_DB = '0'
 
 # 邮件服务
 SMTP_PASSWORD = ''

@@ -16,7 +16,8 @@ class Cache(object):
     def __init__(self):
         redis_host = configs.REDIS_HOST
         redis_port = configs.REDIS_PORT
-        pool = redis.ConnectionPool(host=redis_host, port=redis_port, decode_responses=True)
+        redis_db = configs.REDIS_DB
+        pool = redis.ConnectionPool(host=redis_host, port=redis_port, db=redis_db, decode_responses=True)
         self.r = redis.Redis(connection_pool=pool)
 
     # def __is_model(self, o) -> bool:
