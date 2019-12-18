@@ -29,7 +29,8 @@ class ServiceAPI(BaseNeedLoginAPI):
             query = db_session.query(Service, ServiceTemplate.title) \
                 .outerjoin(ServiceTemplate, Service.template_uuid == ServiceTemplate.uuid) \
                 .filter(Service.user_uuid == user_uuid) \
-                .filter(Service.status != Service.STATUS.DELETED)
+                .filter(Service.status != Service.STATUS.DELETED) \
+                .order_by(Service.created_at)
 
             page, page_size, offset, max_page = self._derive_page_parameter(query.count())
 
