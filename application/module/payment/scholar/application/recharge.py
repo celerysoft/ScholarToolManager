@@ -2,6 +2,8 @@
 """
 学术积分账户支付系统 - 充值模块
 """
+from decimal import Decimal
+
 import configs
 from application.model.pay_order import PayOrder
 from application.model.scholar_payment_account import ScholarPaymentAccount
@@ -21,6 +23,8 @@ class Recharge(BaseComponent):
             signature = payload['signature']
         except KeyError:
             raise RuntimeError('非法请求')
+
+        amount = Decimal(amount)
 
         expect_signature = self._derive_signature(timestamp, app_id, configs.SCHOLAR_PAYMENT_SYSTEM_APP_SECRET)
         if signature != expect_signature:
@@ -47,12 +51,13 @@ class Recharge(BaseComponent):
                 trade_order_uuid=trade_order.uuid,
             )  # type: PayOrder
 
-            log = self._pay_trade_order(
+            log = self.increase(
                 session=session,
                 account_uuid=account.uuid,
                 old_balance=old_balance,
                 amount=amount,
-                new_balance=new_balance
+                new_balance=new_balance,
+                purpose_type=ScholarPaymentAccountLog.PurposeType.RECHARGE
             )  # type: ScholarPaymentAccountLog
 
             if log is not None:
@@ -66,6 +71,7 @@ class Recharge(BaseComponent):
                 account.balance = new_balance
 
             print('已收到为用户{}充值{}学术积分的请求'.format(user_uuid, amount))
+            return True
 
     @staticmethod
     def _create_trade_order(session, user_uuid, amount):
@@ -78,20 +84,6 @@ class Recharge(BaseComponent):
         session.add(order)
         session.flush()
         return order
-
-    @staticmethod
-    def _pay_trade_order(session, account_uuid: str, old_balance, amount, new_balance):
-        log = ScholarPaymentAccountLog(
-            account_uuid=account_uuid,
-            former_balance=old_balance,
-            amount=amount,
-            balance=new_balance,
-            log_type=ScholarPaymentAccountLog.Type.INCREASE.value,
-            purpose_type=ScholarPaymentAccountLog.PurposeType.RECHARGE.value,
-        )
-        session.add(log)
-        session.flush()
-        return log
 
     @staticmethod
     def _create_pay_order(session, amount, trade_order_uuid):

@@ -6,6 +6,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 # ======================================== Legacy Database Start ======================================= #
+import configs
+
 legacy_engine = None
 db = None
 LegacySession = None
@@ -57,18 +59,13 @@ def legacy_session_scope():
         raise
     finally:
         session.close()
+
+
 # ========================================= Legacy Database End ======================================== #
-
-
-engine = None
-Session = None
-
-
-def set_sqlalchemy_database_uri(uri):
-    global engine
-    engine = create_engine(uri, pool_recycle=3600)
-    global Session
-    Session = sessionmaker(bind=engine)
+uri = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' \
+          % (configs.DB_USER, configs.DB_PASSWORD, configs.DB_HOST, configs.DB_PORT, configs.DB_NAME)
+engine = create_engine(uri, pool_recycle=3600)
+Session = sessionmaker(bind=engine)
 
 
 @contextmanager

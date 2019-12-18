@@ -3,11 +3,13 @@ from datetime import datetime, timedelta
 
 from flask import Blueprint
 
+import configs
 from app import derive_import_root, add_url_rules_for_blueprint
 from application import exception
 from application.model.service_template import ServiceTemplate
 from application.model.subscribe_service_snapshot import SubscribeServiceSnapshot
 from application.model.trade_order import TradeOrder
+from application.util import scholar_payment_system
 from application.util.database import session_scope
 from application.views.base_api import BaseNeedLoginAPI, ApiResult
 
@@ -16,6 +18,11 @@ class ServiceOrderAPI(BaseNeedLoginAPI):
     methods = ['GET', 'POST', 'PUT', 'DELETE']
 
     def get(self):
+        """
+        获取订单信息
+
+        :return:
+        """
         uuid = self.get_data('uuid')
         if self.valid_data(uuid):
             return self.get_order_by_uuid(uuid)
@@ -53,6 +60,11 @@ class ServiceOrderAPI(BaseNeedLoginAPI):
             return result.to_response()
 
     def post(self):
+        """
+        创建订单
+
+        :return:
+        """
         service_uuid = self.get_post_data('service_uuid')
         if self.valid_data(service_uuid):
             return self.generate_renew_order(service_uuid)
@@ -131,9 +143,37 @@ class ServiceOrderAPI(BaseNeedLoginAPI):
                     raise exception.api.Conflict('有尚未支付的{}的订单，请勿重复下单'.format(snapshot.title))
 
     def put(self):
-        pass
+        """
+        订单支付
+
+        :return:
+        """
+        payment_method_uuid = self.get_post_data('payment_method_uuid', require=True,
+                                                 error_message='缺少payment_method_uuid字段')
+        trade_order_uuid = self.get_post_data('trade_order_uuid', require=True,
+                                              error_message='缺少trade_order_uuid字段')
+
+        if payment_method_uuid == configs.SCHOLAR_PAYMENT_SYSTEM_UUID_IN_PAYMENT_METHOD:
+            return self.pay_order_by_scholar_payment_system(trade_order_uuid)
+
+        return self.pay_order()
+
+    @staticmethod
+    def pay_order_by_scholar_payment_system(trade_order_uuid):
+        scholar_payment_system.toolkit.pay_order(trade_order_uuid)
+
+        result = ApiResult('支付订单的请求已收到，正在后台支付', 200)
+        return result.to_response()
+
+    def pay_order(self):
+        raise exception.api.ServiceUnavailable('暂不支持该支付方式')
 
     def delete(self):
+        """
+        取消订单
+
+        :return:
+        """
         uuid = self.get_data('uuid', require=True, error_message='缺少uuid字段')
         with session_scope() as session:
             order = session.query(TradeOrder) \

@@ -59,12 +59,21 @@ class ScholarPaymentSystemToolkit(object):
             'signature': signature
         }
 
-        scholar_payment_system_app.recharge(payload)
+        scholar_payment_system_app.recharge.delay(payload)
 
-    def pay_order(self, order_uuid: str):
-        # TODO 支付订单
+    def pay_order(self, trade_order_uuid: str):
+        timestamp = self._derive_timestamp(datetime.now())
 
-        self.create_service_by_order_uuid(order_uuid)
+        signature = self._derive_signature(timestamp)
+
+        payload = {
+            'app_id': self._app_id,
+            'timestamp': timestamp,
+            'trade_order_uuid': trade_order_uuid,
+            'signature': signature
+        }
+
+        scholar_payment_system_app.subscribe_service.delay(payload)
 
     def create_service_by_order_uuid(self, order_uuid: str):
         with session_scope() as session:

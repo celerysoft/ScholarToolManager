@@ -18,10 +18,11 @@ class PayOrder(Base, BaseModelMixin):
     payment_method_token = Column(VARCHAR(64), comment='支付渠道唯一标识符')
 
     class Status(Enum):
-        # 状态：0 - 初始化，1 - 支付完成，2 - 作废，3 - 支付中
+        # 状态：0 - 初始化，1 - 支付完成，2 - 作废，3 - 支付中，4 - 支付失败（取消支付）
         INITIALIZATION = 0
         FINISH = 1
         DELETED = 2
+        FAILED = 4
 
     class Type(Enum):
         RECHARGE = 1

@@ -23,7 +23,7 @@ class Service(Base, BaseModelMixin):
     password = Column(VARCHAR(64), nullable=False, comment='服务密码')
 
     class STATUS(object):
-        # 初始化，待创建订单
+        # 初始化
         INITIALIZATION = 0
         # 有效
         ACTIVATED = 1
@@ -33,8 +33,6 @@ class Service(Base, BaseModelMixin):
         SUSPENDED = 3
         # 已失效
         INVALID = 4
-        # 订单创建成功，待支付
-        CREATED = 5
 
     class TYPE(object):
         # 包月

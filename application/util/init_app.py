@@ -53,9 +53,9 @@ def init_database(app):
     database.set_legacy_sqlalchemy_database_uri(legacy_uri)
     database.set_db_with_pagination(SQLAlchemy(app))
 
-    uri = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' \
-          % (configs.DB_USER, configs.DB_PASSWORD, configs.DB_HOST, configs.DB_PORT, configs.DB_NAME)
-    database.set_sqlalchemy_database_uri(uri)
+    # uri = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' \
+    #       % (configs.DB_USER, configs.DB_PASSWORD, configs.DB_HOST, configs.DB_PORT, configs.DB_NAME)
+    # database.set_sqlalchemy_database_uri(uri)
 
 
 def datetime_filter(t):

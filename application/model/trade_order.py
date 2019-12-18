@@ -22,6 +22,7 @@ class TradeOrder(Base, BaseModelMixin):
         FINISH = 1
         DELETED = 2
         PAYING = 3
+        PARTIAL_PAY = 4
         CANCEL = 8
 
     class TYPE(Enum):
