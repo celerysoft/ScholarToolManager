@@ -49,6 +49,13 @@ class SubScribeService(BaseComponent):
             else:
                 amount = trade_order.amount
 
+            if amount == 0:
+                trade_order.status = TradeOrder.STATUS.FINISH.value
+                session.commit()
+                self._create_service(session, trade_order_uuid)
+                print('订单{}支付完毕，共支付0学术积分，学术服务已开通成功'.format(trade_order_uuid))
+                return
+
             old_balance = account.balance
             new_balance = old_balance - amount
 
@@ -74,9 +81,9 @@ class SubScribeService(BaseComponent):
             if pay_order.status == PayOrder.Status.FINISH.value and pay_order.amount == amount:
                 trade_order.status = TradeOrder.STATUS.FINISH.value
 
-            print('订单{}支付完毕，共支付{}学术积分'.format(trade_order_uuid, pay_order.amount))
-
             self._create_service(session, trade_order_uuid)
+
+            print('订单{}支付完毕，共支付{}学术积分，学术服务已开通成功'.format(trade_order_uuid, pay_order.amount))
             return True
 
     @staticmethod

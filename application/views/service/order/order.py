@@ -153,10 +153,22 @@ class ServiceOrderAPI(BaseNeedLoginAPI):
         trade_order_uuid = self.get_post_data('trade_order_uuid', require=True,
                                               error_message='缺少trade_order_uuid字段')
 
-        if payment_method_uuid == configs.SCHOLAR_PAYMENT_SYSTEM_UUID_IN_PAYMENT_METHOD:
-            return self.pay_order_by_scholar_payment_system(trade_order_uuid)
+        with session_scope() as session:
+            trade_order = session.query(TradeOrder) \
+                .filter(TradeOrder.uuid == trade_order_uuid).first()  # type: TradeOrder
+            if trade_order is None:
+                raise exception.api.NotFound('订单不存在')
+            if trade_order.status == TradeOrder.STATUS.PAYING.value:
+                raise exception.api.Conflict('订单正在支付中，请不要重复支付')
 
-        return self.pay_order()
+            old_status = trade_order.status
+            trade_order.status = TradeOrder.STATUS.PAYING.value
+
+            if payment_method_uuid != configs.SCHOLAR_PAYMENT_SYSTEM_UUID_IN_PAYMENT_METHOD:
+                trade_order.status = old_status
+                return self.pay_order()
+
+        return self.pay_order_by_scholar_payment_system(trade_order_uuid)
 
     @staticmethod
     def pay_order_by_scholar_payment_system(trade_order_uuid):
