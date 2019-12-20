@@ -12,7 +12,7 @@ from application.views.base_api import BaseNeedLoginAPI, ApiResult
 
 class EventAPI(BaseNeedLoginAPI):
     methods = ['GET', 'POST', 'PATCH', 'DELETE']
-    need_login_methods = ['POST', 'PATCH', 'DELETE']
+    need_login_methods = ['GET', 'POST', 'PATCH', 'DELETE']
 
     def get(self):
         event_uuid = self.get_data('uuid')

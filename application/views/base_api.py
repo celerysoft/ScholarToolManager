@@ -9,7 +9,8 @@ from jwt import PyJWTError
 import configs
 from application import exception
 from application.model.base_model import BaseModelMixin
-from application.util import authorization
+from application.util import authorization, permission
+from application.util.database import session_scope
 
 
 class ApiResult(object):
@@ -262,3 +263,77 @@ class BaseNeedLoginAPI(BaseAPI):
     @jwt_api
     def check_jwt(self):
         pass
+
+
+def permission_required_api(func):
+    def handle_permission(view: MethodView):
+        with session_scope() as session:
+            permission_required = view.get_permission_required
+            # if not permission.toolkit.check_permission(view.user_uuid, permission_required):
+            #     raise exception.api.Forbidden(view.permission_denied_message)
+
+            if not permission.toolkit.check_manage_permission(session, view.user_uuid):
+                raise exception.api.Forbidden(view.permission_denied_message)
+
+    def wrapper(*args, **kwargs):
+        for parameter in args:
+            if isinstance(parameter, PermissionRequiredAPI):
+                handle_permission(parameter)
+            elif isinstance(parameter, MethodView):
+                handle_permission(parameter)
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+class PermissionRequiredAPI(BaseNeedLoginAPI):
+    permission_denied_message = '当前用户无权进行此操作'
+    permission_required_methods = ['HEAD', 'GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTION']
+    permission_required_for_head = None
+    permission_required_for_get = None
+    permission_required_for_post = None
+    permission_required_for_patch = None
+    permission_required_for_put = None
+    permission_required_for_delete = None
+    permission_required_for_option = None
+
+    def get_permission_required_by_http_method(self, http_method_name):
+        http_method_name = http_method_name
+        if http_method_name == 'HEAD':
+            return self.permission_required_for_head
+        elif http_method_name == 'GET':
+            return self.permission_required_for_get
+        elif http_method_name == 'POST':
+            return self.permission_required_for_post
+        elif http_method_name == 'PATCH':
+            return self.permission_required_for_patch
+        elif http_method_name == 'PUT':
+            return self.permission_required_for_put
+        elif http_method_name == 'DELETE':
+            return self.permission_required_for_delete
+        elif http_method_name == 'OPTION':
+            return self.permission_required_for_option
+        else:
+            return None
+
+    def get_permission_required(self):
+        permission_required = self.get_permission_required_by_http_method(request.method)
+
+        if permission_required is None:
+            return ()
+        if isinstance(permission_required, str):
+            perms = (permission_required,)
+        else:
+            perms = permission_required
+        return perms
+
+    @permission_required_api
+    def check_permission(self):
+        pass
+
+    def dispatch_request(self, *args, **kwargs):
+        if request.method in self.need_login_methods:
+            self.check_login_status()
+        if request.method in self.permission_required_methods:
+            self.check_permission()
+        return super().dispatch_request(*args, **kwargs)

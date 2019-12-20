@@ -6,6 +6,7 @@ from flask import session
 from application.model.legacy import model
 import application.exception.http
 from application.model.legacy.model import Permission
+from application.model.user import User
 
 
 def check_user_api_permission():
@@ -141,6 +142,19 @@ class PermissionToolkit(object):
             .filter(model.Permission.id == permission_id) \
             .first()
         return permission is not None
+
+    @classmethod
+    def _temp_check_permission(cls, session, user_uuid):
+        user = session.query(User).filter(User.uuid == user_uuid).first()  # type: User
+        if user.username == 'celerysoft':
+            return True
+        return False
+
+    def check_permission(self, session, user_uuid, permission_required):
+        return False
+
+    def check_manage_permission(self, session, user_uuid):
+        return self._temp_check_permission(session, user_uuid)
 
     def check_login_permission(self, db_session, user_id) -> bool:
         return self._check_permission(db_session, user_id, Permission.LOGIN)
