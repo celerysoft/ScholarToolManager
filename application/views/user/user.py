@@ -22,6 +22,12 @@ class UserAPI(BaseNeedLoginAPI):
     need_login_methods = ['GET']
 
     def get(self):
+        uuid = self.get_data('uuid')
+        if self.valid_data(uuid):
+            return self.get_user_information(uuid)
+        return self.get_self_information()
+
+    def get_self_information(self):
         with session_scope() as session:
             user = session.query(User).filter(User.uuid == self.user_uuid).first()  # type:User
 
@@ -32,6 +38,23 @@ class UserAPI(BaseNeedLoginAPI):
                 'register_date': user.created_at.isoformat(),
                 'status': user.status
             })
+            return result.to_response()
+
+    def get_user_information(self, uuid):
+        with session_scope() as session:
+            user = session.query(User).filter(User.uuid == uuid).first()  # type:User
+
+            payload = {
+                'uuid': user.uuid,
+                'username': user.username,
+                'email': user.email,
+                'register_date': user.created_at.isoformat(),
+                'status': user.status
+            }
+            if self.user_uuid != uuid:
+                payload['email'] = ''
+                payload['status'] = -1
+            result = ApiResult('获取个人信息成功', payload=payload)
             return result.to_response()
 
     def post(self):
