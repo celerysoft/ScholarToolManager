@@ -36,6 +36,7 @@ class UserAPI(BaseNeedLoginAPI):
                 'username': user.username,
                 'email': user.email,
                 'register_date': user.created_at.isoformat(),
+                'created_at': user.created_at.isoformat(),
                 'status': user.status
             })
             return result.to_response()
@@ -49,6 +50,7 @@ class UserAPI(BaseNeedLoginAPI):
                 'username': user.username,
                 'email': user.email,
                 'register_date': user.created_at.isoformat(),
+                'created_at': user.created_at.isoformat(),
                 'status': user.status
             }
             if self.user_uuid != uuid:
