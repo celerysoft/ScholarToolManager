@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-from flask import request
-
-from application import exception
 from application.model.invitation_code import InvitationCode
 from application.model.user import User
 from application.util.database import session_scope
@@ -48,7 +45,7 @@ class ManagementInvitationAPI(PermissionRequiredAPI):
             session.add(invitation)
             session.flush()
 
-            result = ApiResult('创建邀请码成功', payload={
+            result = ApiResult('创建邀请码成功', 201, payload={
                 'invitation': invitation.to_dict(),
             })
             return result.to_response()
