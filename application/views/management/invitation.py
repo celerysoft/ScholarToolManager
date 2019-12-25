@@ -17,9 +17,9 @@ class ManagementInvitationAPI(PermissionRequiredAPI):
         with session_scope() as session:
             invitation_list = []
             query = self.derive_query_for_get_method(session, InvitationCode) \
-                .filter(User.status != User.STATUS.DELETED)
+                .filter(InvitationCode.status != InvitationCode.Status.DELETED.value)
             page, page_size, offset, max_page = self.derive_page_parameter(query.count())
-            invitations = query.offset(offset).limit(page_size).all()
+            invitations = query.limit(page_size).offset(offset).all()
             for invitation in invitations:  # type: InvitationCode
                 invitation_dict = invitation.to_dict()
                 inviter_username = session.query(User.username) \

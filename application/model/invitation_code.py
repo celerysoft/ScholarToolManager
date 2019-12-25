@@ -24,10 +24,10 @@ class InvitationCode(Base, BaseModelMixin):
         DELETED = 2
         INVITED = 3
 
-    def __init__(self, inviter_uuid, code=str(uuid.uuid4()), *args, **kwargs):
+    def __init__(self, inviter_uuid, code=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.code = code
+        self.code = code if code is not None else str(uuid.uuid4())
         self.inviter_uuid = inviter_uuid
 
 
