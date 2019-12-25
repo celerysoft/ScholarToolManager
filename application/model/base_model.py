@@ -1,5 +1,4 @@
 import json
-import uuid
 from datetime import datetime
 from decimal import Decimal
 
@@ -18,7 +17,7 @@ class IdMixin(object):
 
 
 class UuidMixin(object):
-    uuid = Column(VARCHAR(36), nullable=False, default=str(uuid.uuid4()))
+    uuid = Column(VARCHAR(36), nullable=False, default=func.uuid())
 
 
 class StatusMixin(object):
