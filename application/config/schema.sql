@@ -34,7 +34,7 @@ CREATE TABLE invitation_code
     `invited_at`   DATETIME             DEFAULT NULL DEFAULT CURRENT_TIMESTAMP,
     `created_at`   DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`   DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `status`       TINYINT(4)  NOT NULL DEFAULT 1 COMMENT '状态：0 - 初始化，1 - 有效，2 - 作废',
+    `status`       TINYINT(4)  NOT NULL DEFAULT 1 COMMENT '状态：0 - 初始化，1 - 有效，2 - 作废，3 - 已使用',
     PRIMARY KEY (`id`)
 )
     ENGINE = innodb

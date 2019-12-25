@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import uuid
+from enum import Enum
+
 from sqlalchemy import Column, String
 from sqlalchemy.dialects.mysql import VARCHAR, DATETIME
 
@@ -14,7 +17,14 @@ class InvitationCode(Base, BaseModelMixin):
     invitee_uuid = Column(VARCHAR(36))
     invited_at = Column(DATETIME)
 
-    def __init__(self, code, inviter_uuid, *args, **kwargs):
+    class Status(Enum):
+        # 状态：0 - 初始化，1 - 有效，2 - 作废，3 - 已使用
+        INITIALIZATION = 0
+        VALID = 1
+        DELETED = 2
+        INVITED = 3
+
+    def __init__(self, inviter_uuid, code=str(uuid.uuid4()), *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.code = code
