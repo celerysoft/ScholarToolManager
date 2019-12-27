@@ -129,7 +129,6 @@ class BaseView(MethodView):
 
     @classmethod
     def patch_model(cls, model_class, model, data: dict = None, *args, exclude=None):
-
         if exclude is None:
             exclude = []
         if model_class.__immutable_columns__ is not None:
@@ -153,6 +152,30 @@ class BaseView(MethodView):
 
             if cls.valid_data(value) and arg in fields:
                 setattr(model, arg, value)
+
+    @classmethod
+    def get_post_model(cls, model_class: BaseModelMixin.__class__, data: dict = None) -> BaseModelMixin:
+        model = model_class()
+
+        columns = []
+        for column in model_class.__allow_columns_for_creation__:
+            columns.append(column)
+        for column in model_class.__required_columns_for_creation__:
+            columns.append(column)
+
+        for arg in columns:
+            if data is None:
+                value = cls.get_post_data(arg)
+            else:
+                value = data.get(arg)
+
+            if cls.valid_data(value):
+                setattr(model, arg, value)
+            else:
+                if arg in model_class.__required_columns_for_creation__:
+                    raise exception.api.InvalidRequest('缺少{}字段'.format(arg))
+
+        return model
 
     @staticmethod
     def models_to_list(models: list):

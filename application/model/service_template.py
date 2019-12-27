@@ -17,6 +17,10 @@ class ServiceTemplate(Base, BaseModelMixin):
     price = Column(DECIMAL(12, 2), nullable=False, comment='价格')
     initialization_fee = Column(DECIMAL(12, 2), nullable=False, comment='初装费')
 
+    __required_columns_for_creation__ = ['type', 'title', 'subtitle', 'description', 'package', 'price',
+                                         'initialization_fee']
+    __allow_columns_for_creation__ = ['status']
+
     class STATUS(object):
         # 初始化
         INITIALIZATION = 0
@@ -35,18 +39,22 @@ class ServiceTemplate(Base, BaseModelMixin):
         # 推荐
         RECOMMENDATION = 2
 
-    def __init__(self, service_type: int, title: str, subtitle: str, description: str, package: int, price,
-                 initialization_fee, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
+        print(self.__allow_columns_for_creation__)
         super().__init__(*args, **kwargs)
 
-        self.type = service_type
-        self.title = title
-        self.subtitle = subtitle
-        self.description = description
-        self.package = package
-        self.price = price
-        self.initialization_fee = initialization_fee
-        self.status = 1
+    # def __init__(self, service_type: int, title: str, subtitle: str, description: str, package: int, price,
+    #              initialization_fee, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #
+    #     self.type = service_type
+    #     self.title = title
+    #     self.subtitle = subtitle
+    #     self.description = description
+    #     self.package = package
+    #     self.price = price
+    #     self.initialization_fee = initialization_fee
+    #     self.status = 1
 
 
 cacheable = ServiceTemplate

@@ -8,14 +8,15 @@ from application.model.base_model import Base, BaseModelMixin
 class Event(Base, BaseModelMixin):
     __tablename__ = 'event'
     __comment__ = '公告'
-    __immutable_columns__ = ['id', 'user_id', 'created_at']
 
     author_uuid = Column(VARCHAR(36))
     title = Column(VARCHAR(128))
     summary = Column(String)
     content = Column(String)
 
-    def __init__(self, author_uuid=None, title=None, summary=None, content=None):
+    __immutable_columns__ = ['id', 'author_uuid', 'created_at']
+
+    def __init__(self, *args, author_uuid=None, title=None, summary=None, content=None, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.author_uuid = author_uuid

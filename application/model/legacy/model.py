@@ -184,7 +184,6 @@ class InvitationCode(Base):
 
 class Event(Base):
     __tablename__ = 'event'
-    __immutable_columns__ = ['id', 'user_id', 'created_at']
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer)
@@ -194,6 +193,8 @@ class Event(Base):
     content = Column(String)
     created_at = Column(Float)
     available = Column(Boolean)
+
+    __immutable_columns__ = ['id', 'user_id', 'created_at']
 
     def __init__(self, user_id=None, name=None, tag=None, summary=None, content=None, created_at=None,
                  available=True):

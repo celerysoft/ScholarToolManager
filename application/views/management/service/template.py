@@ -32,37 +32,46 @@ class ManagementServiceTemplateAPI(PermissionRequiredAPI):
             return result.to_response()
 
     def post(self):
-        service_type = self.get_post_data('type', require=True, error_message='缺少type字段')
-        title = self.get_post_data('title', require=True, error_message='缺少title字段')
-        subtitle = self.get_post_data('subtitle', require=True, error_message='缺少subtitle字段')
-        description = self.get_post_data('description', require=True, error_message='缺少description字段')
-        package = self.get_post_data('package', require=True, error_message='缺少package字段')
-        try:
-            package = int(package)
-        except:
-            raise exception.api.InvalidRequest('请输入合法的package字段')
-        price = self.get_post_data('price', require=True, error_message='缺少price字段')
-        try:
-            price = float(price)
-        except:
-            raise exception.api.InvalidRequest('请输入合法的price字段')
-        initialization_fee = self.get_post_data('initialization_fee', require=True,
-                                                error_message='缺少initialization_fee字段')
-        try:
-            initialization_fee = float(initialization_fee)
-        except:
-            raise exception.api.InvalidRequest('请输入合法的initialization_fee字段')
-
+        # service_type = self.get_post_data('type', require=True, error_message='缺少type字段')
+        # title = self.get_post_data('title', require=True, error_message='缺少title字段')
+        # subtitle = self.get_post_data('subtitle', require=True, error_message='缺少subtitle字段')
+        # description = self.get_post_data('description', require=True, error_message='缺少description字段')
+        # package = self.get_post_data('package', require=True, error_message='缺少package字段')
+        # try:
+        #     package = int(package)
+        # except:
+        #     raise exception.api.InvalidRequest('请输入合法的package字段')
+        # price = self.get_post_data('price', require=True, error_message='缺少price字段')
+        # try:
+        #     price = float(price)
+        # except:
+        #     raise exception.api.InvalidRequest('请输入合法的price字段')
+        # initialization_fee = self.get_post_data('initialization_fee', require=True,
+        #                                         error_message='缺少initialization_fee字段')
+        # try:
+        #     initialization_fee = float(initialization_fee)
+        # except:
+        #     raise exception.api.InvalidRequest('请输入合法的initialization_fee字段')
+        #
+        # with session_scope() as session:
+        #     template = ServiceTemplate(
+        #         service_type=service_type,
+        #         title=title,
+        #         subtitle=subtitle,
+        #         description=description,
+        #         package=package,
+        #         price=price,
+        #         initialization_fee=initialization_fee,
+        #     )
+        #     session.add(template)
+        #     session.flush()
+        #
+        #     result = ApiResult('创建学术服务模板成功', 201, payload={
+        #         'template': template.to_dict(),
+        #     })
+        #     return result.to_response()
         with session_scope() as session:
-            template = ServiceTemplate(
-                service_type=service_type,
-                title=title,
-                subtitle=subtitle,
-                description=description,
-                package=package,
-                price=price,
-                initialization_fee=initialization_fee,
-            )
+            template = self.get_post_model(ServiceTemplate)
             session.add(template)
             session.flush()
 
