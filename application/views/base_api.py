@@ -128,7 +128,30 @@ class BaseView(MethodView):
             return data is not None
 
     @classmethod
-    def patch_model(cls, model_class, model, data: dict = None, *args, exclude=None):
+    def update_model(cls, db_session, model_class: BaseModelMixin.__class__, data: dict = None, *args,
+                     exclude=None, not_found_error_message=None):
+        model_id = cls.get_post_data('id')
+        model_uuid = cls.get_post_data('uuid')
+        if model_id is None and model_uuid is None:
+            raise exception.api.InvalidRequest('条件不足，无法寻找指定数据')
+
+        delete_status = 2
+        if cls.valid_data(model_id):
+            model = db_session.query(model_class) \
+                .filter(model_class.id == model_id,
+                        model_class.status != delete_status).first()
+        elif cls.valid_data(model_uuid):
+            model = db_session.query(model_class) \
+                .filter(model_class.uuid == model_uuid,
+                        model_class.status != delete_status).first()
+        else:
+            model = None
+
+        if model is None:
+            raise exception.api.NotFound(
+                not_found_error_message if not_found_error_message is not None else '指定的数据不存在'
+            )
+
         if exclude is None:
             exclude = []
         if model_class.__immutable_columns__ is not None:
@@ -153,8 +176,10 @@ class BaseView(MethodView):
             if cls.valid_data(value) and arg in fields:
                 setattr(model, arg, value)
 
+        return model
+
     @classmethod
-    def get_post_model(cls, model_class: BaseModelMixin.__class__, data: dict = None) -> BaseModelMixin:
+    def create_model_from_http_post(cls, model_class: BaseModelMixin.__class__, data: dict = None) -> BaseModelMixin:
         model = model_class()
 
         columns = []

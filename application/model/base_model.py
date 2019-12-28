@@ -34,8 +34,9 @@ class BaseModelMixin(IdMixin, UuidMixin, TimestampMixin, StatusMixin):
     # updated_at = Column(DATETIME, nullable=False, default=func.now(), server_default=func.now(), onupdate=func.now())
     # status = Column(TINYINT, nullable=False, default=1, comment='记录状态：1 - 正常')
 
+    __immutable_columns__ = ['id', 'uuid', 'created_at', 'updated_at']
     __required_columns_for_creation__ = []
-    __allow_columns_for_creation__ = [].extend(__required_columns_for_creation__)
+    __allow_columns_for_creation__ = []
 
     def __init__(self, *args, **kwargs):
         pass
