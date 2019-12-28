@@ -6,7 +6,7 @@ from application.views.base_api import PermissionRequiredAPI, ApiResult
 
 
 class ManagementServiceTemplateAPI(PermissionRequiredAPI):
-    methods = ['GET', 'POST', 'DELETE']
+    methods = ['GET', 'POST', 'PUT', 'DELETE']
     permission_required_for_get = []
     permission_required_for_post = []
     permission_required_for_delete = []
@@ -71,11 +71,20 @@ class ManagementServiceTemplateAPI(PermissionRequiredAPI):
         #     })
         #     return result.to_response()
         with session_scope() as session:
-            template = self.get_post_model(ServiceTemplate)
+            template = self.create_model_from_http_post(ServiceTemplate)
             session.add(template)
             session.flush()
 
             result = ApiResult('创建学术服务模板成功', 201, payload={
+                'template': template.to_dict(),
+            })
+            return result.to_response()
+
+    def put(self):
+        with session_scope() as session:
+            template = self.update_model(session, ServiceTemplate)
+
+            result = ApiResult('修改学术服务模板成功', 200, payload={
                 'template': template.to_dict(),
             })
             return result.to_response()
