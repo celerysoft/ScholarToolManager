@@ -59,19 +59,10 @@ class ManagementEventAPI(PermissionRequiredAPI):
             return result.to_response()
 
     def delete(self):
-        uuid = self.get_data('uuid', require=True, error_message='请输入uuid字段')
-
         with session_scope() as session:
-            event = session.query(Event) \
-                .filter(Event.uuid == uuid,
-                        Event.status != ServiceTemplate.STATUS.DELETED) \
-                .first()  # type: Event
-
-            if event is None:
-                raise exception.api.NotFound('需要删除的公告不存在')
-
-            event.status = 2
-
+            self.delete_model(session, Event,
+                              delete_status=Event.Status.DELETED.value,
+                              not_found_error_message='需要删除的公告不存在')
             result = ApiResult('删除公告成功')
             return result.to_response()
 

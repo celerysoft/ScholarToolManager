@@ -2,7 +2,8 @@
 import json
 import math
 
-from flask import request, Response, session
+from flask import request, Response
+from flask import session as flask_session
 from flask.views import MethodView
 from jwt import PyJWTError
 
@@ -128,8 +129,37 @@ class BaseView(MethodView):
             return data is not None
 
     @classmethod
-    def update_model(cls, db_session, model_class: BaseModelMixin.__class__, data: dict = None, *args,
-                     exclude=None, not_found_error_message=None):
+    def delete_model(cls, session, model_class: BaseModelMixin.__class__, delete_status=None,
+                     not_found_error_message=None) -> BaseModelMixin:
+        model_id = cls.get_data('id')
+        model_uuid = cls.get_data('uuid')
+        if model_id is None and model_uuid is None:
+            raise exception.api.InvalidRequest('条件不足，无法寻找指定数据')
+
+        delete_status = 2 if delete_status is None else delete_status
+        if cls.valid_data(model_id):
+            model = session.query(model_class) \
+                .filter(model_class.id == model_id,
+                        model_class.status != delete_status).first()
+        elif cls.valid_data(model_uuid):
+            model = session.query(model_class) \
+                .filter(model_class.uuid == model_uuid,
+                        model_class.status != delete_status).first()
+        else:
+            model = None
+
+        if model is None:
+            raise exception.api.NotFound(
+                not_found_error_message if not_found_error_message is not None else '需要删除的数据不存在'
+            )
+
+        model.status = delete_status
+
+        return model
+
+    @classmethod
+    def update_model(cls, session, model_class: BaseModelMixin.__class__, data: dict = None, *args,
+                     exclude=None, not_found_error_message=None) -> BaseModelMixin:
         model_id = cls.get_post_data('id')
         model_uuid = cls.get_post_data('uuid')
         if model_id is None and model_uuid is None:
@@ -137,11 +167,11 @@ class BaseView(MethodView):
 
         delete_status = 2
         if cls.valid_data(model_id):
-            model = db_session.query(model_class) \
+            model = session.query(model_class) \
                 .filter(model_class.id == model_id,
                         model_class.status != delete_status).first()
         elif cls.valid_data(model_uuid):
-            model = db_session.query(model_class) \
+            model = session.query(model_class) \
                 .filter(model_class.uuid == model_uuid,
                         model_class.status != delete_status).first()
         else:
@@ -255,14 +285,14 @@ def jwt_api(func):
 
 
 def session_api(func):
-    session_dict = session
+    session_dict = flask_session
 
     def handle_session(view: MethodView):
         if 'user' not in session_dict.keys():
             raise exception.api.Unauthorized('请先登录')
 
         try:
-            user_id = session['user']['id']
+            user_id = flask_session['user']['id']
         except KeyError:
             raise exception.api.Unauthorized('请先登录')
 
@@ -316,7 +346,7 @@ class BaseNeedLoginAPI(BaseAPI):
 def permission_required_api(func):
     def handle_permission(view: MethodView):
         with session_scope() as session:
-            permission_required = view.get_permission_required
+            # permission_required = view.get_permission_required
             # if not permission.toolkit.check_permission(view.user_uuid, permission_required):
             #     raise exception.api.Forbidden(view.permission_denied_message)
 
