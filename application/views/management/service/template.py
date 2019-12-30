@@ -99,7 +99,7 @@ class ManagementServiceTemplateAPI(PermissionRequiredAPI):
                 .first()  # type: ServiceTemplate
 
             if template is None:
-                raise exception.api.NotFound('')
+                raise exception.api.NotFound('需要删除的学术服务模板不存在')
 
             template.status = 2
 

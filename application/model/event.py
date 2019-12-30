@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from enum import Enum
+
 from sqlalchemy import Column, String
 from sqlalchemy.dialects.mysql import VARCHAR
 
@@ -15,6 +17,12 @@ class Event(Base, BaseModelMixin):
     content = Column(String)
 
     __immutable_columns__ = ['id', 'author_uuid', 'created_at']
+
+    class Status(Enum):
+        # 状态：0 - 初始化，1 - 有效，2 - 作废
+        INITIALIZATION = 0
+        VALID = 1
+        DELETED = 2
 
     def __init__(self, *args, author_uuid=None, title=None, summary=None, content=None, **kwargs):
         super().__init__(*args, **kwargs)

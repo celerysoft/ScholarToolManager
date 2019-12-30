@@ -30,7 +30,7 @@ class EventAPI(BaseNeedLoginAPI):
 
             event_list = []
             for event in events:  # type:Event
-                event_list.append(event.to_dict())
+                event_list.append(event.to_dict('content'))
 
             result = ApiResult('获取公告成功', payload={
                 'events': event_list
