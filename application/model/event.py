@@ -17,6 +17,8 @@ class Event(Base, BaseModelMixin):
     content = Column(String)
 
     __immutable_columns__ = ['id', 'author_uuid', 'created_at']
+    __required_columns_for_creation__ = ['author_uuid', 'title', 'summary', 'content']
+    __allow_columns_for_creation__ = ['status']
 
     class Status(Enum):
         # 状态：0 - 初始化，1 - 有效，2 - 作废

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-from application import exception
 from application.model.event import Event
-from application.model.service_template import ServiceTemplate
 from application.model.user import User
 from application.util.database import session_scope
 from application.views.base_api import PermissionRequiredAPI, ApiResult
