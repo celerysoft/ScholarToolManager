@@ -23,7 +23,8 @@ class EventAPI(BaseNeedLoginAPI):
 
     def get_events(self):
         with session_scope() as session:
-            query = session.query(Event).filter(Event.status == 1)
+            query = self.derive_query_for_get_method(session, Event) \
+                .filter(Event.status == Event.Status.VALID.value)
             page, page_size, offset, max_page = self.derive_page_parameter(query.count())
 
             events = query.offset(offset).limit(page_size).all()

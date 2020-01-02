@@ -84,7 +84,6 @@ class ServiceOrderAPI(BaseNeedLoginAPI):
             conflict, snapshot = trade_order.toolkit.check_is_order_conflict(
                 session, self.user_uuid, service_template_uuid=service_template_uuid
             )
-            print(conflict, 123, snapshot)
             if conflict:
                 raise exception.api.Conflict('有尚未支付的『{}』的订单，请勿重复下单'.format(snapshot.title))
 

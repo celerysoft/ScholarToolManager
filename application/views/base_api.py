@@ -81,14 +81,99 @@ class BaseView(MethodView):
                 query_dict[format_key] = value
         return query_dict
 
+    @staticmethod
+    def _derive_query_methods_from_http_get_method(model_class):
+        supported_query_methods = ['$order_by']
+        supported_query_methods_extra = {
+            '$order_by': ['asc', 'desc']
+        }
+
+        fields = []
+        for field in model_class.__table__.columns:
+            fields.append(field.name)
+
+        query_method_list = []
+
+        # request_items = []
+        # # for key, value in request.args.items():
+        # #     if key in supported_query_methods:
+        # #         request_items.append((key, value))
+        # for key, values in request.args.lists():
+        #     key = key.replace('[]', '')
+        #     if key in supported_query_methods:
+        #         for value in values:
+        #             request_items.append((key, value))
+        #
+        # for key, value in request_items:
+        #     if value in [None, '']:
+        #         continue
+        #
+        #     value_split = value.split(',')
+        #     if len(value_split) == 1:
+        #         query_method_parameter = value_split[0]
+        #         query_method_extra = None
+        #     elif len(value_split) == 2:
+        #         query_method_parameter, query_method_extra = value_split
+        #     else:
+        #         continue
+        #     if query_method_parameter not in fields:
+        #         continue
+        #
+        #     query_method = key[1:]
+        #     query_method_extra = query_method_extra if query_method_extra in supported_query_methods_extra.get(
+        #         key) else None
+        #
+        #     query_method_list.append((query_method, query_method_parameter, query_method_extra))
+
+        for key, values in request.args.lists():
+            if values in [None, '']:
+                continue
+            key = key.replace('[]', '')
+            if key in supported_query_methods:
+                for value in values:
+                    value_split = value.split(',')
+                    if len(value_split) == 1:
+                        query_method_parameter = value_split[0]
+                        query_method_extra = None
+                    elif len(value_split) == 2:
+                        query_method_parameter, query_method_extra = value_split
+                    else:
+                        continue
+                    if query_method_parameter not in fields:
+                        continue
+
+                    query_method = key[1:]
+                    query_method_extra = query_method_extra if query_method_extra in supported_query_methods_extra.get(
+                        key) else None
+
+                    query_method_list.append((query_method, query_method_parameter, query_method_extra))
+
+        return query_method_list
+
     def derive_query_for_get_method(self, session, model_class, query=None):
         query_dict = self._derive_get_method_query_dict(model_class)
+        query_method_list = self._derive_query_methods_from_http_get_method(model_class)
+
         query = session.query(model_class) if query is None else query
+
         for key, value in query_dict.items():
             if isinstance(value, list):
                 query = query.filter(getattr(model_class, key).in_(value))
             else:
                 query = query.filter(getattr(model_class, key) == value)
+
+        for query_method, query_method_parameter, query_method_extra in query_method_list:
+            method = getattr(query, query_method) if query_method is not None else None
+            if method is None:
+                continue
+            parameter = getattr(model_class, query_method_parameter) if query_method_parameter is not None else None
+            if parameter is None:
+                continue
+            extra = getattr(parameter, query_method_extra) if query_method_extra is not None else None
+            if extra is not None:
+                parameter = extra()
+            query = method(parameter)
+
         return query
 
     @classmethod
