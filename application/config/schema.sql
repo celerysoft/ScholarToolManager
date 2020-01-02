@@ -147,6 +147,21 @@ CREATE TABLE scholar_payment_account_log
     DEFAULT CHARSET = utf8
     COMMENT = '学术积分账户流水';
 
+CREATE TABLE service_trade_order
+(
+    `id`               INT(11)     NOT NULL AUTO_INCREMENT,
+    `uuid`             VARCHAR(36) NOT NULL,
+    `service_uuid`     VARCHAR(36) NOT NULL COMMENT '学术服务UUID',
+    `trade_order_uuid` TINYINT     NOT NULL COMMENT '交易订单UUID',
+    `created_at`       DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`       DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `status`           TINYINT(4)  NOT NULL DEFAULT 1 COMMENT '状态：0 - 初始化，1 - 有效，2 - 作废',
+    PRIMARY KEY (`id`)
+)
+    ENGINE = innodb
+    DEFAULT CHARSET = utf8
+    COMMENT = '学术服务交易订单关系表';
+
 CREATE TABLE trade_order
 (
     `id`          INT(11)        NOT NULL AUTO_INCREMENT,

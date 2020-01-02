@@ -40,7 +40,7 @@ class SubscribeServiceSnapshot(Base, BaseModelMixin):
 
     def __init__(self, trade_order_uuid: str, user_uuid: str, service_password: str, auto_renew: int,
                  service_template_uuid: str, service_type: int, title: str, subtitle: str, description: str,
-                 package: int, price: int, initialization_fee: int, *args, **kwargs):
+                 package: int, price: float, initialization_fee: float, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.trade_order_uuid = trade_order_uuid

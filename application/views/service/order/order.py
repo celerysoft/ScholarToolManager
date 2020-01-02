@@ -9,7 +9,7 @@ from application import exception
 from application.model.service_template import ServiceTemplate
 from application.model.subscribe_service_snapshot import SubscribeServiceSnapshot
 from application.model.trade_order import TradeOrder
-from application.util import scholar_payment_system
+from application.util import scholar_payment_system, trade_order
 from application.util.database import session_scope
 from application.views.base_api import BaseNeedLoginAPI, ApiResult
 
@@ -76,15 +76,21 @@ class ServiceOrderAPI(BaseNeedLoginAPI):
         raise exception.api.InvalidRequest('非法请求')
 
     def generate_renew_order(self, service_uuid: str):
+        # TODO 续费学术服务订单创建
         raise exception.api.ServiceUnavailable('接口建设中')
 
     def generate_creation_order(self, service_template_uuid: str):
-        self.check_is_order_conflict(service_template_uuid)
-
-        password = self.get_post_data('password', require=True, error_message='缺少password字段')
-        auto_renew = self.get_post_data('auto_renew')
-
         with session_scope() as session:
+            conflict, snapshot = trade_order.toolkit.check_is_order_conflict(
+                session, self.user_uuid, service_template_uuid=service_template_uuid
+            )
+            print(conflict, 123, snapshot)
+            if conflict:
+                raise exception.api.Conflict('有尚未支付的『{}』的订单，请勿重复下单'.format(snapshot.title))
+
+            password = self.get_post_data('password', require=True, error_message='缺少password字段')
+            auto_renew = self.get_post_data('auto_renew')
+
             service_template = session.query(ServiceTemplate) \
                 .filter(ServiceTemplate.uuid == service_template_uuid,
                         ServiceTemplate.status != ServiceTemplate.STATUS.DELETED).first()  # type: ServiceTemplate
@@ -125,22 +131,6 @@ class ServiceOrderAPI(BaseNeedLoginAPI):
                 'uuid': order.uuid,
             })
             return result.to_response()
-
-    def check_is_order_conflict(self, service_template_uuid: str):
-        with session_scope() as session:
-            threshold_in_day = 1
-            critical_time = datetime.now() - timedelta(days=threshold_in_day)
-            orders = session.query(TradeOrder) \
-                .filter(TradeOrder.user_uuid == self.user_uuid,
-                        TradeOrder.status.in_([TradeOrder.STATUS.INITIALIZATION.value, TradeOrder.STATUS.PAYING.value]),
-                        TradeOrder.created_at > critical_time).all()
-            for order in orders:  # type: TradeOrder
-                snapshot = session.query(SubscribeServiceSnapshot) \
-                    .filter(SubscribeServiceSnapshot.trade_order_uuid == order.uuid,
-                            SubscribeServiceSnapshot.status != SubscribeServiceSnapshot.STATUS.DELETED) \
-                    .first()  # type: SubscribeServiceSnapshot
-                if snapshot.service_template_uuid == service_template_uuid:
-                    raise exception.api.Conflict('有尚未支付的{}的订单，请勿重复下单'.format(snapshot.title))
 
     def put(self):
         """
