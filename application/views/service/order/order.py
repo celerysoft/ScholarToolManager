@@ -6,7 +6,9 @@ from flask import Blueprint
 import configs
 from app import derive_import_root, add_url_rules_for_blueprint
 from application import exception
+from application.model.service import Service
 from application.model.service_template import ServiceTemplate
+from application.model.service_trade_order import ServiceTradeOrder
 from application.model.subscribe_service_snapshot import SubscribeServiceSnapshot
 from application.model.trade_order import TradeOrder
 from application.util import scholar_payment_system, trade_order
@@ -76,10 +78,84 @@ class ServiceOrderAPI(BaseNeedLoginAPI):
         raise exception.api.InvalidRequest('非法请求')
 
     def generate_renew_order(self, service_uuid: str):
-        # TODO 续费学术服务订单创建
-        raise exception.api.ServiceUnavailable('接口建设中')
+        """
+        生成续费订单
+
+        :param service_uuid:
+        :return:
+        """
+        with session_scope() as session:
+            service = session.query(Service).filter(Service.uuid == service_uuid,
+                                                    Service.status != Service.STATUS.DELETED).first()  # type: Service
+            if service is None:
+                raise exception.api.NotFound('学术服务不存在，无法续费')
+            if service.status == Service.STATUS.INVALID:
+                raise exception.api.InvalidRequest('由于学术服务长时间没有续费，已被系统回收，无法续费')
+            if service.type == Service.TYPE.MONTHLY:
+                raise exception.api.InvalidRequest(
+                    '包月学术服务无法手动续费，请在每月的账单日支付系统自动生成的续费账单即可完成续费')
+            if service.usage / service.package < 0.8:
+                raise exception.api.Forbidden('剩余流量大于总流量的20%，暂无法续费')
+
+            conflict, snapshot = trade_order.toolkit.check_is_order_conflict(
+                session, service.user_uuid, service_uuid=service.uuid,
+            )
+            if conflict:
+                raise exception.api.Conflict('有尚未支付的『{}』的订单，请勿重复下单'.format(snapshot.title))
+
+            service_template = session.query(ServiceTemplate) \
+                .filter(ServiceTemplate.uuid == service.template_uuid,
+                        ServiceTemplate.status != ServiceTemplate.STATUS.DELETED).first()  # type: ServiceTemplate
+            if service_template is None:
+                raise exception.api.NotFound('套餐不存在，无法办理')
+            if service_template.status == ServiceTemplate.STATUS.SUSPEND:
+                raise exception.api.ServiceUnavailable('该套餐已下架，无法办理')
+
+            total_payment = service_template.price
+
+            order = TradeOrder(
+                user_uuid=service.user_uuid,
+                order_type=TradeOrder.TYPE.CONSUME.value,
+                amount=total_payment,
+                description='续费学术服务，服务UUID：{}'.format(service.uuid)
+            )
+            session.add(order)
+            session.flush()
+
+            snapshot = SubscribeServiceSnapshot(
+                trade_order_uuid=order.uuid,
+                user_uuid=service.user_uuid,
+                service_password=service.password,
+                auto_renew=service.auto_renew,
+                service_template_uuid=service.template_uuid,
+                service_type=service.type,
+                title=service_template.title,
+                subtitle=service_template.subtitle,
+                description=service_template.description,
+                package=service_template.package,
+                price=service_template.price,
+                initialization_fee=service_template.initialization_fee
+            )
+            session.add(snapshot)
+
+            relationship = ServiceTradeOrder(
+                service_uuid=service.uuid,
+                trade_order_uuid=order.uuid,
+            )
+            session.add(relationship)
+
+            result = ApiResult('订单创建成功', 201, {
+                'uuid': order.uuid,
+            })
+            return result.to_response()
 
     def generate_creation_order(self, service_template_uuid: str):
+        """
+        生成创建新的学术服务的订单
+
+        :param service_template_uuid:
+        :return:
+        """
         with session_scope() as session:
             conflict, snapshot = trade_order.toolkit.check_is_order_conflict(
                 session, self.user_uuid, service_template_uuid=service_template_uuid
@@ -96,7 +172,7 @@ class ServiceOrderAPI(BaseNeedLoginAPI):
             if service_template is None:
                 raise exception.api.NotFound('套餐不存在，无法办理')
             if service_template.status == ServiceTemplate.STATUS.SUSPEND:
-                raise exception.api.Forbidden('该套餐已下架，故无法办理')
+                raise exception.api.ServiceUnavailable('该套餐已下架，故无法办理')
 
             total_payment = service_template.initialization_fee + service_template.price
 
@@ -149,15 +225,13 @@ class ServiceOrderAPI(BaseNeedLoginAPI):
                 raise exception.api.NotFound('订单不存在')
             if trade_order.status == TradeOrder.STATUS.PAYING.value:
                 raise exception.api.Conflict('订单正在支付中，请不要重复支付')
-
-            old_status = trade_order.status
-            trade_order.status = TradeOrder.STATUS.PAYING.value
+            if trade_order.status == TradeOrder.STATUS.FINISH.value:
+                raise exception.api.Conflict('订单已完成支付，请不要重复支付')
 
             if payment_method_uuid != configs.SCHOLAR_PAYMENT_SYSTEM_UUID_IN_PAYMENT_METHOD:
-                trade_order.status = old_status
                 return self.pay_order()
 
-        return self.pay_order_by_scholar_payment_system(trade_order_uuid)
+            return self.pay_order_by_scholar_payment_system(trade_order_uuid)
 
     @staticmethod
     def pay_order_by_scholar_payment_system(trade_order_uuid):

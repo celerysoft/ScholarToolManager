@@ -33,6 +33,8 @@ class Service(Base, BaseModelMixin):
         SUSPENDED = 3
         # 已失效
         INVALID = 4
+        # 欠费
+        OUT_OF_CREDIT = 5
 
     class TYPE(object):
         # 包月
