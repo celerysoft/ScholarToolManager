@@ -15,7 +15,7 @@ from application.util import trade_order
 from application.util.database import session_scope
 
 
-class AutoCreateOrderForExpiredServiceScript:
+class CreateOrderForExpiredServiceScript:
     def execute(self):
         now = datetime.now()
         if now.day == 1:
@@ -88,5 +88,5 @@ class AutoCreateOrderForExpiredServiceScript:
 
 
 if __name__ == '__main__':
-    script = AutoCreateOrderForExpiredServiceScript()
+    script = CreateOrderForExpiredServiceScript()
     script.execute()

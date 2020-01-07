@@ -13,7 +13,7 @@ from application.util import scholar_payment_system
 from application.util.database import session_scope
 
 
-class AutoPayOrderForAutoRenewServiceScript:
+class PayOrderForAutoRenewServiceScript:
     def execute(self):
         now = datetime.now()
         if now.day == 1:
@@ -25,7 +25,7 @@ class AutoPayOrderForAutoRenewServiceScript:
             deadline = now - timedelta(hours=1)
             orders = session.query(TradeOrder) \
                 .filter(TradeOrder.type == TradeOrder.TYPE.CONSUME.value,
-                        TradeOrder.status == TradeOrder.STATUS.INITIALIZATION,
+                        TradeOrder.status == TradeOrder.STATUS.INITIALIZATION.value,
                         TradeOrder.created_at > deadline) \
                 .all()
             for order in orders:  # type: TradeOrder
@@ -45,5 +45,5 @@ class AutoPayOrderForAutoRenewServiceScript:
 
 
 if __name__ == '__main__':
-    script = AutoPayOrderForAutoRenewServiceScript()
+    script = PayOrderForAutoRenewServiceScript()
     script.execute()
