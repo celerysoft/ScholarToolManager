@@ -133,6 +133,7 @@ CREATE TABLE scholar_payment_account_log
     `id`             INT(11)        NOT NULL AUTO_INCREMENT,
     `uuid`           VARCHAR(36)    NOT NULL,
     `account_uuid`   VARCHAR(36)    NOT NULL COMMENT '学术积分账户UUID',
+    `pay_order_uuid` VARCHAR(36)    NOT NULL COMMENT '流水对应的支付订单UUID',
     `former_balance` DECIMAL(12, 2) NOT NULL COMMENT '操作前账户余额',
     `amount`         DECIMAL(12, 2) NOT NULL COMMENT '金额',
     `balance`        DECIMAL(12, 2) NOT NULL COMMENT '操作后账户余额',

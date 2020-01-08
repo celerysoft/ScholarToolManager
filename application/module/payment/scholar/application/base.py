@@ -32,13 +32,14 @@ class BaseComponent(object):
         ).decode()
 
     @classmethod
-    def increase(cls, session, account_uuid, old_balance, amount, new_balance,
+    def increase(cls, session, account_uuid, pay_order_uuid, old_balance, amount, new_balance,
                  purpose_type: ScholarPaymentAccountLog.PurposeType) -> ScholarPaymentAccountLog:
         if new_balance - old_balance != amount:
             raise RuntimeError('非法请求')
         return cls.create_scholar_payment_account_log(
             session=session,
             account_uuid=account_uuid,
+            pay_order_uuid=pay_order_uuid,
             old_balance=old_balance,
             amount=amount,
             new_balance=new_balance,
@@ -47,13 +48,14 @@ class BaseComponent(object):
         )
 
     @classmethod
-    def decrease(cls, session, account_uuid, old_balance, amount, new_balance,
+    def decrease(cls, session, account_uuid, pay_order_uuid, old_balance, amount, new_balance,
                  purpose_type: ScholarPaymentAccountLog.PurposeType) -> ScholarPaymentAccountLog:
         if old_balance - new_balance != amount:
             raise RuntimeError('非法请求')
         return cls.create_scholar_payment_account_log(
             session=session,
             account_uuid=account_uuid,
+            pay_order_uuid=pay_order_uuid,
             old_balance=old_balance,
             amount=amount,
             new_balance=new_balance,
@@ -62,12 +64,13 @@ class BaseComponent(object):
         )
 
     @staticmethod
-    def create_scholar_payment_account_log(session, account_uuid: str, old_balance, amount, new_balance,
-                                           log_type: ScholarPaymentAccountLog.Type,
+    def create_scholar_payment_account_log(session, account_uuid: str, pay_order_uuid: str, old_balance, amount,
+                                           new_balance, log_type: ScholarPaymentAccountLog.Type,
                                            purpose_type: ScholarPaymentAccountLog.PurposeType) \
             -> ScholarPaymentAccountLog:
         log = ScholarPaymentAccountLog(
             account_uuid=account_uuid,
+            pay_order_uuid=pay_order_uuid,
             former_balance=old_balance,
             amount=amount,
             balance=new_balance,

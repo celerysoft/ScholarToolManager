@@ -74,6 +74,7 @@ class SubScribeService(BaseComponent):
                 log = self.decrease(
                     session=session,
                     account_uuid=account.uuid,
+                    pay_order_uuid=pay_order.uuid,
                     old_balance=old_balance,
                     amount=amount,
                     new_balance=new_balance,

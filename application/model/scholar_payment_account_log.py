@@ -12,6 +12,7 @@ class ScholarPaymentAccountLog(Base, BaseModelMixin):
     __comment__ = '学术积分账户流水'
 
     account_uuid = Column(VARCHAR(36), nullable=False, comment='学术积分账户UUID')
+    pay_order_uuid = Column(VARCHAR(36), nullable=False, comment='流水对应的支付订单UUID')
     former_balance = Column(DECIMAL(12, 2), nullable=False, comment='账户余额')
     amount = Column(DECIMAL(12, 2), nullable=False, comment='金额')
     balance = Column(DECIMAL(12, 2), nullable=False, comment='账户余额')
@@ -32,10 +33,12 @@ class ScholarPaymentAccountLog(Base, BaseModelMixin):
         VALID = 1
         DELETED = 2
 
-    def __init__(self, account_uuid: str, former_balance, amount, balance, log_type, purpose_type, *args, **kwargs):
+    def __init__(self, account_uuid: str, pay_order_uuid: str, former_balance, amount, balance,
+                 log_type, purpose_type, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.account_uuid = account_uuid
+        self.pay_order_uuid = pay_order_uuid
         self.former_balance = former_balance
         self.balance = balance
         self.amount = amount
