@@ -28,7 +28,7 @@ class CreateOrderForExpiredServiceScript:
                 .filter(Service.type == service_type,
                         Service.status.in_([Service.STATUS.INITIALIZATION, Service.STATUS.ACTIVATED,
                                             Service.STATUS.SUSPENDED]),
-                        Service.expired_at < now)
+                        Service.billing_date <= now)
             for service in services:  # type: Service
                 conflict, snapshot = trade_order.toolkit.check_is_order_conflict(
                     session, service.user_uuid, service_uuid=service.uuid,

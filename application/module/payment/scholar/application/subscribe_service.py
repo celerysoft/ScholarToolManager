@@ -124,21 +124,16 @@ class SubScribeService(BaseComponent):
             raise print('由于学术服务长时间没有续费，已被系统回收，无法续费')
 
         now = datetime.now()
-        service.last_reset_at = now
 
         service.usage = 0
 
         if service.type == Service.TYPE.MONTHLY:
-            reset_at = date_util.derive_1st_datetime_of_next_month(now)
-            if service.auto_renew:
-                service.expired_at = datetime(2099, 12, 31, 23, 59, 59)
-            else:
-                service.expired_at = reset_at
+            billing_date = date_util.derive_1st_datetime_of_next_month(now)
         elif service.type == Service.TYPE.DATA:
-            reset_at = now + timedelta(days=365)
-            service.reset_at = service.expired_at = reset_at
+            billing_date = now + timedelta(days=365)
         else:
             raise RuntimeError('未知的服务类型')
+        service.billing_date = billing_date
 
         if service.status != Service.STATUS.ACTIVATED:
             service.status = Service.STATUS.ACTIVATED
@@ -152,17 +147,10 @@ class SubScribeService(BaseComponent):
 
         service_type = snapshot.type
         now = datetime.now()
-        last_reset_at = None
-        auto_renew = snapshot.auto_renew
         if service_type == Service.TYPE.MONTHLY:
-            reset_at = date_util.derive_1st_datetime_of_next_month(now)
-            if auto_renew:
-                expired_at = datetime(2099, 12, 31, 23, 59, 59)
-            else:
-                expired_at = reset_at
+            billing_date = date_util.derive_1st_datetime_of_next_month(now)
         elif service_type == Service.TYPE.DATA:
-            reset_at = now + timedelta(days=365)
-            expired_at = reset_at
+            billing_date = now + timedelta(days=365)
         else:
             raise RuntimeError('未知的服务类型')
 
@@ -174,9 +162,7 @@ class SubScribeService(BaseComponent):
             package=snapshot.package,
             usage=0,
             auto_renew=snapshot.auto_renew,
-            reset_at=reset_at,
-            last_reset_at=last_reset_at,
-            expired_at=expired_at,
+            billing_date=billing_date,
             total_usage=0,
             port=port,
             password=snapshot.service_password)

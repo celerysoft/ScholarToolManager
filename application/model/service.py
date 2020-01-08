@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from sqlalchemy import Column
-from sqlalchemy.dialects.mysql import TINYINT, BIGINT, DATETIME, VARCHAR, INTEGER
+from sqlalchemy.dialects.mysql import TINYINT, BIGINT, DATE, VARCHAR, INTEGER
 
 from application.model.base_model import Base, BaseModelMixin
 
@@ -15,9 +15,7 @@ class Service(Base, BaseModelMixin):
     usage = Column(BIGINT, nullable=False, comment='已用流量')
     package = Column(BIGINT, nullable=False, comment='总流量')
     auto_renew = Column(TINYINT, comment='自动续费状态：0 - 不自动，1 - 自动续费，包月套餐专用字段')
-    reset_at = Column(DATETIME, comment='下次将已用流量重置为0的时间点，包月套餐专用字段')
-    last_reset_at = Column(DATETIME, comment='上次将已用流量重置为0的时间点，暨上次续费的时间')
-    expired_at = Column(DATETIME, comment='套餐过期时间，流量套餐专用字段')
+    billing_date = Column(DATE, nullable=False, comment='账单日，下次付款的时间')
     total_usage = Column(BIGINT, nullable=False, comment='已使用流量合计')
     port = Column(INTEGER, nullable=False, comment='服务绑定的端口号')
     password = Column(VARCHAR(64), nullable=False, comment='服务密码')
@@ -42,8 +40,8 @@ class Service(Base, BaseModelMixin):
         # 流量
         DATA = 1
 
-    def __init__(self, user_uuid, template_uuid, service_type, package, usage, auto_renew, reset_at,
-                 last_reset_at, expired_at, total_usage, port: int, password: str, *args, **kwargs):
+    def __init__(self, user_uuid, template_uuid, service_type, package, usage, auto_renew, billing_date,
+                 total_usage, port: int, password: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.user_uuid = user_uuid
@@ -52,9 +50,7 @@ class Service(Base, BaseModelMixin):
         self.usage = usage
         self.package = package
         self.auto_renew = auto_renew
-        self.reset_at = reset_at
-        self.last_reset_at = last_reset_at
-        self.expired_at = expired_at
+        self.billing_date = billing_date
         self.total_usage = total_usage
         self.port = port
         self.password = password

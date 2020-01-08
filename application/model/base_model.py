@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, date
 from decimal import Decimal
 
 from sqlalchemy import Column, func
@@ -69,6 +69,8 @@ class BaseModelMixin(IdMixin, UuidMixin, TimestampMixin, StatusMixin):
 
             if isinstance(row, datetime):
                 # row = row.strftime('%Y-%m-%d %H:%M:%S')
+                row = row.isoformat()
+            if isinstance(row, date):
                 row = row.isoformat()
             if isinstance(row, Decimal):
                 row = float(row)
