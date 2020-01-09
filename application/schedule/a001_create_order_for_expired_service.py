@@ -87,6 +87,9 @@ class CreateOrderForExpiredServiceScript:
         self.create_order_for_service(Service.TYPE.DATA, now)
 
 
+script = CreateOrderForExpiredServiceScript()
+
+
 if __name__ == '__main__':
     script = CreateOrderForExpiredServiceScript()
     script.execute()

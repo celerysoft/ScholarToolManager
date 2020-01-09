@@ -44,6 +44,9 @@ class PayOrderForAutoRenewServiceScript:
                     scholar_payment_system.toolkit.pay_order(order.uuid)
 
 
+script = PayOrderForAutoRenewServiceScript()
+
+
 if __name__ == '__main__':
     script = PayOrderForAutoRenewServiceScript()
     script.execute()

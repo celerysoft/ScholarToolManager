@@ -47,6 +47,9 @@ class CancelOverdueOrderScript:
             order.status = TradeOrder.STATUS.CANCEL.value
 
 
+script = CancelOverdueOrderScript()
+
+
 if __name__ == '__main__':
     script = CancelOverdueOrderScript()
     script.execute()

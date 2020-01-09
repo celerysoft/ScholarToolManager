@@ -37,22 +37,31 @@ pip install -r requirements.txt
 
 ## Run
 
-### run and hot-reloads for development
+### Back-end service
+
+#### run and hot-reloads for development
 
 ```
 FLASK_ENV=development FLASK_DEBUG=1 flask run
 ```
 
-### run for development
+#### run for development
 
 ```
 FLASK_ENV=development flask run
 ```
 
-### run for production
+#### run for production
 
 ```
 flask run
+```
+
+### Task Queue
+
+```
+celery -A application.util.background_task worker --loglevel=info
+celery -A application.module.payment.scholar.app worker --loglevel=info
 ```
 
 ## License
