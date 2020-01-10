@@ -14,7 +14,7 @@ class UserRole(Base, BaseModelMixin):
     user_uuid = Column(VARCHAR(36), nullable=False, comment='用户UUID')
     role_uuid = Column(VARCHAR(36), nullable=False, comment='角色UUID')
 
-    class STATUS(Enum):
+    class Status(Enum):
         INITIALIZATION = 0
         VALID = 1
         DELETED = 2
@@ -25,7 +25,7 @@ class UserRole(Base, BaseModelMixin):
 
         self.user_uuid = user_uuid
         self.role_uuid = role_uuid
-        self.status = self.STATUS.VALID.value
+        self.status = self.Status.VALID.value
 
 
 cacheable = UserRole

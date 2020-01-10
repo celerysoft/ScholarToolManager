@@ -30,7 +30,7 @@ class Role(Base, BaseModelMixin):
 
         self.name = name
         self.description = description
-        self.status = self.STATUS.VALID.value
+        self.status = self.Status.VALID.value
 
 
 cacheable = Role

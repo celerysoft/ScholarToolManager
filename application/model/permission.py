@@ -31,7 +31,7 @@ class Permission(Base, BaseModelMixin):
         self.name = name
         self.label = label
         self.description = description
-        self.status = self.STATUS.VALID.value
+        self.status = self.Status.VALID.value
 
 
 cacheable = Permission

@@ -14,7 +14,7 @@ class RolePermission(Base, BaseModelMixin):
     role_uuid = Column(VARCHAR(36), nullable=False, comment='角色UUID')
     permission_uuid = Column(VARCHAR(36), nullable=False, comment='权限UUID')
 
-    class STATUS(Enum):
+    class Status(Enum):
         INITIALIZATION = 0
         VALID = 1
         DELETED = 2
@@ -25,7 +25,7 @@ class RolePermission(Base, BaseModelMixin):
 
         self.role_uuid = role_uuid
         self.permission_uuid = permission_uuid
-        self.status = self.STATUS.VALID.value
+        self.status = self.Status.VALID.value
 
 
 cacheable = RolePermission
