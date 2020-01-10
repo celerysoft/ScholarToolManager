@@ -9,8 +9,10 @@ import configs
 from app import derive_import_root, add_url_rules_for_blueprint
 from application import exception
 from application.model.invitation_code import InvitationCode
+from application.model.role import Role
 from application.model.scholar_payment_account import ScholarPaymentAccount
 from application.model.user import User
+from application.model.user_role import UserRole
 from application.util import authorization, background_task
 from application.util.constant import JwtSub
 from application.util.database import session_scope
@@ -90,6 +92,12 @@ class UserAPI(BaseNeedLoginAPI):
 
             session.add(user)
             session.flush()
+
+            # 进行角色关联
+            role = session.query(Role).filter(Role.name == Role.RoleName.REGISTRATION_USER.value,
+                                              Role.status == Role.Status.VALID.value).first()  # type: Role
+            user_role = UserRole(user_uuid=user.uuid, role_uuid=role.uuid)
+            session.add(user_role)
 
             # 将记录写入invitation_code表
             invitation_code.status = 2

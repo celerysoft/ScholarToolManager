@@ -14,6 +14,7 @@ from application.util.database import session_scope
 from application.views.base_api import BaseNeedLoginAPI, ApiResult
 
 
+# TODO 移至后台管理接口
 class UsageAPI(BaseNeedLoginAPI):
     methods = ['GET', 'POST']
     need_login_methods = ['GET']

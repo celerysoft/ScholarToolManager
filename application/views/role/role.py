@@ -9,6 +9,7 @@ from application.util.database import session_scope
 from application.views.base_api import BaseNeedLoginAPI, ApiResult
 
 
+# TODO 移至后台管理接口
 class RoleAPI(BaseNeedLoginAPI):
     methods = ['GET', 'POST', 'PATCH', 'DELETE']
 

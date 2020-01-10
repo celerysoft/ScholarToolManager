@@ -10,6 +10,7 @@ from application.util.database import session_scope
 from application.views.base_api import BaseNeedLoginAPI, ApiResult
 
 
+# TODO DELETE
 class InvitationCodeAPI(BaseNeedLoginAPI):
     methods = ['POST']
 
