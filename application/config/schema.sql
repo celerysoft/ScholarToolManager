@@ -262,6 +262,67 @@ CREATE TABLE refund_order
     DEFAULT CHARSET = utf8
     COMMENT = '退款订单';
 
+CREATE TABLE user_role
+(
+    `id`         INT(11)     NOT NULL AUTO_INCREMENT,
+    `uuid`       VARCHAR(36) NOT NULL,
+    `user_uuid`  VARCHAR(36) NOT NULL COMMENT '用户UUID',
+    `role_uuid`  VARCHAR(36) NOT NULL COMMENT '角色UUID',
+    `created_at` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `status`     TINYINT(4)  NOT NULL DEFAULT 1 COMMENT '状态：0 - 初始化，1 - 有效，2 - 作废，3 - 无效',
+    PRIMARY KEY (`id`)
+)
+    ENGINE = innodb
+    DEFAULT CHARSET = utf8
+    COMMENT = '用户角色';
+
+CREATE TABLE role
+(
+    `id`          INT(11)     NOT NULL AUTO_INCREMENT,
+    `uuid`        VARCHAR(36) NOT NULL,
+    `name`        VARCHAR(36) NOT NULL COMMENT '角色名',
+    `description` TEXT COMMENT '角色描述',
+    `created_at`  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `status`      TINYINT(4)  NOT NULL DEFAULT 1 COMMENT '状态：0 - 初始化，1 - 有效，2 - 作废，3 - 无效',
+    PRIMARY KEY (`id`)
+)
+    ENGINE = innodb
+    DEFAULT CHARSET = utf8
+    COMMENT = '角色';
+
+CREATE TABLE role_permission
+(
+    `id`         INT(11)     NOT NULL AUTO_INCREMENT,
+    `uuid`       VARCHAR(36) NOT NULL,
+    `role_uuid`  VARCHAR(36) NOT NULL COMMENT '角色UUID',
+    `permission_uuid`  VARCHAR(36) NOT NULL COMMENT '权限UUID',
+    `created_at` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `status`     TINYINT(4)  NOT NULL DEFAULT 1 COMMENT '状态：0 - 初始化，1 - 有效，2 - 作废，3 - 无效',
+    PRIMARY KEY (`id`)
+)
+    ENGINE = innodb
+    DEFAULT CHARSET = utf8
+    COMMENT = '角色权限';
+
+CREATE TABLE permission
+(
+    `id`         INT(11)     NOT NULL AUTO_INCREMENT,
+    `uuid`       VARCHAR(36) NOT NULL,
+    `name`        VARCHAR(36) NOT NULL COMMENT '权限名',
+    `label`        VARCHAR(36) NOT NULL COMMENT '权限标签',
+    `description` TEXT COMMENT '权限描述',
+    `created_at` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `status`     TINYINT(4)  NOT NULL DEFAULT 1 COMMENT '状态：0 - 初始化，1 - 有效，2 - 作废，3 - 无效',
+    PRIMARY KEY (`id`)
+)
+    ENGINE = innodb
+    DEFAULT CHARSET = utf8
+    COMMENT = '权限';
+
 /*
 CREATE TABLE table_name
 (

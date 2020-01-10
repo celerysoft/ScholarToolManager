@@ -33,8 +33,6 @@ class ServiceAPI(BaseNeedLoginAPI):
 
             service_list = []
             for record in services:
-                print(dir(record.Service))
-                print(type(record.Service.billing_date), 123)
                 service = record.Service
                 service_dict = service.to_dict()
                 service_dict['title'] = record.title
