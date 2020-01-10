@@ -130,7 +130,11 @@ class PermissionToolkit(object):
             .filter(UserRole.role_uuid == Role.uuid) \
             .filter(Role.uuid == RolePermission.role_uuid) \
             .filter(RolePermission.permission_uuid == Permission.uuid) \
-            .filter(User.uuid == user_uuid).all()
+            .filter(User.uuid == user_uuid) \
+            .filter(~User.status.in_([User.STATUS.SUSPENDED, User.STATUS.DELETED]),
+                    UserRole.status == UserRole.Status.VALID.value,
+                    RolePermission.status == RolePermission.Status.VALID.value) \
+            .all()
 
         return permissions
 
@@ -143,6 +147,9 @@ class PermissionToolkit(object):
             .filter(RolePermission.permission_uuid == Permission.uuid) \
             .filter(User.uuid == user_uuid) \
             .filter(Permission.uuid == permission_uuid) \
+            .filter(~User.status.in_([User.STATUS.SUSPENDED, User.STATUS.DELETED]),
+                    UserRole.status == UserRole.Status.VALID.value,
+                    RolePermission.status == RolePermission.Status.VALID.value) \
             .first()
         return permission is not None
 
@@ -155,6 +162,9 @@ class PermissionToolkit(object):
             .filter(RolePermission.permission_uuid == Permission.uuid) \
             .filter(User.uuid == user_uuid) \
             .filter(Permission.label == label.value) \
+            .filter(~User.status.in_([User.STATUS.SUSPENDED, User.STATUS.DELETED]),
+                    UserRole.status == UserRole.Status.VALID.value,
+                    RolePermission.status == RolePermission.Status.VALID.value) \
             .first()
         return permission is not None
 
