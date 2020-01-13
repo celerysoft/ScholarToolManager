@@ -10,6 +10,7 @@ import configs
 import application.exception.http
 from application.exception.api import BaseApiException
 from application.util import shadowsocks_controller, database, permission, init_app
+from application.util.database import session_scope
 from application.views.legacy import method_views, views
 from application.views.base_api import BaseView
 
@@ -136,14 +137,8 @@ def init_logging(flask_app: Flask):
 
 
 def action_before_app_run(flask_app):
-    db_session = database.derive_db_session()
-    try:
+    with session_scope() as db_session:
         shadowsocks_controller.recreate_shadowsocks_config_file(db_session, flask_app.debug)
-    except BaseException:
-        db_session.rollback()
-        raise
-    finally:
-        db_session.close()
 
 
 def create_app():
