@@ -59,9 +59,18 @@ flask run
 
 ### Task Queue
 
+recommend use [Supervisor](http://supervisord.org/) to handle the following processes
+
 ```
+# activate venv first
+source venv/bin/activate
+
+# common background task
 celery -A application.util.background_task worker --loglevel=info
+# scholar payment
 celery -A application.module.payment.scholar.app worker --loglevel=info
+# network usage monitor
+python application/module/network_usage_monitor/app.py
 ```
 
 ## License

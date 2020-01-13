@@ -3,9 +3,10 @@ import os
 import re
 
 import configs
-from application.model.legacy import model
 
 # /config/multiple_users_config.json
+from application.model.service import Service
+
 __SHADOWSOCKS_CONFIG_FILE_PATH = configs.SHADOWSOCKS_CONFIG_FILE_PATH
 __CONFIG_FILE_INDENT = '  '
 
@@ -71,28 +72,9 @@ def recreate_shadowsocks_config_file(db_session, method='chacha20-ietf-poly1305'
     :param debug:
     :return:
     """
-
-    service_passwords = db_session.query(model.ServicePassword) \
-        .filter(model.Service.alive.is_(True)) \
-        .filter(model.Service.available.is_(True)) \
-        .filter(model.ServicePassword.service_id == model.Service.id) \
-        .order_by(model.ServicePassword.port).all()
-    # service_passwords = db_session.query(model.ServicePassword) \
-    #     .filter(model.DataService.alive.is_(True)) \
-    #     .filter(model.DataService.available.is_(True)) \
-    #     .filter(model.ServicePassword.service_type == 1) \
-    #     .filter(model.ServicePassword.service_id == model.DataService.id) \
-    #     .order_by(model.ServicePassword.port).all()
-    #
-    # monthly_service_password = db_session.query(model.ServicePassword) \
-    #     .filter(model.MonthlyService.alive.is_(True)) \
-    #     .filter(model.MonthlyService.available.is_(True)) \
-    #     .filter(model.ServicePassword.service_type == 0) \
-    #     .filter(model.ServicePassword.service_id == model.MonthlyService.id) \
-    #     .order_by(model.ServicePassword.port).all()
-    #
-    # if len(monthly_service_password) > 0:
-    #     service_passwords.extend(monthly_service_password)
+    services = db_session.query(Service) \
+        .filter(Service.status.in_([Service.STATUS.ACTIVATED, Service.STATUS.OUT_OF_CREDIT])) \
+        .all()
 
     lines = []
     lines.append('{%s' % os.linesep)
@@ -102,7 +84,7 @@ def recreate_shadowsocks_config_file(db_session, method='chacha20-ietf-poly1305'
         lines.append('%s"server": "0.0.0.0",%s' % (__CONFIG_FILE_INDENT, os.linesep))
     lines.append('%s"port_password": {%s' % (__CONFIG_FILE_INDENT, os.linesep))
 
-    service_password_count = len(service_passwords)
+    service_password_count = len(services)
     if service_password_count == 0:
         lines.append('%s%s"%s": "%s"%s'
                      % (__CONFIG_FILE_INDENT,
@@ -112,20 +94,20 @@ def recreate_shadowsocks_config_file(db_session, method='chacha20-ietf-poly1305'
                         os.linesep))
     else:
         for x in range(service_password_count):
-            service_password = service_passwords[x]
+            service = services[x]  # type: Service
             if x == service_password_count - 1:
                 lines.append('%s%s"%s": "%s"%s'
                              % (__CONFIG_FILE_INDENT,
                                 __CONFIG_FILE_INDENT,
-                                service_password.port,
-                                service_password.password,
+                                service.port,
+                                service.password,
                                 os.linesep))
             else:
                 lines.append('%s%s"%s": "%s",%s'
                              % (__CONFIG_FILE_INDENT,
                                 __CONFIG_FILE_INDENT,
-                                service_password.port,
-                                service_password.password,
+                                service.port,
+                                service.password,
                                 os.linesep))
 
     lines.append('%s},%s' % (__CONFIG_FILE_INDENT, os.linesep))
@@ -142,9 +124,6 @@ def recreate_shadowsocks_config_file(db_session, method='chacha20-ietf-poly1305'
 
 
 if __name__ == '__main__':
-    # add_port(56000, 'ss')
-    # remove_port(56000)
-
     with open(__SHADOWSOCKS_CONFIG_FILE_PATH, 'r') as f:
         lines = f.readlines()
         print(lines)

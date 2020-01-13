@@ -96,7 +96,7 @@ SHADOWSOCKS_CONFIG_FILE_PATH = \
 # 主服务器地址，数据库，网页所在的服务器地址
 MAIN_SERVER_ADDRESS = 'http://127.0.0.1:20000'
 # SS服务unix domain socket的地址
-SS_SERVER_UDS_ADDRESS = '/Users/admin/Developer/Python/scholar-tool-manager/local/shadowsocks-manage.sock'
+SS_SERVER_UDS_ADDRESS = '/Users/admin/Developer/Python/scholar-tool-manager/local/shadowsocks-manager.sock'
 # ss_controller的unix domain socket的地址
 SS_CONTROLLER_UDS_CLIEND_ADDRESS = \
     '/Users/admin/Developer/Python/scholar-tool-manager/local/shadowsocks-controller-client.sock'

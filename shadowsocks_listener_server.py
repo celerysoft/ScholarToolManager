@@ -1,5 +1,8 @@
 #!/usr/bin/python3
 # -*-coding:utf-8 -*-
+"""
+TODO remove this legacy file
+"""
 import logging
 import socket
 import time
