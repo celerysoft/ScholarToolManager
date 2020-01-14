@@ -19,7 +19,7 @@ logging.basicConfig(filename=LOG_FILE,
                     format='%(asctime)s - %(message)s')
 
 # address of the client
-CLIENT_ADDRESS = configs.SS_LISTENER_UDS_CLIEND_ADDRESS
+CLIENT_ADDRESS = configs.SS_LISTENER_UDS_CLIENT_ADDRESS
 
 # client instance
 client = None

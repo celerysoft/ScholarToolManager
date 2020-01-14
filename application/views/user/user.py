@@ -94,7 +94,7 @@ class UserAPI(BaseNeedLoginAPI):
             session.flush()
 
             # 进行角色关联
-            role = session.query(Role).filter(Role.name == Role.RoleName.REGISTRATION_USER.value,
+            role = session.query(Role).filter(Role.name == Role.BuiltInRole.REGISTRATION_USER.value.name,
                                               Role.status == Role.Status.VALID.value).first()  # type: Role
             user_role = UserRole(user_uuid=user.uuid, role_uuid=role.uuid)
             session.add(user_role)

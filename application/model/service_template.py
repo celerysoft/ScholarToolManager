@@ -39,22 +39,21 @@ class ServiceTemplate(Base, BaseModelMixin):
         # 推荐
         RECOMMENDATION = 2
 
-    def __init__(self, *args, **kwargs):
-        print(self.__allow_columns_for_creation__)
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+
+    def __init__(self, service_type: int = None, title: str = None, subtitle: str = None, description: str = None,
+                 package: int = None, price=None, initialization_fee=None, status=1, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    # def __init__(self, service_type: int, title: str, subtitle: str, description: str, package: int, price,
-    #              initialization_fee, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-    #
-    #     self.type = service_type
-    #     self.title = title
-    #     self.subtitle = subtitle
-    #     self.description = description
-    #     self.package = package
-    #     self.price = price
-    #     self.initialization_fee = initialization_fee
-    #     self.status = 1
+        self.type = service_type
+        self.title = title
+        self.subtitle = subtitle
+        self.description = description
+        self.package = package
+        self.price = price
+        self.initialization_fee = initialization_fee
+        self.status = status
 
 
 cacheable = ServiceTemplate

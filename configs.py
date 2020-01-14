@@ -35,23 +35,23 @@ BUILD_API_EXCEPTION = False
 
 # JSON显示中文
 JSON_AS_ASCII = False
-# session的secret
-SECRET_KEY = 'scholar.celerysoft.com'
 # 加密密码时的盐
 SHA1_SALT = 'whosyourdaddy'
 # 新版密码的盐
 PASSWORD_SALT = 'whosyourdaddy'
 JWT_SECRET = 'whosyourdaddy'
 # 分页时每页的项目数
-ITEM_PER_PAGE = 10
+DEFAULT_ITEM_PER_PAGE = 10
+# session的secret
+SECRET_KEY = 'scholar.celerysoft.com'
 # session的域名
 # SESSION_COOKIE_DOMAIN = 'celerysoft.science'
 # session类型 http://pythonhosted.org/Flask-Session/
 SESSION_TYPE = 'sqlalchemy'
 SESSION_USE_SIGNER = True
 # 数据库的URI
-SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' \
-                          % (LEGACY_DB_USER, LEGACY_DB_PASSWORD, LEGACY_DB_HOST, LEGACY_DB_PORT, LEGACY_DB_NAME)
+SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' % (
+    LEGACY_DB_USER, LEGACY_DB_PASSWORD, LEGACY_DB_HOST, LEGACY_DB_PORT, LEGACY_DB_NAME)
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 
 # 手动生成以hash版本命名的静态资源文件的目录
@@ -65,9 +65,9 @@ URL_OF_BLOG_IMAGE = '/static/image/blog/'
 # 匿名评论用户的用户名（username）字段
 ANONYMOUS_USER_NAME = 'anonymous'
 # 七牛access_key
-QINIU_ACCESS_KEY = 'YCHyZnl8DPE2T107dsYcLnSbb1rQZb1igf-tdiRm'
+QINIU_ACCESS_KEY = 'YCHyZnl8DPE2T107dsYcLnSbb1rQZb1igf-dlkMP'
 # 七牛secret_key
-QINIU_SECRET_KEY = '9BiplXuagdDwocKpjiWEAfDhTh68iSM82_6OyIdq'
+QINIU_SECRET_KEY = '9BiplXuagdDwocKpjiWEAfDhTh68iSM82_6OlLpq'
 # 上传头像到七牛时七牛空间名
 QINIU_BUCKET_NAME = 'celerysoft-science'
 # 上传头像到七牛时图片名前缀
@@ -79,7 +79,7 @@ QINIU_BUCKET_NAME_FOR_BACKUP_DATABASE = 'database'
 # 数据库备份文件本地存放目录
 DATABASE_BACKUP_FILE_DIRECTORY = '/Users/admin/Documents/'
 # 新注册用户默认学术积分
-NEW_USER_SCHOLAR_BALANCE = 5120
+NEW_USER_SCHOLAR_BALANCE = 10240
 # reCAPTCHA secret key
 RE_CAPTCHA_SECRET_KEY = '6LenHTkUAAAAACSATcazsqs3kuH6NkT7KQMz4-dvdcps'
 # 日志文件
@@ -98,11 +98,11 @@ MAIN_SERVER_ADDRESS = 'http://127.0.0.1:20000'
 # SS服务unix domain socket的地址
 SS_SERVER_UDS_ADDRESS = '/Users/admin/Developer/Python/scholar-tool-manager/local/shadowsocks-manager.sock'
 # ss_controller的unix domain socket的地址
-SS_CONTROLLER_UDS_CLIEND_ADDRESS = \
-    '/Users/admin/Developer/Python/scholar-tool-manager/local/shadowsocks-controller-client.sock'
+SS_CONTROLLER_UDS_CLIENT_ADDRESS = ('/Users/admin/Developer/Python/scholar-tool-manager'
+                                    '/local/shadowsocks-controller-client.sock')
 # ss_listener的unix domain socket的地址
-SS_LISTENER_UDS_CLIEND_ADDRESS = \
-    '/Users/admin/Developer/Python/scholar-tool-manager/local/shadowsocks-listener-client.sock'
+SS_LISTENER_UDS_CLIENT_ADDRESS = ('/Users/admin/Developer/Python/scholar-tool-manager'
+                                  '/local/shadowsocks-listener-client.sock')
 # ss_listener上报流量使用情况的频率（秒）
 SS_LISTENER_WORKING_FREQUENCY = 30
 

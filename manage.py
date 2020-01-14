@@ -11,7 +11,7 @@ import click
 
 from app import app as flask_app
 
-from application.util import static_file_hash_util
+from application.util import static_file_hash_util, init_project
 
 app = flask_app
 
@@ -38,3 +38,20 @@ def generate_static_file(**kwargs):
 
     command = static_file_hash_util.Command()
     command.execute(generate_type)
+
+
+@app.cli.command()
+def create():
+    success = init_project.toolkit.create_config_file()
+    if success:
+        print('Config file creation accomplish, please open the config file and configure the project, '
+              'after you finish the config file, use "FLASK_APP=manage.py flask init" command to continue.')
+
+
+@app.cli.command()
+def init():
+    success = init_project.toolkit.execute()
+    if success:
+        print('Project initialization succeed, you can now login with\n'
+              'username: admin\n'
+              'password: 12345679\n')

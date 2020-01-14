@@ -7,6 +7,13 @@ from sqlalchemy.dialects.mysql import VARCHAR, TEXT
 from application.model.base_model import Base, BaseModelMixin
 
 
+class BuiltInPermissionObject(object):
+    def __init__(self, name, label, description):
+        self.name = name
+        self.label = label
+        self.description = description
+
+
 class Permission(Base, BaseModelMixin):
     __tablename__ = 'permission'
     __comment__ = '权限表'
@@ -21,9 +28,9 @@ class Permission(Base, BaseModelMixin):
         DELETED = 2
         INVALID = 3
 
-    class PermissionLabel(Enum):
-        LOGIN = 'login'
-        MANAGEMENT = 'management'
+    class BuiltInPermission(Enum):
+        LOGIN = BuiltInPermissionObject('登录', 'login', '允许登录')
+        MANAGEMENT = BuiltInPermissionObject('管理', 'management', '后台管理')
 
     def __init__(self, name, label, description, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -1,14 +1,21 @@
 # HOW TO DEPLOY THE PROJECT
 
 ## REQUIREMENTS
-    * Python3 (> 3.4 version)
-    * MySQL (> 5.5 version)
-    * Redis
-    * pip3
+
+* Python3 (> 3.4 version)
+* MySQL (> 5.5 version)
+* [Redis](https://redis.io/)
+* pip3
+* [shadowsocks](https://github.com/shadowsocks/shadowsocks) or [shadowsocks-libev](https://github.com/shadowsocks/shadowsocks-libev)
+* [ScholarToolFrontEnd](https://github.com/celerysoft/ScholarToolFrontEnd)
 
 ## Project setup
 
-### setup virtual environment
+### Create Database
+
+database schema file is locate at /application/config/schema.sql
+
+### Setup virtual environment
 
 #### VirtualEnv
 
@@ -29,11 +36,26 @@ python3 -m venv /path/to/new/virtual/environment
 pip install -r requirements.txt
 ```
 
-### Configure
+### Initialization and Configure
 
-    * Go to project base dir .
-    * touch local_settings.py
-    * Modify local_settings.py for your own.
+```
+# activate venv first
+source venv/bin/activate
+# create config file on project_base_dir/local_settings.py
+FLASK_APP=manage.py flask create
+# modify local_settings.py for your own.
+# after you finish this, run next command
+FLASK_APP=manage.py flask init
+```
+
+now you have a superuser:
+
+username: admin
+
+password: 12345679
+    
+### 
+
 
 ## Run
 
@@ -73,6 +95,10 @@ celery -A application.module.payment.scholar.app worker --loglevel=info
 python application/module/network_usage_monitor/app.py
 ```
 
-## License
+# Sponsor
+
+[JetBrains](https://www.jetbrains.com/community/opensource/)
+
+# License
 
 [Apache License 2.0](./LICENSE)

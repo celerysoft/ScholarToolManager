@@ -7,7 +7,7 @@ import configs
 from application.util import shadowsocks_config_manager
 
 # address of the client
-CLIENT_ADDRESS = configs.SS_CONTROLLER_UDS_CLIEND_ADDRESS
+CLIENT_ADDRESS = configs.SS_CONTROLLER_UDS_CLIENT_ADDRESS
 
 
 # client instance

@@ -154,14 +154,15 @@ class PermissionToolkit(object):
         return permission is not None
 
     @classmethod
-    def _check_permission_by_permission_label(cls, db_session, user_uuid, label: Permission.PermissionLabel) -> bool:
+    def _check_permission_by_built_in_permission(cls, db_session, user_uuid,
+                                                 build_in_permission: Permission.BuiltInPermission) -> bool:
         permission = db_session.query(Permission) \
             .filter(User.uuid == UserRole.user_uuid) \
             .filter(UserRole.role_uuid == Role.uuid) \
             .filter(Role.uuid == RolePermission.role_uuid) \
             .filter(RolePermission.permission_uuid == Permission.uuid) \
             .filter(User.uuid == user_uuid) \
-            .filter(Permission.label == label.value) \
+            .filter(Permission.label == build_in_permission.value.label) \
             .filter(~User.status.in_([User.STATUS.SUSPENDED, User.STATUS.DELETED]),
                     UserRole.status == UserRole.Status.VALID.value,
                     RolePermission.status == RolePermission.Status.VALID.value) \
@@ -172,7 +173,8 @@ class PermissionToolkit(object):
         return False
 
     def check_manage_permission(self, session, user_uuid):
-        return self._check_permission_by_permission_label(session, user_uuid, Permission.PermissionLabel.MANAGEMENT)
+        return self._check_permission_by_built_in_permission(session, user_uuid,
+                                                             Permission.BuiltInPermission.MANAGEMENT)
 
     def check_login_permission(self, db_session, user_id) -> bool:
         return self._check_permission(db_session, user_id, model.Permission.LOGIN)

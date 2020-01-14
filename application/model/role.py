@@ -7,6 +7,12 @@ from sqlalchemy.dialects.mysql import VARCHAR, TEXT
 from application.model.base_model import Base, BaseModelMixin
 
 
+class BuiltInRoleObject(object):
+    def __init__(self, name, description):
+        self.name = name
+        self.description = description
+
+
 class Role(Base, BaseModelMixin):
     __tablename__ = 'role'
     __comment__ = '角色表'
@@ -20,10 +26,10 @@ class Role(Base, BaseModelMixin):
         DELETED = 2
         INVALID = 3
 
-    class RoleName(Enum):
-        REGISTRATION_USER = '注册会员'
-        ADMINISTRATOR = '超级管理员'
-        BAN_LIST = '小黑屋'
+    class BuiltInRole(Enum):
+        REGISTRATION_USER = BuiltInRoleObject('注册会员', '注册会员')
+        ADMINISTRATOR = BuiltInRoleObject('超级管理员', '超级管理员')
+        BAN_LIST = BuiltInRoleObject('小黑屋', '小黑屋')
 
     def __init__(self, name, description, *args, **kwargs):
         super().__init__(*args, **kwargs)

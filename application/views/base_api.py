@@ -39,7 +39,7 @@ class BaseView(MethodView):
         except ValueError:
             raise exception.api.InvalidRequest('Invalid page field.')
         default_items_per_page = 10
-        page_size = request.args.get('page_size', 10)
+        page_size = request.args.get('page_size', configs.DEFAULT_ITEM_PER_PAGE)
         try:
             page_size = int(page_size) if page_size is not None else default_items_per_page
         except ValueError:
