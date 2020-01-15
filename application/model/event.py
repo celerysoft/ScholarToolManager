@@ -26,7 +26,7 @@ class Event(Base, BaseModelMixin):
         VALID = 1
         DELETED = 2
 
-    def __init__(self, *args, author_uuid=None, title=None, summary=None, content=None, **kwargs):
+    def __init__(self, author_uuid=None, title=None, summary=None, content=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.author_uuid = author_uuid

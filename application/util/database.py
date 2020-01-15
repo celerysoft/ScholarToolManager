@@ -8,17 +8,13 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 # ======================================== Legacy Database Start ======================================= #
 import configs
 
-legacy_engine = None
+legacy_uri = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' \
+          % (configs.LEGACY_DB_USER, configs.LEGACY_DB_PASSWORD, configs.LEGACY_DB_HOST, configs.LEGACY_DB_PORT,
+             configs.LEGACY_DB_NAME)
+legacy_engine = create_engine(legacy_uri, pool_recycle=3600)
+LegacySession = sessionmaker(bind=legacy_engine)
 db = None
-LegacySession = None
 db_session = None
-
-
-def set_legacy_sqlalchemy_database_uri(uri):
-    global legacy_engine
-    legacy_engine = create_engine(uri, pool_recycle=3600)
-    global LegacySession
-    LegacySession = sessionmaker(bind=legacy_engine)
 
 
 def set_db_with_pagination(db_inst):
