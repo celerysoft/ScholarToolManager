@@ -52,7 +52,6 @@ SESSION_USE_SIGNER = True
 # 数据库的URI
 SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' % (
     LEGACY_DB_USER, LEGACY_DB_PASSWORD, LEGACY_DB_HOST, LEGACY_DB_PORT, LEGACY_DB_NAME)
-SQLALCHEMY_TRACK_MODIFICATIONS = True
 
 # 手动生成以hash版本命名的静态资源文件的目录
 CDN_STATIC_ROOT = '/Users/admin/Developer/Python/scholar-tool-manager/local/cdn'

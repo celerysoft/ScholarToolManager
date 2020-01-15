@@ -2,6 +2,9 @@
 """
 
 """
+import os
+import shutil
+
 from application.model.event import Event
 from application.model.payment_method import PaymentMethod
 from application.model.permission import Permission
@@ -17,6 +20,14 @@ from application.util.database import session_scope
 
 class ProjectInitializationToolkit(object):
     def create_config_file(self) -> bool:
+        try:
+            if os.path.exists('local_settings.py'):
+                os.rename('local_settings.py', 'local_settings.py.bak')
+            shutil.copyfile('application/config/local_settings', 'local_settings.py')
+            if not os.path.exists('local_settings.py'):
+                return False
+        except:
+            return False
         return True
 
     def execute(self) -> bool:

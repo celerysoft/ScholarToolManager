@@ -1,5 +1,10 @@
 # -*-coding:utf-8 -*-
 """
+# 创建本地配置文件
+FLASK_APP=manage.py flask create
+# 补充完本地配置文件后，执行项目初始化
+FLASK_APP=manage.py flask init
+
 FLASK_APP=manage.py flask hello
 FLASK_APP=manage.py flask status
 
