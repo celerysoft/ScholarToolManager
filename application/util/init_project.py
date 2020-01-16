@@ -30,18 +30,19 @@ class ProjectInitializationToolkit(object):
             return False
         return True
 
-    def execute(self) -> bool:
+    def execute(self, minimal=False) -> bool:
         with session_scope() as session:
             try:
                 self._create_built_in_permissions(session)
                 self._create_built_in_role(session)
                 self._assign_role_permission(session)
-                self._create_built_in_user(session)
-                self._assign_role_for_built_in_user(session)
-                self._create_scholar_account_for_built_in_user(session)
-                self._create_default_event(session)
-                self._create_default_service_template(session)
                 self._create_built_in_payment_method(session)
+                if not minimal:
+                    self._create_built_in_user(session)
+                    self._assign_role_for_built_in_user(session)
+                    self._create_scholar_account_for_built_in_user(session)
+                    self._create_default_event(session)
+                    self._create_default_service_template(session)
                 session.commit()
             except:
                 return False

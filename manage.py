@@ -95,3 +95,10 @@ def transfer_former_database():
         print('Data transferring accomplish.')
     else:
         print('Error: data transferring failed.')
+
+
+@app.cli.command()
+def minimal_init():
+    success = init_project.toolkit.execute(minimal=True)
+    if success:
+        print('Project initialization succeed')
