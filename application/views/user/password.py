@@ -1,18 +1,55 @@
 # -*- coding: utf-8 -*-
+from jwt import PyJWTError
+
 import configs
 from application import exception
 from application.model.user import User
 from application.util import authorization, background_task
 from application.util.constant import JwtSub
 from application.util.database import session_scope
-from application.views.base_api import BaseNeedLoginAPI, ApiResult
+from application.views.base_api import BaseNeedLoginAPI, ApiResult, jwt_api
 
 
 class UserPasswordAPI(BaseNeedLoginAPI):
     methods = ['PUT', 'PATCH']
-    need_login_methods = ['PUT']
+    need_login_methods = []
 
     def put(self):
+        jwt = self.get_post_data('jwt')
+        if self.valid_data(jwt):
+            return self.reset_password(jwt)
+        else:
+            return self.update_password()
+
+    def reset_password(self, jwt: str):
+        """
+        重设密码
+
+        :return:
+        """
+        password = self.get_post_data('password', require=True, error_message='请输入新密码')
+        try:
+            jwt_dict = authorization.toolkit.decode_jwt_token(jwt)  # type:dict
+        except PyJWTError:
+            raise exception.api.InvalidRequest('重设密码的链接已过期或者重设密码请求非法')
+
+        if 'sub' not in jwt_dict.keys() or jwt_dict['sub'] != JwtSub.ResetPassword.value:
+            raise exception.api.InvalidRequest('重设密码的请求非法')
+
+        if 'uuid' not in jwt_dict.keys():
+            raise exception.api.InvalidRequest('重设密码的请求非法')
+
+        uuid = jwt_dict['uuid']
+        with session_scope() as session:
+            user = session.query(User).filter(User.uuid == uuid).first()
+
+            user.password = authorization.toolkit.hash_plaintext(password)
+
+            result = ApiResult('密码重设成功，以后请使用新密码登录', 201)
+            return result.to_response()
+
+    @jwt_api
+    def update_password(self):
         """
         修改密码
 
@@ -50,12 +87,11 @@ class UserPasswordAPI(BaseNeedLoginAPI):
             if user.status == User.STATUS.SUSPENDED:
                 raise exception.api.Forbidden('该电子邮箱地址关联的账号已被停用，如需重新启用账号，请联系客服')
 
-            expired_in = 48
+            expired_in = 1
             extra_payload = {
                 'sub': JwtSub.ResetPassword.value,
-                'email': email,
             }
-            jwt = authorization.toolkit.derive_jwt_token(self.user_uuid, expired_in, extra_payload)
+            jwt = authorization.toolkit.derive_jwt_token(user.uuid, expired_in, extra_payload)
             if configs.DEBUG:
                 domain = 'http://localhost:8080'
             else:

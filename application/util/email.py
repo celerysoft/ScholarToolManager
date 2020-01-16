@@ -115,7 +115,7 @@ class EmailToolkit(object):
             <body>
                 <div style="font-size: 14px;">
                     <p>亲爱的{}：</p>
-                    <p>您好，您申请重设在『Celery Soft 学术』的登录密码，只差最后一步，就能完成重设。在48小时内点击下面的链接即可：</p>
+                    <p>您好，您申请重设在『Celery Soft 学术』的登录密码，只差最后一步，就能完成重设。在1小时内点击下面的链接即可：</p>
                     <p></p>
                     <div><a href="{}">{}</a></div>
                     <div>（如果链接无法点击，请将它拷贝到浏览器的地址栏中直接打开）</div>

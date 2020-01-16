@@ -360,7 +360,10 @@ def jwt_api(func):
     def wrapper(*args, **kwargs):
         for parameter in args:
             if isinstance(parameter, BaseNeedLoginAPI):
-                if parameter.need_login_methods is not None and request.method in parameter.need_login_methods:
+                if parameter.need_login_methods is not None and len(
+                        parameter.need_login_methods) > 0 and request.method not in parameter.need_login_methods:
+                    pass
+                else:
                     handle_jwt(parameter)
             elif isinstance(parameter, MethodView):
                 handle_jwt(parameter)
