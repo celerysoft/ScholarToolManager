@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from application import exception
+from application.model.role import Role
 from application.model.user import User
-from application.util import authorization
+from application.model.user_role import UserRole
+from application.util import authorization, permission
 from application.util.database import session_scope
 from application.views.base_api import BaseAPI, ApiResult
 
@@ -21,23 +23,23 @@ class LoginAPI(BaseAPI):
                 if user is None:
                     raise exception.api.NotFound('用户不存在')
 
-                hashed_password = authorization.toolkit.hash_plaintext(password)
+            hashed_password = authorization.toolkit.hash_plaintext(password)
 
-                if user.password != hashed_password:
-                    raise exception.api.InvalidRequest('密码错误，请重试')
+            if user.password != hashed_password:
+                raise exception.api.InvalidRequest('密码错误，请重试')
 
-                if user.status == User.STATUS.SUSPENDED:
-                    raise exception.api.Forbidden('用户已申请停用账号，如需恢复使用，请联系管理员')
+            if user.status == User.STATUS.SUSPENDED:
+                raise exception.api.Forbidden('用户已申请停用账号，如需恢复使用，请联系管理员')
 
-                #     if not permission.toolkit.check_login_permission(db_session, user.id):
-                #         user_role = db_session.query(UserRole).filter(UserRole.user_id == user.id).first()
-                #         if user_role is None:
-                #             user_role = UserRole(user.id, Role.USER)
-                #             db_session.add(user_role)
-                #         else:
-                #             raise exception.api.Forbidden('该用户已被拉黑，请联系管理员进行申诉')
-                #
-                #     user.last_login_at = datetime.now().timestamp()
+            if not permission.toolkit.check_login_permission(session, user.uuid):
+                user_role = session.query(UserRole).filter(UserRole.user_uuid == user.uuid).first()
+                if user_role is None:
+                    role = session.query(Role).fitler(
+                        Role.name == Role.BuiltInRole.REGISTRATION_USER.value.name).first()  # type: Role
+                    user_role = UserRole(user.uuid, role.uuid)
+                    session.add(user_role)
+                else:
+                    raise exception.api.Forbidden('该用户已被拉黑，请联系管理员进行申诉')
 
             result = ApiResult('登录成功', payload={
                 'jwt': authorization.toolkit.derive_jwt_token(user.uuid)

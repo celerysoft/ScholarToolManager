@@ -87,6 +87,7 @@ def derive_user_jwt(**kwargs):
         )
         print(token)
 
+
 @app.cli.command()
 def transfer_former_database():
     success = transfer_legacy_data.toolkit.execute()
