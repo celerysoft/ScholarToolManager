@@ -129,7 +129,11 @@ REDIS_PORT = '6379'
 REDIS_DB = '0'
 
 # 邮件服务
+SMTP_HOST = 'smtpdm-ap-southeast-1.aliyun.com'
+SMTP_PORT = '465'
+SENDING_ADDRESS = 'no-reply@celerysoft.science'
 SMTP_PASSWORD = ''
+REPLY_TO = 'celerysoft.gmail.com'
 
 
 try:

@@ -12,11 +12,11 @@ import configs
 
 
 class EmailToolkit(object):
-    smtp_host = 'smtpdm-ap-southeast-1.aliyun.com'
-    smtp_port = '465'
-    sending_address = 'no-reply@celerysoft.science'
+    smtp_host = configs.SMTP_HOST
+    smtp_port = configs.SMTP_PORT
+    sending_address = configs.SENDING_ADDRESS
     smtp_password = configs.SMTP_PASSWORD
-    reply_to = 'celerysoft.gmail.com'
+    reply_to = configs.REPLY_TO
 
     def send_activation_email(self, send_to, username, activate_url):
         email_html = '''
@@ -56,8 +56,10 @@ class EmailToolkit(object):
         '''
         email_html = email_html.format(username, activate_url, activate_url)
 
-        self.__send_email(send_to, email_html)
-        print('用户{}的注册激活邮箱已成功发送至{}'.format(username, send_to))
+        title = '欢迎注册Celery Soft学术'
+
+        self.__send_email(send_to, title, email_html)
+        print('用户{}的验证电子邮箱地址的邮件已成功发送至{}'.format(username, send_to))
 
     def send_activation_email_for_modifying_email_address(self, send_to, username, activate_url):
         email_html = '''
@@ -97,13 +99,44 @@ class EmailToolkit(object):
         '''
         email_html = email_html.format(username, activate_url, activate_url)
 
-        self.__send_email(send_to, email_html)
-        print('用户{}的注册激活邮箱已成功发送至{}'.format(username, send_to))
+        title = '修改在Celery Soft学术的电子邮箱地址'
 
-    def __send_email(self, send_to, text):
+        self.__send_email(send_to, title, email_html)
+        print('用户{}修改电子邮箱地址的验证邮件已成功发送至{}'.format(username, send_to))
+
+    def send_reset_password_email(self, send_to, username, reset_password_url):
+        email_html = '''
+        <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <title>『Celery Soft 学术』重设密码</title>
+            </head>
+            <body>
+                <div style="font-size: 14px;">
+                    <p>亲爱的{}：</p>
+                    <p>您好，您申请重设在『Celery Soft 学术』的登录密码，只差最后一步，就能完成重设。在48小时内点击下面的链接即可：</p>
+                    <p></p>
+                    <div><a href="{}">{}</a></div>
+                    <div>（如果链接无法点击，请将它拷贝到浏览器的地址栏中直接打开）</div>
+                    <p>如果您没有在『Celery Soft 学术』申请重设登录密码，那我们严重怀疑您在『Celery Soft 学术』的密码已经泄漏，请您立即登录网站修改密码。</p>
+                    <p>此致，</p>
+                    <p>Celery Soft 学术</p>
+                </div>
+            </body>
+        </html>
+        '''
+        email_html = email_html.format(username, reset_password_url, reset_password_url)
+
+        title = '重设在Celery Soft学术的登录密码'
+
+        self.__send_email(send_to, title, email_html)
+        print('用户{}的重设密码邮件已成功发送至{}'.format(username, send_to))
+
+    def __send_email(self, send_to, title, text):
         # 构建alternative结构
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = Header('欢迎注册Celery Soft学术', charset='utf-8').encode()
+        msg['Subject'] = Header(title, charset='utf-8').encode()
         msg['From'] = '%s <%s>' % (Header('Celery Soft学术', charset='utf-8').encode(), self.sending_address)
         msg['To'] = send_to
         msg['Reply-to'] = self.reply_to

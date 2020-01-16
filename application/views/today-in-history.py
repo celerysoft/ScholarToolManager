@@ -21,7 +21,7 @@ class TodayInHistoryAPI(BaseAPI):
             params = {
                 'type': 'json'
             }
-            response = requests.get(api_url, params=params, verify=True)
+            response = requests.get(api_url, params=params, verify=False)
             if response.ok:
                 today_in_history_json_str = response.text
                 cache.set(cache_key, today_in_history_json_str)

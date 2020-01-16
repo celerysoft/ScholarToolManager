@@ -75,7 +75,8 @@ class UserAPI(BaseNeedLoginAPI):
             user = session.query(User).filter(User.username == username, User.status != User.STATUS.DELETED).first()
             if user is not None:
                 raise exception.api.Conflict('用户名已被注册')
-            user = session.query(User).filter(User.email == email, User.status != User.STATUS.DELETED).first()
+            user = session.query(User).filter(
+                User.email == email, ~User.status.in_([User.STATUS.DELETED, User.STATUS.INACTIVATED])).first()
             if user is not None:
                 return exception.api.Conflict('邮箱已被注册')
 
