@@ -20,7 +20,8 @@ class ManagementUserAPI(PermissionRequiredAPI):
             user_list = []
             query = self.derive_query_for_get_method(session, User) \
                 .filter(User.status != User.STATUS.DELETED)
-            page, page_size, offset, max_page = self.derive_page_parameter(query.count())
+            record_count = query.count()
+            page, page_size, offset, max_page = self.derive_page_parameter(record_count)
             users = query.offset(offset).limit(page_size).all()
             for user in users:  # type: User
                 user_list.append(user.to_dict())
@@ -30,6 +31,7 @@ class ManagementUserAPI(PermissionRequiredAPI):
                 'page': page,
                 'page_size': page_size,
                 'max_page': max_page,
+                'total': record_count,
             })
             return result.to_response()
 
