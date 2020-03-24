@@ -133,6 +133,10 @@ class EmailToolkit(object):
         self.__send_email(send_to, title, email_html)
         print('用户{}的重设密码邮件已成功发送至{}'.format(username, send_to))
 
+    def send_email(self, send_to, title, text):
+        self.__send_email(send_to, title, text)
+        print('邮件已成功发送至{}'.format(send_to))
+
     def __send_email(self, send_to, title, text):
         # 构建alternative结构
         msg = MIMEMultipart('alternative')

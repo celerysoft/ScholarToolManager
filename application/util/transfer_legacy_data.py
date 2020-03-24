@@ -1,6 +1,6 @@
 # -*-coding:utf-8 -*-
 """
-Transfer legacy data format to current data format
+Transfer v1.0 data format to v2.0 data format
 """
 from datetime import datetime
 

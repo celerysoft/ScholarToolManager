@@ -25,7 +25,7 @@ logging.basicConfig(filename=LOG_FILE,
 
 class NetworkUsageMonitor(object):
     # address of the client
-    _CLIENT_ADDRESS = configs.SS_LISTENER_UDS_CLIEND_ADDRESS
+    _CLIENT_ADDRESS = configs.SS_LISTENER_UDS_CLIENT_ADDRESS
     # address of the server
     _SERVER_ADDRESS = configs.SS_SERVER_UDS_ADDRESS
     # client name
