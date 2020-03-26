@@ -20,6 +20,7 @@ class TransferLegacyDataToolkit(object):
     def execute(self) -> bool:
         with legacy_session_scope() as legacy_session, session_scope() as session:
             try:
+                self._create_built_in_role(session)
                 self._transfer_user_and_scholar_payment_account(legacy_session, session)
                 self._transfer_event(legacy_session, session)
                 self._transfer_service_template(legacy_session, session)
@@ -31,6 +32,18 @@ class TransferLegacyDataToolkit(object):
                     raise RuntimeError(e)
                 return False
             return True
+
+    @classmethod
+    def _create_built_in_role(cls, session):
+        for built_in_permission_enum in Role.BuiltInRole:
+            built_in_role = built_in_permission_enum.value  # type: Role.BuiltInRole.BuiltInRoleObject
+            role = Role(
+                name=built_in_role.name,
+                description=built_in_role.description,
+            )
+            session.add(role)
+        # session.commit()
+        session.flush()
 
     @classmethod
     def _transfer_user_and_scholar_payment_account(cls, legacy_session, session):

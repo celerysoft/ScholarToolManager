@@ -71,6 +71,7 @@ CREATE TABLE service
     `package`       BIGINT(16)  NOT NULL
         COMMENT '总流量',
     `auto_renew`    TINYINT(4) COMMENT '自动续费状态：0 - 不自动，1 - 自动续费，包月套餐专用字段',
+    `billing_date`  DATE NOT NULL COMMENT '账单日，下次付款的时间',
 #     `reset_at`      DATETIME COMMENT '下次将已用流量重置为0的时间点，包月套餐专用字段',
 #     `last_reset_at` DATETIME COMMENT '上次将已用流量重置为0的时间点，暨上次续费的时间',
 #     `expired_at`    DATETIME COMMENT '套餐过期时间，流量套餐专用字段',
