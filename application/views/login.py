@@ -30,10 +30,15 @@ class LoginAPI(BaseAPI):
 
             if user.password != hashed_password:
                 sha1 = hashlib.sha1()
+                sha1.update(password.encode('utf-8'))
+                legacy_password = sha1.hexdigest()
+
+                sha1 = hashlib.sha1()
                 sha1.update(configs.SHA1_SALT.encode('utf-8'))
                 sha1.update(b':')
-                sha1.update(password.encode('utf-8'))
+                sha1.update(legacy_password.encode('utf-8'))
                 legacy_hash_password = sha1.hexdigest()
+
                 if user.password != legacy_hash_password:
                     raise exception.api.InvalidRequest('密码错误，请重试')
                 else:
@@ -43,13 +48,18 @@ class LoginAPI(BaseAPI):
                 raise exception.api.Forbidden('用户已申请停用账号，如需恢复使用，请联系管理员')
 
             if not permission.toolkit.check_login_permission(session, user.uuid):
-                user_role = session.query(UserRole).filter(UserRole.user_uuid == user.uuid).first()
+                user_role = session.query(UserRole).filter(UserRole.user_uuid == user.uuid).first()  # type: UserRole
                 if user_role is None:
-                    role = session.query(Role).fitler(
+                    role = session.query(Role).filter(
                         Role.name == Role.BuiltInRole.REGISTRATION_USER.value.name).first()  # type: Role
                     user_role = UserRole(user.uuid, role.uuid)
                     session.add(user_role)
-                else:
+                    session.commit()
+
+                role = session.query(Role).filter(
+                        Role.uuid == user_role.role_uuid).first()  # type: Role
+
+                if role is not None and role.name == Role.BuiltInRole.BAN_LIST.value.name:
                     raise exception.api.Forbidden('该用户已被拉黑，请联系管理员进行申诉')
 
             result = ApiResult('登录成功', payload={
