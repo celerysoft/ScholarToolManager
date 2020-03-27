@@ -7,7 +7,9 @@ from datetime import datetime
 import configs
 from application.model.event import Event
 from application.model.legacy import model
+from application.model.permission import Permission
 from application.model.role import Role
+from application.model.role_permission import RolePermission
 from application.model.scholar_payment_account import ScholarPaymentAccount
 from application.model.service import Service
 from application.model.service_template import ServiceTemplate
@@ -20,7 +22,9 @@ class TransferLegacyDataToolkit(object):
     def execute(self) -> bool:
         with legacy_session_scope() as legacy_session, session_scope() as session:
             try:
+                self._create_built_in_permissions(session)
                 self._create_built_in_role(session)
+                self._assign_role_permission(session)
                 self._transfer_user_and_scholar_payment_account(legacy_session, session)
                 self._transfer_event(legacy_session, session)
                 self._transfer_service_template(legacy_session, session)
@@ -34,6 +38,18 @@ class TransferLegacyDataToolkit(object):
             return True
 
     @classmethod
+    def _create_built_in_permissions(cls, session):
+        for built_in_permission_enum in Permission.BuiltInPermission:
+            built_in_permission = built_in_permission_enum.value
+            permission = Permission(
+                name=built_in_permission.name,
+                label=built_in_permission.label,
+                description=built_in_permission.description,
+            )
+            session.add(permission)
+        session.flush()
+
+    @classmethod
     def _create_built_in_role(cls, session):
         for built_in_permission_enum in Role.BuiltInRole:
             built_in_role = built_in_permission_enum.value  # type: Role.BuiltInRole.BuiltInRoleObject
@@ -42,8 +58,29 @@ class TransferLegacyDataToolkit(object):
                 description=built_in_role.description,
             )
             session.add(role)
+        session.flush()
+
+    @classmethod
+    def _assign_role_permission(cls, session):
+        cls._assign_permission_to_role(session, Role.BuiltInRole.REGISTRATION_USER, Permission.BuiltInPermission.LOGIN)
+
+        cls._assign_permission_to_role(session, Role.BuiltInRole.ADMINISTRATOR,
+                                       Permission.BuiltInPermission.LOGIN, Permission.BuiltInPermission.MANAGEMENT)
         # session.commit()
         session.flush()
+
+    @staticmethod
+    def _assign_permission_to_role(session, built_in_role: Role.BuiltInRole, *built_in_permissions):
+        role = session.query(Role).filter(
+            Role.name == built_in_role.value.name).first()  # type: Role
+        for built_in_permission in built_in_permissions:  # type: Permission.BuiltInPermission
+            permission = session.query(Permission).filter(
+                Permission.label == built_in_permission.value.label).first()  # type: Permission
+            role_permission = RolePermission(
+                role_uuid=role.uuid,
+                permission_uuid=permission.uuid,
+            )
+            session.add(role_permission)
 
     @classmethod
     def _transfer_user_and_scholar_payment_account(cls, legacy_session, session):
@@ -97,7 +134,6 @@ class TransferLegacyDataToolkit(object):
             event.created_at = datetime.fromtimestamp(legacy_event.created_at)
             event.status = Event.Status.VALID.value if legacy_event.available else Event.Status.DELETED.value
             session.add(event)
-
 
     @staticmethod
     def _transfer_service_template(legacy_session, session):
