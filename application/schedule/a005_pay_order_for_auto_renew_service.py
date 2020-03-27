@@ -48,5 +48,6 @@ script = PayOrderForAutoRenewServiceScript()
 
 
 if __name__ == '__main__':
-    script = PayOrderForAutoRenewServiceScript()
-    script.execute()
+    # script = PayOrderForAutoRenewServiceScript()
+    # script.execute()
+    raise RuntimeError('Do not execute this script directory, execute a000_execute_a_series_schedules.py instead')

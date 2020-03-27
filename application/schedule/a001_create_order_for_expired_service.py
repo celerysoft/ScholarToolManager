@@ -91,5 +91,6 @@ script = CreateOrderForExpiredServiceScript()
 
 
 if __name__ == '__main__':
-    script = CreateOrderForExpiredServiceScript()
-    script.execute()
+    # script = CreateOrderForExpiredServiceScript()
+    # script.execute()
+    raise RuntimeError('Do not execute this script directory, execute a000_execute_a_series_schedules.py instead')

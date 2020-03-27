@@ -33,5 +33,6 @@ script = MarkOverdueServiceAsOutOfCreditScript()
 
 
 if __name__ == '__main__':
-    script = MarkOverdueServiceAsOutOfCreditScript()
-    script.execute()
+    # script = MarkOverdueServiceAsOutOfCreditScript()
+    # script.execute()
+    raise RuntimeError('Do not execute this script directory, execute c000_execute_c_series_schedules.py instead')

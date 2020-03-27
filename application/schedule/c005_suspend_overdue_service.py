@@ -40,5 +40,6 @@ script = SuspendOverdueServiceScript()
 
 
 if __name__ == '__main__':
-    script = SuspendOverdueServiceScript()
-    script.execute()
+    # script = SuspendOverdueServiceScript()
+    # script.execute()
+    raise RuntimeError('Do not execute this script directory, execute c000_execute_c_series_schedules.py instead')

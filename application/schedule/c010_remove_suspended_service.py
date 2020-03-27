@@ -50,5 +50,6 @@ script = RemoveSuspendedServiceScript()
 
 
 if __name__ == '__main__':
-    script = RemoveSuspendedServiceScript()
-    script.execute()
+    # script = RemoveSuspendedServiceScript()
+    # script.execute()
+    raise RuntimeError('Do not execute this script directory, execute c000_execute_c_series_schedules.py instead')

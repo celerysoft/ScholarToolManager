@@ -1,6 +1,6 @@
 # -*-coding:utf-8 -*-
 """
-自动取消超时未支付的脚本
+自动取消超时未支付的订单脚本
 续费服务订单的超时时间：>7天
 新建服务订单的超时时间：>30分钟
 执行频率：每隔30分钟执行
@@ -51,5 +51,6 @@ script = CancelOverdueOrderScript()
 
 
 if __name__ == '__main__':
-    script = CancelOverdueOrderScript()
-    script.execute()
+    # script = CancelOverdueOrderScript()
+    # script.execute()
+    raise RuntimeError('Do not execute this script directory, execute b000_execute_b_series_schedules.py instead')
