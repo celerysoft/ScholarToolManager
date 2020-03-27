@@ -32,7 +32,7 @@ class TodayInHistoryAPI(BaseAPI):
             payload = json.loads(today_in_history_json_str)
         except:
             cache.delete(cache_key)
-            return ApiResult('获取历史上的今天数据失败，数据源返回的数据异常，请稍后再试', 503)
+            raise exception.api.ServiceUnavailable('获取历史上的今天数据失败，数据源返回的数据异常，请稍后再试')
 
         result = ApiResult('获取历史上的今天数据成功', payload=payload)
         return result.to_response()

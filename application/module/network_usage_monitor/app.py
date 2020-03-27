@@ -226,5 +226,5 @@ class NetworkUsageMonitor(object):
 
 if __name__ == '__main__':
     monitor_service = NetworkUsageMonitor()
-    # monitor_service.run()
-    monitor_service.run_test_for_shadowsocks_libev()
+    monitor_service.run()
+    # monitor_service.run_test_for_shadowsocks_libev()
