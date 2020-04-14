@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 import hashlib
 
+from flask import request
+
 import configs
 from application import exception
 from application.model.role import Role
 from application.model.user import User
+from application.model.user_login_log import UserLoginLog
 from application.model.user_role import UserRole
 from application.util import authorization, permission
 from application.util.database import session_scope
@@ -61,6 +64,12 @@ class LoginAPI(BaseAPI):
 
                 if role is not None and role.name == Role.BuiltInRole.BAN_LIST.value.name:
                     raise exception.api.Forbidden('该用户已被拉黑，请联系管理员进行申诉')
+
+            login_log = UserLoginLog(
+                user_uuid=user.uuid,
+                ip=request.remote_addr
+            )
+            session.add(login_log)
 
             result = ApiResult('登录成功', payload={
                 'jwt': authorization.toolkit.derive_jwt_token(user.uuid)

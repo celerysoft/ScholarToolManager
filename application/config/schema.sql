@@ -71,7 +71,7 @@ CREATE TABLE service
     `package`       BIGINT(16)  NOT NULL
         COMMENT '总流量',
     `auto_renew`    TINYINT(4) COMMENT '自动续费状态：0 - 不自动，1 - 自动续费，包月套餐专用字段',
-    `billing_date`  DATE NOT NULL COMMENT '账单日，下次付款的时间',
+    `billing_date`  DATE        NOT NULL COMMENT '账单日，下次付款的时间',
 #     `reset_at`      DATETIME COMMENT '下次将已用流量重置为0的时间点，包月套餐专用字段',
 #     `last_reset_at` DATETIME COMMENT '上次将已用流量重置为0的时间点，暨上次续费的时间',
 #     `expired_at`    DATETIME COMMENT '套餐过期时间，流量套餐专用字段',
@@ -295,13 +295,13 @@ CREATE TABLE role
 
 CREATE TABLE role_permission
 (
-    `id`         INT(11)     NOT NULL AUTO_INCREMENT,
-    `uuid`       VARCHAR(36) NOT NULL,
-    `role_uuid`  VARCHAR(36) NOT NULL COMMENT '角色UUID',
-    `permission_uuid`  VARCHAR(36) NOT NULL COMMENT '权限UUID',
-    `created_at` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `status`     TINYINT(4)  NOT NULL DEFAULT 1 COMMENT '状态：0 - 初始化，1 - 有效，2 - 作废，3 - 无效',
+    `id`              INT(11)     NOT NULL AUTO_INCREMENT,
+    `uuid`            VARCHAR(36) NOT NULL,
+    `role_uuid`       VARCHAR(36) NOT NULL COMMENT '角色UUID',
+    `permission_uuid` VARCHAR(36) NOT NULL COMMENT '权限UUID',
+    `created_at`      DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`      DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `status`          TINYINT(4)  NOT NULL DEFAULT 1 COMMENT '状态：0 - 初始化，1 - 有效，2 - 作废，3 - 无效',
     PRIMARY KEY (`id`)
 )
     ENGINE = innodb
@@ -310,19 +310,34 @@ CREATE TABLE role_permission
 
 CREATE TABLE permission
 (
-    `id`         INT(11)     NOT NULL AUTO_INCREMENT,
-    `uuid`       VARCHAR(36) NOT NULL,
+    `id`          INT(11)     NOT NULL AUTO_INCREMENT,
+    `uuid`        VARCHAR(36) NOT NULL,
     `name`        VARCHAR(36) NOT NULL COMMENT '权限名',
-    `label`        VARCHAR(36) NOT NULL COMMENT '权限标签',
+    `label`       VARCHAR(36) NOT NULL COMMENT '权限标签',
     `description` TEXT COMMENT '权限描述',
-    `created_at` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `status`     TINYINT(4)  NOT NULL DEFAULT 1 COMMENT '状态：0 - 初始化，1 - 有效，2 - 作废，3 - 无效',
+    `created_at`  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `status`      TINYINT(4)  NOT NULL DEFAULT 1 COMMENT '状态：0 - 初始化，1 - 有效，2 - 作废，3 - 无效',
     PRIMARY KEY (`id`)
 )
     ENGINE = innodb
     DEFAULT CHARSET = utf8
     COMMENT = '权限';
+
+CREATE TABLE user_login_log
+(
+    `id`         INT(11)     NOT NULL AUTO_INCREMENT,
+    `uuid`       VARCHAR(36) NOT NULL,
+    `user_uuid`  VARCHAR(36) NOT NULL,
+    `ip`         VARCHAR(39)          DEFAULT NULL COMMENT '登录IP',
+    `created_at` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `status`     TINYINT(4)  NOT NULL DEFAULT 1 COMMENT '状态：0 - 初始化，1 - 有效，2 - 作废',
+    PRIMARY KEY (`id`)
+)
+    ENGINE = innodb
+    DEFAULT CHARSET = utf8
+    COMMENT = '用户登录日志';
 
 /*
 CREATE TABLE table_name
