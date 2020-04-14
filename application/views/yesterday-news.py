@@ -69,10 +69,12 @@ class YesterdayNewsAPI(BaseNeedLoginAPI):
                         'title': item.title,
                         'view_count': item.view_count,
                         'comment_count': item.comment_count,
+                        'trend': item.view_count * 1 + item.comment_count * 9,
                         'publish_date': item.publish_date.isoformat(),
                         'url_for_desktop': item.url_for_desktop,
                         'status': item.status
                     })
+                news_list.sort(key=lambda x: x['trend'], reverse=True)
                 payload = {
                     'news': news_list,
                 }
