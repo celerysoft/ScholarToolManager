@@ -7,6 +7,7 @@ from datetime import datetime
 import configs
 from application.model.event import Event
 from application.model.legacy import model
+from application.model.payment_method import PaymentMethod
 from application.model.permission import Permission
 from application.model.role import Role
 from application.model.role_permission import RolePermission
@@ -22,6 +23,7 @@ class TransferLegacyDataToolkit(object):
     def execute(self) -> bool:
         with legacy_session_scope() as legacy_session, session_scope() as session:
             try:
+                self._create_built_in_payment_method(session)
                 self._create_built_in_permissions(session)
                 self._create_built_in_role(session)
                 self._assign_role_permission(session)
@@ -36,6 +38,14 @@ class TransferLegacyDataToolkit(object):
                     raise RuntimeError(e)
                 return False
             return True
+
+    @classmethod
+    def _create_built_in_payment_method(cls, session):
+        payment_method = PaymentMethod(
+            name='学术积分账户余额'
+        )
+        session.add(payment_method)
+        session.flush()
 
     @classmethod
     def _create_built_in_permissions(cls, session):
