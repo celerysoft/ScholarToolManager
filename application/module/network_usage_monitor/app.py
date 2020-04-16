@@ -127,12 +127,10 @@ class NetworkUsageMonitor(object):
             if former_usage is not None and len(former_usage) > 0:
                 former_usage = int(former_usage)
                 diff = usage - former_usage
-                if diff > 0:
+                if diff >= 0:
                     format_data[port] = diff
                 else:
                     format_data[port] = usage
-            else:
-                cache.set(cache_key, usage)
 
         if len(format_data) > 0:
             self._handle_port_usage(format_data)
@@ -184,20 +182,17 @@ class NetworkUsageMonitor(object):
                 if former_usage is not None and len(former_usage) > 0:
                     former_usage = int(former_usage)
                     diff = usage - former_usage
-                    if diff > 0:
+                    if diff >= 0:
                         format_data[port] = diff
                     else:
                         format_data[port] = usage
-                else:
-                    cache.set(cache_key, usage)
 
             if len(format_data) > 0:
                 self._handle_port_usage(format_data)
             print('消息处理完毕')
             print('=' * 50, '\n')
 
-    @staticmethod
-    def _generate_fake_data_for_shadowsocks_libev() -> str:
+    def _generate_fake_data_for_shadowsocks_libev(self) -> str:
         # stat: {"8001":11370}
         from random import random
         from random import seed
