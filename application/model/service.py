@@ -21,6 +21,12 @@ class Service(Base, BaseModelMixin):
     password = Column(VARCHAR(64), nullable=False, comment='服务密码')
 
     class STATUS(object):
+        """
+        学术服务状态流程：
+                             -- 到期 --> 欠费(5) -- 欠费超过3天 --> 暂停(3) ----
+        初始化(0) -> 有效(1) -|                                             |-- 暂停状态到达7天 --> 失效(4)
+                            -- 流量超出 --> 欠费(5) -- 流量超出10% --> 暂停(3)-
+        """
         # 初始化
         INITIALIZATION = 0
         # 有效
