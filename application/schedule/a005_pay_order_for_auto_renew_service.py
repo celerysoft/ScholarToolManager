@@ -38,7 +38,7 @@ class PayOrderForAutoRenewServiceScript:
                 related_service = session.query(Service) \
                     .filter(Service.uuid == relationship.service_uuid,
                             Service.status.in_([Service.STATUS.INITIALIZATION, Service.STATUS.ACTIVATED,
-                                                Service.STATUS.SUSPENDED])) \
+                                                Service.STATUS.SUSPENDED, Service.STATUS.OUT_OF_CREDIT])) \
                     .first()  # type: Service
                 if related_service.auto_renew == 1:
                     scholar_payment_system.toolkit.pay_order(order.uuid)
