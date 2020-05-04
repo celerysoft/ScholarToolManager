@@ -59,7 +59,7 @@ REDIS_HOST = 'localhost'
 REDIS_PORT = '6379'
 REDIS_DB = '0'
 
-# email toolkit setting, see detail in EmailToolkit(application/util/email.py)
+# email toolkit setting, see detail in EmailToolkit(application/util/email_util.py)
 SMTP_HOST = ''
 SMTP_PORT = '465'
 SENDING_ADDRESS = ''
