@@ -39,6 +39,14 @@ cd ${backup_file_directory}
 # 删除七天前的备份
 find ${backup_file_directory} -name "*.sql" -type f -mtime +7 -exec rm -rf {} \; > /dev/null 2>&1
 
+# 执行Python脚本将备份文件上传到七牛
+echo "开始将备份文件上传至七牛" >> ${log_file_directory}${log_file_name}
+cd /path/tp/venv
+source ./bin/activate
+cd /path/to/project
+PYTHONPATH=/path/to/project/ /path/tp/venv/bin/python /path/to/project/application/schedule/backup_database.py >> ${log_file_directory}${log_file_name}
+deactivate
+
 echo "数据库 ${db_name} 备份成功!!" >> ${log_file_directory}${log_file_name}
 else
 # 备份失败则进行以下操作
