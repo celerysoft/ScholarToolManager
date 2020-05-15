@@ -23,8 +23,8 @@ PASSWORD_SALT = 'BlackSheepWall'
 JWT_SECRET = 'WhatsMineIsMine'
 
 # qiniu keys, user for backup database script
-QINIU_ACCESS_KEY = 'YCHyZnl8DPE2T107dsYcLnSbb1rQZb1igf-tdiRm'
-QINIU_SECRET_KEY = '9BiplXuagdDwocKpjiWEAfDhTh68iSM82_6OyIdq'
+QINIU_ACCESS_KEY = ''
+QINIU_SECRET_KEY = ''
 QINIU_BUCKET_NAME_FOR_BACKUP_DATABASE = 'database'
 
 DATABASE_BACKUP_FILE_DIRECTORY = '/Users/Celery/Developer/Python/scholar-tool-manager/local'

@@ -3,7 +3,6 @@ import json
 import math
 
 from flask import request, Response
-from flask import session as flask_session
 from flask.views import MethodView
 from jwt import PyJWTError
 
@@ -327,21 +326,6 @@ class BaseView(MethodView):
 
 class BaseAPI(BaseView):
     pass
-    # methods = ['GET']
-
-    # def get_single_model(self, model_class, uuid, query, not_found_exception_message='不存在'):
-    #     model = cache.get_model(model_class, uuid)
-    #     # model = None
-    #     if model is None:
-    #         model = query.first()
-    #         if model is None:
-    #             raise exception.api.NotFound(not_found_exception_message)
-    #         else:
-    #             cache.set_model(model)
-    #     return model
-    #
-    # def get_multiple_models(self):
-    #     pass
 
 
 def jwt_api(func):
@@ -372,32 +356,6 @@ def jwt_api(func):
     return wrapper
 
 
-def session_api(func):
-    session_dict = flask_session
-
-    def handle_session(view: MethodView):
-        if 'user' not in session_dict.keys():
-            raise exception.api.Unauthorized('请先登录')
-
-        try:
-            user_id = flask_session['user']['id']
-        except KeyError:
-            raise exception.api.Unauthorized('请先登录')
-
-        view.user_id = user_id
-
-    def wrapper(*args, **kwargs):
-        for parameter in args:
-            if isinstance(parameter, BaseNeedLoginAPI):
-                if parameter.need_login_methods is not None and request.method in parameter.need_login_methods:
-                    handle_session(parameter)
-            elif isinstance(parameter, MethodView):
-                handle_session(parameter)
-        return func(*args, **kwargs)
-
-    return wrapper
-
-
 class BaseNeedLoginAPI(BaseAPI):
     # 需要理用户登录才能执行的方法
     need_login_methods = ['HEAD', 'GET', 'POST', 'PATCH', 'PUT', 'DELETE']
@@ -421,10 +379,6 @@ class BaseNeedLoginAPI(BaseAPI):
 
                 if not self.valid_data(self.user_uuid):
                     raise e
-
-    @session_api
-    def check_session(self):
-        pass
 
     @jwt_api
     def check_jwt(self):

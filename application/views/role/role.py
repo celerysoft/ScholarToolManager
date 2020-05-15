@@ -15,7 +15,7 @@ class RoleAPI(BaseNeedLoginAPI):
 
     def get(self):
         with session_scope() as db_session:
-            if not permission.check_manage_role_permission(db_session, self.user_id):
+            if not permission.toolkit.check_manage_role_permission(db_session, self.user_id):
                 raise exception.api.Forbidden('当前用户无法管理角色')
 
             # 查询用户当前角色
