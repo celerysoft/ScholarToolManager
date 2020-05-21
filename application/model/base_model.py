@@ -58,7 +58,9 @@ class BaseModelMixin(IdMixin, UuidMixin, TimestampMixin, StatusMixin):
         if len(exclude_columns) == 0:
             exclude_columns = ('id',)
         else:
-            ['id'].extend(exclude_columns)
+            temp = ['id']
+            temp.extend(exclude_columns)
+            exclude_columns = temp
 
         data = {}
         for column in self.__table__.columns:
