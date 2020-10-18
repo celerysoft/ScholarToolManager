@@ -1,6 +1,7 @@
 # -*-coding:utf-8 -*-
 """
 执行C系列定时任务
+执行频率：每天执行
 """
 from application.schedule.c001_mark_overdue_service_as_out_of_credit import MarkOverdueServiceAsOutOfCreditScript
 from application.schedule.c005_suspend_overdue_service import SuspendOverdueServiceScript

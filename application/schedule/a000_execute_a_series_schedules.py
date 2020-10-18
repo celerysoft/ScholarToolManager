@@ -1,6 +1,7 @@
 # -*-coding:utf-8 -*-
 """
 执行A系列定时任务
+执行频率：每天执行
 """
 from datetime import datetime
 
