@@ -6,7 +6,6 @@ from flask import Flask, redirect, url_for, make_response, Blueprint
 from werkzeug.utils import find_modules, import_string
 
 import configs
-import application.exception.http
 from application.exception.api import BaseApiException
 from application.util import shadowsocks_controller, database
 from application.util.database import session_scope
@@ -175,11 +174,6 @@ def create_app():
 app = create_app()
 
 
-@app.teardown_appcontext
-def teardown_db(exception=None):
-    database.close_database()
-
-
 # -------------------------------------------------- Error Handler -------------------------------------------------- #
 # -------------------------------------------------- Error Handler -------------------------------------------------- #
 # -------------------------------------------------- Error Handler -------------------------------------------------- #
@@ -188,17 +182,6 @@ def teardown_db(exception=None):
 @app.errorhandler(Exception)
 def handle_base_exception(error):
     app.logger.exception(error)
-
-
-# ------------------------------------------------ Page Error Handler ------------------------------------------------ #
-@app.errorhandler(application.exception.http.Unauthorized)
-def handle_unauthorized(error):
-    return redirect(url_for('login'))
-
-
-@app.errorhandler(application.exception.http.Forbidden)
-def handle_forbidden(error):
-    return redirect(url_for('/'))
 
 
 # ------------------------------------------------ API Error Handler ------------------------------------------------ #
