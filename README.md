@@ -44,6 +44,7 @@ source venv/bin/activate
 # create config file on project_base_dir/local_settings.py
 FLASK_APP=manage.py flask create
 # modify local_settings.py for your own.
+vim local_settings.py
 # after you finish this, run next command
 FLASK_APP=manage.py flask init
 ```
@@ -53,9 +54,6 @@ now you have a superuser:
 username: admin
 
 password: 12345679
-    
-### 
-
 
 ## Run
 
@@ -94,6 +92,17 @@ celery -A application.module.payment.scholar.app worker --loglevel=info
 # network usage monitor
 python application/module/network_usage_monitor/app.py
 ```
+
+### Time-bound Task
+
+> activate venv first
+
+`15 1 1 * * python application/schedule/a000_execute_a_series_schedules.py`
+
+`*/30 * * * * python application/schedule/b000_execute_b_series_schedules.py`
+
+`15 0 * * * python application/schedule/c000_execute_c_series_schedules.py`
+
 
 # Sponsor
 
