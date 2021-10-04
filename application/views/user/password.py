@@ -91,16 +91,20 @@ class UserPasswordAPI(BaseNeedLoginAPI):
             extra_payload = {
                 'sub': JwtSub.ResetPassword.value,
             }
-            jwt = authorization.toolkit.derive_jwt_token(user.uuid, expired_in, extra_payload)
+            jwt = authorization.toolkit.derive_jwt_token(
+                user.id, user.uuid, expired_in, extra_payload
+            )
             if configs.DEBUG:
                 domain = 'http://localhost:8080'
             else:
                 domain = 'http://www.celerysoft.science'
             reset_password_url = '{}/password-reset/password?jwt={}'.format(domain, jwt)
 
-            background_task.send_reset_password_email.delay(user_email=email,
-                                                            username=user.username,
-                                                            reset_password_url=reset_password_url)
+            background_task.send_reset_password_email.delay(
+                user_email=email,
+                username=user.username,
+                reset_password_url=reset_password_url
+            )
 
             return ApiResult('重设密码的邮件已发送至{}，请查收'.format(user.email), 201).to_response()
 

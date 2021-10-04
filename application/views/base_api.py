@@ -337,11 +337,28 @@ def jwt_api(func):
 
         try:
             decoded_jwt = authorization.toolkit.decode_jwt_token(jwt)
+        # except InvalidAudienceError:
+        #     raise exception.api.Forbidden('您无权进行这个操作')
+        # except InvalidIssuerError:
+        #     raise exception.api.Unauthorized('请先登录')
         except PyJWTError:
             raise exception.api.Unauthorized('请先登录')
 
-        view.user_id = decoded_jwt['id']
-        view.user_uuid = decoded_jwt['uuid']
+        if 'id' not in decoded_jwt.keys():
+            raise exception.api.Unauthorized('请先登录')
+        if 'uuid' not in decoded_jwt.keys():
+            raise exception.api.Unauthorized('请先登录')
+
+        user_id = decoded_jwt.get('id', 0)
+        user_uuid = decoded_jwt.get('uuid', '')
+
+        if user_id is None or user_id <= 0:
+            raise exception.api.Unauthorized('请先登录')
+        if user_uuid is None or user_uuid == '':
+            raise exception.api.Unauthorized('请先登录')
+
+        view.user_id = user_id
+        view.user_uuid = user_uuid
 
     def wrapper(*args, **kwargs):
         for parameter in args:
@@ -381,7 +398,7 @@ class BaseNeedLoginAPI(BaseAPI):
                     self.user_id = self.get_data('user_id')
                     self.user_uuid = self.get_post_data('user_uuid')
 
-                if self.user_id <= 0 or not self.valid_data(self.user_uuid):
+                if self.user_id is None or self.user_id < 0 or not self.valid_data(self.user_uuid):
                     raise e
 
     @jwt_api

@@ -40,7 +40,9 @@ class UserEmailAPI(BaseNeedLoginAPI):
 
             user.email = email
 
-            jwt_token = authorization.toolkit.derive_jwt_token(uuid)
+            jwt_token = authorization.toolkit.derive_jwt_token(
+                user_id=user.id, user_uuid=uuid
+            )
             result = ApiResult('电子邮箱地址修改成功', 201, payload={
                 'jwt': jwt_token
             })
@@ -73,7 +75,9 @@ class UserEmailAPI(BaseNeedLoginAPI):
                 'sub': JwtSub.ModifyEmail.value,
                 'email': email,
             }
-            jwt = authorization.toolkit.derive_jwt_token(self.user_uuid, expired_in, extra_payload)
+            jwt = authorization.toolkit.derive_jwt_token(
+                user_id=self.user_id, user_uuid=self.user_uuid, expired_in=expired_in, extra_payload=extra_payload
+            )
             if configs.DEBUG:
                 domain = 'http://localhost:8080'
             else:
@@ -94,7 +98,9 @@ class UserEmailAPI(BaseNeedLoginAPI):
             extra_payload = {
                 'sub': JwtSub.Activation.value
             }
-            jwt = authorization.toolkit.derive_jwt_token(self.user_uuid, expired_in, extra_payload)
+            jwt = authorization.toolkit.derive_jwt_token(
+                user_id=self.user_id, user_uuid=self.user_uuid, expired_in=expired_in, extra_payload=extra_payload
+            )
             if configs.DEBUG:
                 domain = 'http://localhost:8080'
             else:

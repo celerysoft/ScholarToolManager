@@ -115,7 +115,9 @@ class UserAPI(BaseNeedLoginAPI):
             self.send_activation_email(user)
 
             result = ApiResult('注册成功', status=201, payload={
-                'jwt': authorization.toolkit.derive_jwt_token(user.uuid)
+                'jwt': authorization.toolkit.derive_jwt_token(
+                    user_id=user.id, user_uuid=user.uuid
+                )
             })
             return result.to_response()
 
@@ -124,7 +126,9 @@ class UserAPI(BaseNeedLoginAPI):
         extra_payload = {
             'sub': 'activation'
         }
-        jwt = authorization.toolkit.derive_jwt_token(user.uuid, expired_in, extra_payload)
+        jwt = authorization.toolkit.derive_jwt_token(
+            user.id, user.uuid, expired_in, extra_payload
+        )
         if configs.DEBUG:
             domain = 'http://localhost:8080'
         else:
@@ -164,7 +168,10 @@ class UserAPI(BaseNeedLoginAPI):
             if scholar_payment_account is not None:
                 scholar_payment_account.balance = configs.NEW_USER_SCHOLAR_BALANCE
 
-            jwt_token = authorization.toolkit.derive_jwt_token(uuid)
+            jwt_token = authorization.toolkit.derive_jwt_token(
+                user_id=user.id, user_uuid=uuid
+            )
+
             result = ApiResult('邮箱验证成功', 201, payload={
                 'jwt': jwt_token
             })

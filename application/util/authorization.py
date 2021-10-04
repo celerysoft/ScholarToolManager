@@ -30,11 +30,12 @@ class AuthorizationToolkit(object):
         return sha256.hexdigest()
 
     @staticmethod
-    def derive_jwt_token(uuid: str, expired_in: int = 24, extra_payload: dict = None) -> str:
+    def derive_jwt_token(user_id: int, user_uuid: str, expired_in: int = 24, extra_payload: dict = None) -> str:
         """
         为用户生成jwt
 
-        :param uuid: 用户uuid
+        :param user_id: 用户id
+        :param user_uuid: 用户uuid
         :param expired_in: 过期时间（小时）
         :param extra_payload: 额外的payload
         :return: 用户的jwt
@@ -42,11 +43,12 @@ class AuthorizationToolkit(object):
         now = datetime.now()
 
         payload = {
-            'uuid': uuid,
+            'id': user_id,
+            'uuid': user_uuid,
             'issuer': 'https://www.celerysoft.science',
-            'iat': now.timestamp(),
-            'nbf': now.timestamp(),
-            'exp': (now + timedelta(hours=expired_in)).timestamp(),
+            'iat': int(now.timestamp()),
+            'nbf': int(now.timestamp()),
+            'exp': int((now + timedelta(hours=expired_in)).timestamp()),
             'jti': snowflake_toolkit.get_id_from_default_worker()
         }
         if extra_payload is not None:
@@ -63,3 +65,4 @@ class AuthorizationToolkit(object):
 
 
 toolkit = AuthorizationToolkit()
+authorization_toolkit = toolkit

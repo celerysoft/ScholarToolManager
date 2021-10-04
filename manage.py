@@ -82,7 +82,8 @@ def derive_user_jwt(**kwargs):
             exit(1)
 
         token = authorization.toolkit.derive_jwt_token(
-            uuid=user.uuid,
+            user_id=user.id,
+            user_uuid=user.uuid,
             expired_in=expires,
         )
         print(token)

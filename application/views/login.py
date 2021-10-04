@@ -72,7 +72,9 @@ class LoginAPI(BaseAPI):
             session.add(login_log)
 
             result = ApiResult('登录成功', payload={
-                'jwt': authorization.toolkit.derive_jwt_token(user.uuid)
+                'jwt': authorization.toolkit.derive_jwt_token(
+                    user_id=user.id, user_uuid=user.uuid
+                )
             })
             return result.to_response()
 
