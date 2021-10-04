@@ -8,6 +8,7 @@ from datetime import timedelta, datetime
 import jwt
 
 import configs
+from application.util.snowflake import snowflake_toolkit
 
 
 class AuthorizationToolkit(object):
@@ -45,7 +46,8 @@ class AuthorizationToolkit(object):
             'issuer': 'https://www.celerysoft.science',
             'iat': now.timestamp(),
             'nbf': now.timestamp(),
-            'exp': (now + timedelta(hours=expired_in)).timestamp()
+            'exp': (now + timedelta(hours=expired_in)).timestamp(),
+            'jti': snowflake_toolkit.get_id_from_default_worker()
         }
         if extra_payload is not None:
             for k, v in extra_payload.items():
