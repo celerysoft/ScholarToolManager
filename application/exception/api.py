@@ -5,53 +5,65 @@ from flask import Response
 
 
 class BaseApiException(Exception):
-    status_code = 500
+    STATUS_CODE = 500
 
-    def __init__(self, message, status_code=None, payload=None):
+    def __init__(self, message, payload=None):
         Exception.__init__(self)
         self.message = message
-        if status_code is not None:
-            self.status_code = status_code
         self.payload = payload
 
     def to_response(self):
         rv = dict(self.payload or ())
         rv['message'] = self.message
         return Response(json.dumps(rv),
-                        status=self.status_code,
+                        status=self.STATUS_CODE,
                         mimetype='application/json')
 
 
 class InvalidRequest(BaseApiException):
+    STATUS_CODE = 400
+
     def __init__(self, message, payload=None):
-        BaseApiException.__init__(self, message, status_code=400, payload=payload)
+        BaseApiException.__init__(self, message, payload=payload)
 
 
 class Unauthorized(BaseApiException):
+    STATUS_CODE = 401
+
     def __init__(self, message, payload=None):
-        BaseApiException.__init__(self, message, status_code=401, payload=payload)
+        BaseApiException.__init__(self, message, payload=payload)
 
 
 class Forbidden(BaseApiException):
+    STATUS_CODE = 403
+
     def __init__(self, message, payload=None):
-        BaseApiException.__init__(self, message, status_code=403, payload=payload)
+        BaseApiException.__init__(self, message, payload=payload)
 
 
 class NotFound(BaseApiException):
+    STATUS_CODE = 404
+
     def __init__(self, message, payload=None):
-        BaseApiException.__init__(self, message, status_code=404, payload=payload)
+        BaseApiException.__init__(self, message, payload=payload)
 
 
 class Conflict(BaseApiException):
+    STATUS_CODE = 409
+
     def __init__(self, message, payload=None):
-        BaseApiException.__init__(self, message, status_code=409, payload=payload)
+        BaseApiException.__init__(self, message, payload=payload)
 
 
 class InternalServerError(BaseApiException):
+    STATUS_CODE = 500
+
     def __init__(self, message, payload=None):
-        BaseApiException.__init__(self, message, status_code=500, payload=payload)
+        BaseApiException.__init__(self, message, payload=payload)
 
 
 class ServiceUnavailable(BaseApiException):
+    STATUS_CODE = 403
+
     def __init__(self, message, payload=None):
-        BaseApiException.__init__(self, message, status_code=503, payload=payload)
+        BaseApiException.__init__(self, message, payload=payload)
