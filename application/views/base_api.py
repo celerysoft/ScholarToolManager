@@ -28,6 +28,7 @@ class ApiResult(object):
 
 
 class BaseView(MethodView):
+    user_id = -1
     user_uuid = ''
 
     @classmethod
@@ -339,6 +340,7 @@ def jwt_api(func):
         except PyJWTError:
             raise exception.api.Unauthorized('请先登录')
 
+        view.user_id = decoded_jwt['id']
         view.user_uuid = decoded_jwt['uuid']
 
     def wrapper(*args, **kwargs):
@@ -373,11 +375,13 @@ class BaseNeedLoginAPI(BaseAPI):
                 raise e
             else:
                 if request.method in ['GET', 'DELETE']:
+                    self.user_id = self.get_data('user_id')
                     self.user_uuid = self.get_data('user_uuid')
                 elif request.method in ['POST', 'PATCH', 'PUT']:
+                    self.user_id = self.get_data('user_id')
                     self.user_uuid = self.get_post_data('user_uuid')
 
-                if not self.valid_data(self.user_uuid):
+                if self.user_id <= 0 or not self.valid_data(self.user_uuid):
                     raise e
 
     @jwt_api
