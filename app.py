@@ -157,9 +157,10 @@ def create_app():
             resp.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS'
             resp.headers['Access-Control-Allow-Credentials'] = True
             resp.headers['Access-Control-Max-Age'] = 1728000
-            resp.headers['Access-Control-Allow-Headers'] = \
-                'DNT,X-Custom-Header,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,' \
+            resp.headers['Access-Control-Allow-Headers'] = (
+                'DNT,X-Custom-Header,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,'
                 'Content-Type,Authorization'
+            )
 
             return resp
         flask_app.after_request(after_request)
