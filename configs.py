@@ -26,6 +26,10 @@ DB_USER = 'www-data'
 DB_PASSWORD = 'www->R&daD6xZM6283n3-data'
 DB_NAME = 'scholar_tool'
 
+SNOWFLAKE_START_TIME = 1633369350000
+SNOWFLAKE_DATACENTER_ID = 0
+SNOWFLAKE_WORKER_ID = 0
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 BASE_URL = '/api'
